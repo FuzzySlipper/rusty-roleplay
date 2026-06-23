@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/scoring-defaults.json",
+  "contract_version": "v0",
+  "default_profile": "narrative-default",
+  "description": "Named recall scoring profiles for lorekeep. These are v0 implementation constants, not tuned truth; calibration happens after dogfooding.",
+  "model": "weighted_sum_then_penalty",
+  "formula": "base = fts_score*w.fts_score + tag_match*w.tag_match + subject_match*w.subject_match + canon_level_modifier*w.canon_level_modifier + recency_modifier*w.recency_modifier + scope_match*w.scope_match + tag_boost*w.tag_boost; score = base * w.excluded_subject_penalty when the entry references an excluded subject, else base. Each factor input is normalized to [0,1] at runtime; canon_level_modifier and entry_status_modifier read from canon_level_scores and entry_status_scores below. This is a weighted-sum-then-penalty model (per docs/01-lore-service-design.md), deliberately distinct from den-memory's additive-modifier model — RP recall tunes per-factor emphasis by profile rather than summing fixed authority modifiers.",
+  "factors": [
+    "fts_score",
+    "tag_match",
+    "subject_match",
+    "canon_level_modifier",
+    "recency_modifier",
+    "scope_match",
+    "tag_boost",
+    "excluded_subject_penalty"
+  ],
+  "profiles": {
+    "narrative-default": {
+      "description": "Balanced weighting for general RP scenes.",
+      "weights": {
+        "fts_score": 1.0,
+        "tag_match": 0.8,
+        "subject_match": 1.0,
+        "canon_level_modifier": 0.6,
+        "recency_modifier": 0.4,
+        "scope_match": 0.7,
+        "tag_boost": 1.0,
+        "excluded_subject_penalty": 0.0
+      }
+    },
+    "lore-heavy": {
+      "description": "Favors comprehensive lore retrieval for lore-dense campaigns.",
+      "weights": {
+        "fts_score": 1.3,
+        "tag_match": 1.0,
+        "subject_match": 0.7,
+        "canon_level_modifier": 0.8,
+        "recency_modifier": 0.3,
+        "scope_match": 0.5,
+        "tag_boost": 1.0,
+        "excluded_subject_penalty": 0.0
+      }
+    },
+    "character-focused": {
+      "description": "Favors character-specific entries over world-level lore.",
+      "weights": {
+        "fts_score": 0.9,
+        "tag_match": 0.8,
+        "subject_match": 1.6,
+        "canon_level_modifier": 0.6,
+        "recency_modifier": 0.5,
+        "scope_match": 1.0,
+        "tag_boost": 1.0,
+        "excluded_subject_penalty": 0.0
+      }
+    }
+  },
+  "canon_level_scores": {
+    "canon": 1.0,
+    "session_canon": 0.7,
+    "rumor": 0.3,
+    "ambiguous": 0.1,
+    "deprecated": -1.0
+  },
+  "entry_status_scores": {
+    "active": 0.0,
+    "superseded": -1000.0,
+    "deprecated": -250.0,
+    "archived": -1000.0
+  }
+}

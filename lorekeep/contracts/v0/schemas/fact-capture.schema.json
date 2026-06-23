@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/fact-capture.schema.json",
+  "title": "Fact capture",
+  "description": "Capturing an established fact during play. Promotes a model assertion toward durable canon.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "body_md": {
+      "type": "string"
+    },
+    "subject_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "canon_level": {
+      "type": "string",
+      "enum": [
+        "canon",
+        "session_canon",
+        "rumor",
+        "deprecated",
+        "ambiguous"
+      ]
+    },
+    "established_in_session": {
+      "type": "string",
+      "minLength": 1
+    },
+    "established_in_turn": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "captured_by": {
+      "type": "string",
+      "enum": [
+        "rp_agent",
+        "mechanic_agent",
+        "user"
+      ]
+    },
+    "capture_reason": {
+      "type": "string",
+      "enum": [
+        "plot_event",
+        "relationship_change",
+        "revealed_information",
+        "character_development",
+        "user_override"
+      ]
+    },
+    "capture_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "profile_id",
+    "campaign_id",
+    "slug",
+    "title",
+    "summary",
+    "body_md",
+    "canon_level",
+    "established_in_session",
+    "established_in_turn",
+    "captured_by",
+    "capture_reason"
+  ]
+}

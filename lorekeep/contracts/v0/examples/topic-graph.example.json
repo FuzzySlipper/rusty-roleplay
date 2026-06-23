@@ -1,0 +1,79 @@
+{
+  "nodes": [
+    {
+      "slug": "xavier",
+      "campaign_id": "eldoria",
+      "title": "Xavier Thorne",
+      "summary": "A duelist sworn to the Silver Flame, entangled in Northmarch politics.",
+      "node_kind": "character",
+      "canon_level": "canon",
+      "discovery_scope": "character",
+      "tags": [
+        "duelist",
+        "silver-flame"
+      ]
+    },
+    {
+      "slug": "silver-flame",
+      "campaign_id": "eldoria",
+      "title": "Order of the Silver Flame",
+      "summary": "A martial order loyal to the crown.",
+      "node_kind": "faction",
+      "canon_level": "canon",
+      "discovery_scope": "campaign",
+      "tags": [
+        "order",
+        "crown-loyal"
+      ]
+    },
+    {
+      "slug": "black-flame",
+      "campaign_id": "eldoria",
+      "title": "Cult of the Black Flame",
+      "summary": "A rival order operating out of the Shadow Capital.",
+      "node_kind": "faction",
+      "canon_level": "canon",
+      "discovery_scope": "campaign",
+      "tags": [
+        "order",
+        "rival"
+      ]
+    },
+    {
+      "slug": "shadow-capital",
+      "campaign_id": "eldoria",
+      "title": "The Shadow Capital",
+      "summary": "A hidden city controlled by the Black Flame.",
+      "node_kind": "location",
+      "canon_level": "rumor",
+      "discovery_scope": "location",
+      "tags": [
+        "city",
+        "hidden"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "campaign_id": "eldoria",
+      "from_slug": "xavier",
+      "to_slug": "silver-flame",
+      "relation": "member_of",
+      "edge_depth_hint": 1
+    },
+    {
+      "campaign_id": "eldoria",
+      "from_slug": "silver-flame",
+      "to_slug": "black-flame",
+      "relation": "rival_of",
+      "edge_depth_hint": 2
+    },
+    {
+      "campaign_id": "eldoria",
+      "from_slug": "black-flame",
+      "to_slug": "shadow-capital",
+      "relation": "controls",
+      "edge_depth_hint": 2
+    }
+  ]
+}

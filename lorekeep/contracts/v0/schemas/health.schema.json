@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/health.schema.json",
+  "title": "Health response",
+  "description": "Response shape for GET /health. Follows the den-services deployable-service contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "degraded",
+        "unavailable"
+      ]
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded",
+              "unavailable"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      }
+    }
+  },
+  "required": [
+    "status"
+  ]
+}

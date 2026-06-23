@@ -1,0 +1,26 @@
+{
+  "campaign_id": "eldoria",
+  "strategy": "narrative_default",
+  "retrieval_depth": "standard",
+  "min_score": 0.65,
+  "token_budget": 2000,
+  "canon_filter": [
+    "canon",
+    "session_canon"
+  ],
+  "tag_boosts": {
+    "active_character": 1.5,
+    "current_location": 1.3
+  },
+  "scope_filter": {
+    "campaign": true,
+    "character": true,
+    "location": true,
+    "faction": false
+  },
+  "recency_weighting": 0.4,
+  "reciprocal_scope_handling": {
+    "co_mentioned_boost": 0.8,
+    "excluded_subject_penalty": 0.0
+  }
+}

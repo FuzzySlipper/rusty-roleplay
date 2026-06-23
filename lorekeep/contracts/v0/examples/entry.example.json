@@ -1,0 +1,34 @@
+{
+  "id": 17,
+  "profile_id": "sister-a",
+  "slug": "northmarch-taxes",
+  "campaign_id": "eldoria",
+  "title": "Northmarch Tax Dispute",
+  "summary": "The barons of Northmarch have been withholding taxes from the crown for three seasons.",
+  "body_md": "The barons of Northmarch, led by Baron Aldric, have withheld their seasonal levies since the failed harvest. The crown treats this as soft rebellion; the barons frame it as a plea for relief. Tensions are highest along the northern trade road.",
+  "content_format": "markdown",
+  "entry_kind": "authored_lore",
+  "subject_kind": "event",
+  "subject_refs": [
+    "northmarch",
+    "baron-aldric"
+  ],
+  "canon_level": "canon",
+  "tags": [
+    "politics",
+    "conflict",
+    "economy"
+  ],
+  "constant": false,
+  "discovery_scope": "campaign",
+  "established_in_session": null,
+  "established_in_turn": null,
+  "captured_by": null,
+  "capture_reason": null,
+  "status": "active",
+  "version": 1,
+  "created_at": "2026-06-01T09:00:00Z",
+  "updated_at": "2026-06-01T09:00:00Z",
+  "created_by": "sister-a",
+  "updated_by": "sister-a"
+}

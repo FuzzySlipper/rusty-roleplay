@@ -1,0 +1,51 @@
+{
+  "id": "trace-89",
+  "turn_id": 34,
+  "rp_session_id": "rp-session-a",
+  "timestamp": "2026-06-23T12:30:00Z",
+  "queries": [
+    "political tension in the northern baronies",
+    "Xavier's standing with the crown"
+  ],
+  "entries_considered": [
+    {
+      "slug": "northmarch-taxes",
+      "score": 0.92,
+      "retrieved": true,
+      "reason": "included"
+    },
+    {
+      "slug": "caleb-prosthetic",
+      "score": 0.71,
+      "retrieved": false,
+      "reason": "excluded_subject"
+    },
+    {
+      "slug": "old-harvest-festival",
+      "score": 0.41,
+      "retrieved": false,
+      "reason": "below_threshold"
+    }
+  ],
+  "scene_brief": {
+    "entries_included": [
+      "northmarch-taxes"
+    ],
+    "token_budget": 2000,
+    "tokens_used": 1840,
+    "tonal_notes": "Tense political maneuvering; restrained, formal register."
+  },
+  "config_snapshot": {
+    "strategy": "narrative_default",
+    "retrieval_depth": "standard",
+    "min_score": 0.65,
+    "canon_filter": [
+      "canon",
+      "session_canon"
+    ],
+    "tag_boosts": {
+      "politics": 1.3
+    },
+    "recency_weighting": 0.4
+  }
+}

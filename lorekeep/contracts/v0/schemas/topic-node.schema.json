@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/topic-node.schema.json",
+  "title": "Topic node",
+  "description": "A graph node representing a world entity for multi-hop exploration.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "node_kind": {
+      "type": "string",
+      "enum": [
+        "character",
+        "location",
+        "faction",
+        "item",
+        "event",
+        "concept"
+      ]
+    },
+    "canon_level": {
+      "type": "string",
+      "enum": [
+        "canon",
+        "session_canon",
+        "rumor",
+        "deprecated",
+        "ambiguous"
+      ]
+    },
+    "discovery_scope": {
+      "type": "string",
+      "enum": [
+        "campaign",
+        "character",
+        "location",
+        "faction",
+        "explicit_only"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "slug",
+    "campaign_id",
+    "title",
+    "summary",
+    "node_kind",
+    "canon_level",
+    "discovery_scope",
+    "tags"
+  ]
+}

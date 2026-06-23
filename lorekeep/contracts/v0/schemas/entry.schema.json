@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/entry.schema.json",
+  "title": "Lore entry",
+  "description": "An authored lore entry or an established fact, scoped to a profile + campaign.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "body_md": {
+      "type": "string"
+    },
+    "content_format": {
+      "type": "string",
+      "enum": [
+        "markdown"
+      ]
+    },
+    "entry_kind": {
+      "type": "string",
+      "enum": [
+        "authored_lore",
+        "established_fact"
+      ]
+    },
+    "subject_kind": {
+      "type": "string",
+      "enum": [
+        "world_rule",
+        "character",
+        "location",
+        "faction",
+        "item",
+        "event",
+        "relationship"
+      ]
+    },
+    "subject_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "canon_level": {
+      "type": "string",
+      "enum": [
+        "canon",
+        "session_canon",
+        "rumor",
+        "deprecated",
+        "ambiguous"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "constant": {
+      "type": "boolean",
+      "description": "If true, the entry bypasses the min_score threshold and subject filtering and is always injected into the scene brief (e.g. world rules), subject only to the token budget. It is not scored for ranking; constant entries are prepended before scored recall results. If false, the entry is retrieved on demand via normal scoring."
+    },
+    "discovery_scope": {
+      "type": "string",
+      "enum": [
+        "campaign",
+        "character",
+        "location",
+        "faction",
+        "explicit_only"
+      ]
+    },
+    "established_in_session": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "established_in_turn": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "captured_by": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "rp_agent",
+        "mechanic_agent",
+        "user",
+        null
+      ]
+    },
+    "capture_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "plot_event",
+        "relationship_change",
+        "revealed_information",
+        "character_development",
+        "user_override",
+        null
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "superseded",
+        "deprecated",
+        "archived"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "updated_by": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "profile_id",
+    "slug",
+    "campaign_id",
+    "title",
+    "summary",
+    "body_md",
+    "content_format",
+    "entry_kind",
+    "subject_kind",
+    "subject_refs",
+    "canon_level",
+    "tags",
+    "constant",
+    "discovery_scope",
+    "status"
+  ]
+}

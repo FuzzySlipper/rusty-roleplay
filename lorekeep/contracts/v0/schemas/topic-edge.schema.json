@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/topic-edge.schema.json",
+  "title": "Topic edge",
+  "description": "A typed, directed edge between two topic nodes within a campaign.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "from_slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "to_slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "relation": {
+      "type": "string",
+      "enum": [
+        "member_of",
+        "located_in",
+        "rival_of",
+        "owns",
+        "knows_about",
+        "controls",
+        "parent_of",
+        "related_to"
+      ]
+    },
+    "edge_depth_hint": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "campaign_id",
+    "from_slug",
+    "to_slug",
+    "relation"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "status": "ok",
+  "checks": {
+    "database": {
+      "status": "ok"
+    },
+    "fts_index": {
+      "status": "ok",
+      "detail": "fts5 available"
+    }
+  }
+}

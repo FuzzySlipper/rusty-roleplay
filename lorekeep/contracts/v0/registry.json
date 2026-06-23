@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/registry.json",
+  "contract_version": "v0",
+  "description": "Canonical lorekeep v0 vocabulary. This is a closed registry: unknown values are rejected unless a later registry migration explicitly adds them.",
+  "entry_kinds": [
+    "authored_lore",
+    "established_fact"
+  ],
+  "subject_kinds": [
+    "world_rule",
+    "character",
+    "location",
+    "faction",
+    "item",
+    "event",
+    "relationship"
+  ],
+  "node_kinds": [
+    "character",
+    "location",
+    "faction",
+    "item",
+    "event",
+    "concept"
+  ],
+  "canon_levels": [
+    "canon",
+    "session_canon",
+    "rumor",
+    "deprecated",
+    "ambiguous"
+  ],
+  "campaign_scopes": [
+    "campaign",
+    "character",
+    "location",
+    "faction",
+    "explicit_only"
+  ],
+  "entry_statuses": [
+    "active",
+    "superseded",
+    "deprecated",
+    "archived"
+  ],
+  "content_formats": [
+    "markdown"
+  ],
+  "captured_by_actors": [
+    "rp_agent",
+    "mechanic_agent",
+    "user"
+  ],
+  "fact_capture_reasons": [
+    "plot_event",
+    "relationship_change",
+    "revealed_information",
+    "character_development",
+    "user_override"
+  ],
+  "retrieval_strategies": [
+    "narrative_default",
+    "lore_heavy",
+    "character_focused"
+  ],
+  "retrieval_depths": [
+    "shallow",
+    "standard",
+    "deep"
+  ],
+  "retrieval_outcomes": [
+    "included",
+    "below_threshold",
+    "excluded_subject",
+    "canon_filtered",
+    "scope_filtered",
+    "over_budget"
+  ],
+  "edge_relations": [
+    "member_of",
+    "located_in",
+    "rival_of",
+    "owns",
+    "knows_about",
+    "controls",
+    "parent_of",
+    "related_to"
+  ]
+}

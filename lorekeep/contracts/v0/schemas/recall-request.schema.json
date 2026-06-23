@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/recall-request.schema.json",
+  "title": "Recall request",
+  "description": "A scored, budgeted recall query against a campaign.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1
+    },
+    "active_subjects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "excluded_subjects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "token_budget": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "config_overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": [
+            "narrative_default",
+            "lore_heavy",
+            "character_focused"
+          ]
+        },
+        "retrieval_depth": {
+          "type": "string",
+          "enum": [
+            "shallow",
+            "standard",
+            "deep"
+          ]
+        },
+        "min_score": {
+          "type": "number",
+          "minimum": 0
+        },
+        "canon_filter": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "canon",
+              "session_canon",
+              "rumor",
+              "deprecated",
+              "ambiguous"
+            ]
+          }
+        },
+        "tag_boosts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "recency_weighting": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  },
+  "required": [
+    "profile_id",
+    "campaign_id",
+    "query"
+  ]
+}

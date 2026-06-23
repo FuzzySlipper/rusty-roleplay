@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/fact-promotion.schema.json",
+  "title": "Fact promotion",
+  "description": "Request shape for POST /api/facts/{slug}/promote. Promotion is a dedicated endpoint, not a generic entry PATCH, because it carries its own authority semantics (who promoted, why) and may only raise canon_level toward canon. The service validates that the target entry is an established_fact and that to_canon_level is a strengthening transition.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "to_canon_level": {
+      "type": "string",
+      "enum": [
+        "canon",
+        "session_canon"
+      ]
+    },
+    "promoted_by": {
+      "type": "string",
+      "enum": [
+        "rp_agent",
+        "mechanic_agent",
+        "user"
+      ]
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "profile_id",
+    "campaign_id",
+    "slug",
+    "to_canon_level",
+    "promoted_by"
+  ]
+}

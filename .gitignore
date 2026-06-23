@@ -1,0 +1,9 @@
+/target/
+/node_modules/
+/temp
+
+
+.claude/
+*.tsbuildinfo
+ts/packages/native-bridge/native/*.d.ts
+ts/packages/native-bridge/native/*.js

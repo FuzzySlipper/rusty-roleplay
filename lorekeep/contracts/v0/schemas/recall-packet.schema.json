@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/recall-packet.schema.json",
+  "title": "Recall packet",
+  "description": "The scored, budgeted response to a recall request.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "packet_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "summary": {
+            "type": "string"
+          },
+          "body_md": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "canon_level": {
+            "type": "string",
+            "enum": [
+              "canon",
+              "session_canon",
+              "rumor",
+              "deprecated",
+              "ambiguous"
+            ]
+          },
+          "entry_kind": {
+            "type": "string",
+            "enum": [
+              "authored_lore",
+              "established_fact"
+            ]
+          },
+          "subject_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "match_reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "score"
+        ]
+      }
+    },
+    "skipped": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "included",
+              "below_threshold",
+              "excluded_subject",
+              "canon_filtered",
+              "scope_filtered",
+              "over_budget"
+            ]
+          }
+        },
+        "required": [
+          "slug",
+          "reason"
+        ]
+      }
+    },
+    "token_budget": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "tokens_used": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "scoring_profile": {
+      "type": "string",
+      "enum": [
+        "narrative_default",
+        "lore_heavy",
+        "character_focused"
+      ]
+    },
+    "retrieval_trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "packet_id",
+    "entries",
+    "skipped",
+    "token_budget",
+    "tokens_used",
+    "retrieval_trace_id"
+  ]
+}

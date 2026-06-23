@@ -1,0 +1,219 @@
+{
+  "tool_definitions_version": "v0",
+  "description": "Canonical tool definitions for the lorekeep tool surface. The rusty-crew adapter-lorekeep package generates or derives its tool definitions from this file rather than hand-writing them (no hand-written protocol copies). Every tool here is backed by a lorekeep HTTP endpoint. Session and coordination tools the narrator/mechanic also use (get_scene_state, get_rp_history, get_last_scene_brief, get_system_prompt, get_profile_config, get_provider_patterns, apply_proposal/reject_proposal, and the non-lore propose_* tools) are backed by rusty-crew session state, NOT lorekeep, so they are intentionally out of scope for this contract — the adapter composes them separately. lorekeep knows nothing about rusty-crew internals.",
+  "tool_sets": {
+    "narrator": {
+      "description": "Lorekeep tools available to the narrator agent during Phase 1 (explore → compose). Read tools assemble the scene brief; capture_fact is the only write.",
+      "tools": [
+        "search_lore",
+        "recall_lore",
+        "explore_topic",
+        "capture_fact"
+      ]
+    },
+    "mechanic": {
+      "description": "Lorekeep tools available to the mechanic (OOC diagnostic) agent. Reads inspect lore and retrieval behavior; lore writes are staged as proposals for user approval.",
+      "tools": [
+        "search_lore",
+        "get_recall_logs",
+        "get_retrieval_config",
+        "get_established_facts",
+        "propose_lore_add",
+        "propose_lore_edit",
+        "propose_lore_tag_update",
+        "propose_retrieval_config_change"
+      ]
+    }
+  },
+  "tools": [
+    {
+      "name": "search_lore",
+      "description": "FTS5 search over campaign lore entries. Returns raw matches without scoring, budgeting, or subject filtering. Backed by POST /api/entries/search.",
+      "behavior": "read_only",
+      "audience": ["narrator", "mechanic"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {"type": "string", "description": "Campaign to search within."},
+          "query": {"type": "string", "description": "FTS5 search query."},
+          "tags": {"type": "array", "items": {"type": "string"}, "description": "Optional tag filter."},
+          "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Maximum results."}
+        },
+        "required": ["campaign_id", "query"]
+      }
+    },
+    {
+      "name": "recall_lore",
+      "description": "Scored, budgeted recall packet from lorekeep. Honors active/excluded subjects for bleed prevention. Backed by POST /api/recall; request matches recall-request.schema.json, response matches recall-packet.schema.json.",
+      "behavior": "read_only",
+      "audience": ["narrator"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "profile_id": {"type": "string", "description": "Owning user profile (silo boundary)."},
+          "campaign_id": {"type": "string", "description": "Campaign to recall from."},
+          "query": {"type": "string", "description": "Recall query."},
+          "active_subjects": {"type": "array", "items": {"type": "string"}, "description": "Subject slugs present in the current scene."},
+          "excluded_subjects": {"type": "array", "items": {"type": "string"}, "description": "Subject slugs NOT in the scene (zeroed via excluded_subject_penalty)."},
+          "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Maximum entries to return."},
+          "token_budget": {"type": "integer", "minimum": 1, "description": "Maximum tokens for the recall packet."}
+        },
+        "required": ["profile_id", "campaign_id", "query"]
+      }
+    },
+    {
+      "name": "explore_topic",
+      "description": "Follow topic-graph edges from a node for multi-hop world exploration. Backed by the topic graph read API.",
+      "behavior": "read_only",
+      "audience": ["narrator"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {"type": "string", "description": "Campaign the node belongs to."},
+          "node_slug": {"type": "string", "description": "Slug of the starting topic node."},
+          "depth": {"type": "integer", "minimum": 1, "maximum": 4, "description": "Traversal depth (1 = direct neighbors)."}
+        },
+        "required": ["campaign_id", "node_slug"]
+      }
+    },
+    {
+      "name": "capture_fact",
+      "description": "Record an established fact to lorekeep during play. Backed by POST /api/facts/capture; request matches fact-capture.schema.json.",
+      "behavior": "write",
+      "audience": ["narrator"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "profile_id": {"type": "string", "description": "Owning user profile."},
+          "campaign_id": {"type": "string", "description": "Campaign the fact belongs to."},
+          "title": {"type": "string", "description": "Short title for the fact."},
+          "summary": {"type": "string", "description": "Retrieval-display summary."},
+          "body_md": {"type": "string", "description": "Full markdown body."},
+          "subject_refs": {"type": "array", "items": {"type": "string"}, "description": "Slugs of referenced entities."},
+          "tags": {"type": "array", "items": {"type": "string"}, "description": "Retrieval tags."},
+          "canon_level": {"type": "string", "enum": ["canon", "session_canon", "rumor", "deprecated", "ambiguous"], "description": "Authority level; captured facts are usually session_canon."},
+          "established_in_session": {"type": "string", "description": "RP session in which the fact was established."},
+          "established_in_turn": {"type": "integer", "minimum": 0, "description": "Turn index in the session."},
+          "captured_by": {"type": "string", "enum": ["rp_agent", "mechanic_agent", "user"], "description": "Actor capturing the fact."},
+          "capture_reason": {"type": "string", "enum": ["plot_event", "relationship_change", "revealed_information", "character_development", "user_override"], "description": "Why the fact is being captured."}
+        },
+        "required": ["profile_id", "campaign_id", "title", "summary", "body_md", "canon_level", "established_in_session", "established_in_turn", "captured_by", "capture_reason"]
+      }
+    },
+    {
+      "name": "get_recall_logs",
+      "description": "Retrieval traces for an RP session — what lore was considered, retrieved, and skipped, and why. Backed by GET /api/traces/by-session/{session_id}; entries match retrieval-trace.schema.json.",
+      "behavior": "read_only",
+      "audience": ["mechanic"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "session_id": {"type": "string", "description": "RP session to fetch traces for."},
+          "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Maximum traces, newest first."}
+        },
+        "required": ["session_id"]
+      }
+    },
+    {
+      "name": "get_retrieval_config",
+      "description": "Per-campaign retrieval configuration (depth, thresholds, boosts, filters). Backed by GET /api/config/{campaign_id}; response matches retrieval-config.schema.json.",
+      "behavior": "read_only",
+      "audience": ["mechanic"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {"type": "string", "description": "Campaign whose retrieval config to read."}
+        },
+        "required": ["campaign_id"]
+      }
+    },
+    {
+      "name": "get_established_facts",
+      "description": "Facts captured during play for a campaign. Backed by an entries query filtered to entry_kind=established_fact.",
+      "behavior": "read_only",
+      "audience": ["mechanic"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {"type": "string", "description": "Campaign whose established facts to list."},
+          "limit": {"type": "integer", "minimum": 1, "maximum": 100, "description": "Maximum facts."}
+        },
+        "required": ["campaign_id"]
+      }
+    },
+    {
+      "name": "propose_lore_add",
+      "description": "Stage a proposal to add a new lore entry. Produces a proposal payload for user approval — it does not write directly. entry_data matches entry.schema.json.",
+      "behavior": "proposal",
+      "audience": ["mechanic"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {"type": "string", "description": "Campaign the entry belongs to."},
+          "entry_data": {"type": "object", "description": "Proposed entry, shaped per entry.schema.json."},
+          "reason": {"type": "string", "description": "Why this entry should be added."}
+        },
+        "required": ["campaign_id", "entry_data", "reason"]
+      }
+    },
+    {
+      "name": "propose_lore_edit",
+      "description": "Stage a proposal to edit a lore entry's body. Produces a proposal payload for user approval.",
+      "behavior": "proposal",
+      "audience": ["mechanic"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {"type": "string", "description": "Campaign the entry belongs to."},
+          "entry_slug": {"type": "string", "description": "Slug of the entry to edit."},
+          "new_body": {"type": "string", "description": "Proposed replacement markdown body."},
+          "reason": {"type": "string", "description": "Why this edit improves the entry."}
+        },
+        "required": ["campaign_id", "entry_slug", "new_body", "reason"]
+      }
+    },
+    {
+      "name": "propose_lore_tag_update",
+      "description": "Stage a proposal to adjust the tags on a lore entry for better/worse retrieval. Produces a proposal payload for user approval.",
+      "behavior": "proposal",
+      "audience": ["mechanic"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {"type": "string", "description": "Campaign the entry belongs to."},
+          "entry_slug": {"type": "string", "description": "Slug of the entry to retag."},
+          "new_tags": {"type": "array", "items": {"type": "string"}, "description": "Proposed replacement tag set."},
+          "reason": {"type": "string", "description": "Why the retag improves retrieval."}
+        },
+        "required": ["campaign_id", "entry_slug", "new_tags", "reason"]
+      }
+    },
+    {
+      "name": "propose_retrieval_config_change",
+      "description": "Stage a proposal to adjust a campaign's lorekeep retrieval config field (depth, threshold, boosts, etc.). Produces a proposal payload for user approval.",
+      "behavior": "proposal",
+      "audience": ["mechanic"],
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {"type": "string", "description": "Campaign whose retrieval config to change."},
+          "field": {"type": "string", "description": "Retrieval-config field to change (per retrieval-config.schema.json)."},
+          "new_value": {"description": "Proposed new value for the field."},
+          "reason": {"type": "string", "description": "Why this change is warranted."}
+        },
+        "required": ["campaign_id", "field", "new_value", "reason"]
+      }
+    }
+  ]
+}

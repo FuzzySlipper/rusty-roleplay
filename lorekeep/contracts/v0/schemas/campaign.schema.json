@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/campaign.schema.json",
+  "title": "Campaign",
+  "description": "A campaign — the isolation boundary for lore. Entries, nodes, edges, traces, and retrieval config all reference a campaign by id. Campaigns are database rows scoped within a profile. v0 has no campaign CRUD endpoints; this schema fixes the referenced shape.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "id",
+    "profile_id",
+    "name",
+    "created_at"
+  ]
+}

@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/retrieval-trace.schema.json",
+  "title": "Retrieval trace",
+  "description": "Per-retrieval trace used by the mechanic agent to diagnose RP output quality.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "turn_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rp_session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "queries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "entries_considered": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "score": {
+            "type": "number"
+          },
+          "retrieved": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "included",
+              "below_threshold",
+              "excluded_subject",
+              "canon_filtered",
+              "scope_filtered",
+              "over_budget"
+            ]
+          }
+        },
+        "required": [
+          "slug",
+          "score",
+          "retrieved",
+          "reason"
+        ]
+      }
+    },
+    "scene_brief": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entries_included": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "token_budget": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tokens_used": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tonal_notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "entries_included",
+        "token_budget",
+        "tokens_used"
+      ]
+    },
+    "config_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": [
+            "narrative_default",
+            "lore_heavy",
+            "character_focused"
+          ]
+        },
+        "retrieval_depth": {
+          "type": "string",
+          "enum": [
+            "shallow",
+            "standard",
+            "deep"
+          ]
+        },
+        "min_score": {
+          "type": "number",
+          "minimum": 0
+        },
+        "canon_filter": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "canon",
+              "session_canon",
+              "rumor",
+              "deprecated",
+              "ambiguous"
+            ]
+          }
+        },
+        "tag_boosts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "recency_weighting": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "retrieval_depth",
+        "min_score",
+        "canon_filter"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "turn_id",
+    "rp_session_id",
+    "timestamp",
+    "queries",
+    "entries_considered",
+    "scene_brief",
+    "config_snapshot"
+  ]
+}

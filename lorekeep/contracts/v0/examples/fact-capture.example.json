@@ -1,0 +1,23 @@
+{
+  "profile_id": "sister-a",
+  "campaign_id": "eldoria",
+  "slug": "protagonist-stole-crown",
+  "title": "The protagonist stole the crown",
+  "summary": "During the vault scene, the protagonist took the Crown of Eldoria.",
+  "body_md": "In turn 34, the protagonist infiltrated the royal vault and stole the Crown of Eldoria, leaving the regent's seal untouched.",
+  "subject_refs": [
+    "protagonist",
+    "crown-of-eldoria"
+  ],
+  "tags": [
+    "theft",
+    "crown",
+    "vault"
+  ],
+  "canon_level": "session_canon",
+  "established_in_session": "rp-session-a",
+  "established_in_turn": 34,
+  "captured_by": "rp_agent",
+  "capture_reason": "plot_event",
+  "capture_note": "Plot-significant event affecting future scenes with the regent."
+}

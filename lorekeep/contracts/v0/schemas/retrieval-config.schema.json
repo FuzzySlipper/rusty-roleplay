@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/retrieval-config.schema.json",
+  "title": "Retrieval config",
+  "description": "Per-campaign retrieval configuration — the knobs the mechanic agent and admin UI adjust.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "strategy": {
+      "type": "string",
+      "enum": [
+        "narrative_default",
+        "lore_heavy",
+        "character_focused"
+      ]
+    },
+    "retrieval_depth": {
+      "type": "string",
+      "enum": [
+        "shallow",
+        "standard",
+        "deep"
+      ]
+    },
+    "min_score": {
+      "type": "number",
+      "minimum": 0
+    },
+    "token_budget": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "canon_filter": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "canon",
+          "session_canon",
+          "rumor",
+          "deprecated",
+          "ambiguous"
+        ]
+      }
+    },
+    "tag_boosts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "scope_filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "campaign": {
+          "type": "boolean"
+        },
+        "character": {
+          "type": "boolean"
+        },
+        "location": {
+          "type": "boolean"
+        },
+        "faction": {
+          "type": "boolean"
+        }
+      }
+    },
+    "recency_weighting": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "reciprocal_scope_handling": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "co_mentioned_boost": {
+          "type": "number"
+        },
+        "excluded_subject_penalty": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  "required": [
+    "campaign_id",
+    "retrieval_depth",
+    "min_score",
+    "token_budget",
+    "canon_filter"
+  ]
+}

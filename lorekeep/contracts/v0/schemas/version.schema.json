@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rusty-roleplay.local/schemas/lorekeep/v0/version.schema.json",
+  "title": "Version response",
+  "description": "Response shape for GET /version. Follows the den-services deployable-service contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "service": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "contract_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "commit": {
+      "type": "string"
+    },
+    "built_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "service",
+    "version",
+    "contract_version"
+  ]
+}

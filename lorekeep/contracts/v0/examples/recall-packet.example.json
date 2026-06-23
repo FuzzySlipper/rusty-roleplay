@@ -1,0 +1,34 @@
+{
+  "packet_id": "recall-42",
+  "entries": [
+    {
+      "slug": "northmarch-taxes",
+      "title": "Northmarch Tax Dispute",
+      "summary": "The barons of Northmarch have been withholding taxes from the crown for three seasons.",
+      "body_md": "The barons of Northmarch, led by Baron Aldric, have withheld their seasonal levies since the failed harvest.",
+      "score": 0.92,
+      "canon_level": "canon",
+      "entry_kind": "authored_lore",
+      "subject_refs": [
+        "northmarch",
+        "baron-aldric"
+      ],
+      "tags": [
+        "politics",
+        "conflict",
+        "economy"
+      ],
+      "match_reason": "FTS match: political, tension, northern, baron"
+    }
+  ],
+  "skipped": [
+    {
+      "slug": "caleb-prosthetic",
+      "reason": "excluded_subject"
+    }
+  ],
+  "token_budget": 2000,
+  "tokens_used": 1840,
+  "scoring_profile": "narrative_default",
+  "retrieval_trace_id": "trace-89"
+}

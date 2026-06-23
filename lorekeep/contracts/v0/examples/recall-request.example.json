@@ -1,0 +1,26 @@
+{
+  "profile_id": "sister-a",
+  "campaign_id": "eldoria",
+  "query": "political tension in the northern baronies",
+  "active_subjects": [
+    "xavier"
+  ],
+  "excluded_subjects": [
+    "caleb"
+  ],
+  "limit": 10,
+  "token_budget": 2000,
+  "config_overrides": {
+    "strategy": "narrative_default",
+    "retrieval_depth": "standard",
+    "min_score": 0.65,
+    "canon_filter": [
+      "canon",
+      "session_canon"
+    ],
+    "tag_boosts": {
+      "politics": 1.3
+    },
+    "recency_weighting": 0.4
+  }
+}
