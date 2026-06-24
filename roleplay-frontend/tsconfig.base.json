@@ -1,0 +1,44 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2022",
+    "module": "esnext",
+    "lib": ["es2023", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@rusty-roleplay/rp-profile": ["./libs/rp-profile/src/index.ts"],
+      "@rusty-roleplay/rp-lorebook": ["./libs/rp-lorebook/src/index.ts"],
+      "@rusty-roleplay/rp-character-menu": [
+        "./libs/rp-character-menu/src/index.ts"
+      ],
+      "@rusty-roleplay/rp-scene-controls": [
+        "./libs/rp-scene-controls/src/index.ts"
+      ],
+      "@rusty-roleplay/rp-mechanic": ["./libs/rp-mechanic/src/index.ts"],
+      "@rusty-roleplay/rp-message-decorators": [
+        "./libs/rp-message-decorators/src/index.ts"
+      ],
+      "@rusty-roleplay/rp-layout": ["./libs/rp-layout/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "rp-message-decorators",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/rp-message-decorators/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [
+    "type:util",
+    "scope:rp"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

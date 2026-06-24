@@ -1,0 +1,16 @@
+{
+  "name": "rp-character-menu",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/rp-character-menu/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [
+    "type:ui",
+    "scope:rp"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

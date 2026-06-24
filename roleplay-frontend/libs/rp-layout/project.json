@@ -1,0 +1,16 @@
+{
+  "name": "rp-layout",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/rp-layout/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [
+    "type:feature",
+    "scope:rp"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

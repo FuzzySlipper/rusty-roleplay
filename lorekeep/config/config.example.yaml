@@ -1,0 +1,26 @@
+# lorekeep service configuration. Copy to config.yaml and adjust.
+# Every tunable lives here — nothing deployment-specific is hardcoded.
+
+# HTTP listen address. Dev binds loopback; release binds the container network.
+listen_addr: "127.0.0.1:8790"
+
+# SQLite database file. Parent directories are created on startup.
+db_path: "./runtime/lorekeep.sqlite"
+
+# Repository root containing contracts/v0 (scoring profiles are loaded from here).
+contract_root: "."
+
+# Default recall tunables. Per-campaign retrieval config (stored in the service)
+# and per-request config_overrides take precedence over these.
+recall:
+  default_token_budget: 2000   # max tokens in an assembled recall packet
+  default_min_score: 0.0       # inclusion threshold for scored entries
+  chars_per_token: 4           # heuristic for token estimation when budgeting
+  shallow_limit: 10            # candidates considered per query at depth=shallow
+  standard_limit: 25           # ... at depth=standard
+  deep_limit: 60               # ... at depth=deep
+
+# HTTP server timeouts.
+timeouts:
+  read_header: 5s
+  shutdown: 10s
