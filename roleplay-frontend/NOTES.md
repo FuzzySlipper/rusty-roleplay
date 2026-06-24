@@ -39,6 +39,25 @@ with** so the Angular linker processes the partial declarations. rusty-view's
 libs compile with `@angular/core` 21.2.17, so the app's `@angular/*` use the
 `~21.2.0` range and resolve `core`/`compiler-cli` to 21.2.17.
 
+## Backend URLs (runtime-configurable, no hardcoded host)
+
+`apps/roleplay-web/src/app/backend-config.ts` resolves backend service URLs at
+**runtime** so one build works locally or from a remote workstation over
+LAN/Tailscale (the normal case — browser on your machine, services on a headless
+box). Inject `BACKEND_CONFIG` from transport / lorekeep clients; never bake a
+host into the build. Resolution order per URL (first match wins):
+
+1. `?api=<url>` (rusty-crew) / `?lore=<url>` (lorekeep) query params.
+2. `window.__RUSTY_ROLEPLAY_CONFIG__` injected at deploy time (may also carry a
+   `bearerToken`).
+3. Derived from the serving host on the default port — view at `http://host:4200`
+   → chat `http://host:9347`, lorekeep `http://host:8790`.
+
+This is the foundation only. The app currently renders mock data
+(`DEMO_MESSAGES`, `MockLoreSource`) and does not yet wire the rusty-crew chat
+transport / SSE stream or a lorekeep HTTP client — when those land they inject
+`BACKEND_CONFIG`. Pure-logic resolution is unit-tested (`backend-config.spec.ts`).
+
 ## Transcript rendering (resolved)
 
 Consumes `@rusty-view/*` >= 0.0.6 (partial-compiled; published packages link
