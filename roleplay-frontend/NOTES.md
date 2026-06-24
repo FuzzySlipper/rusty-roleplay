@@ -39,25 +39,23 @@ with** so the Angular linker processes the partial declarations. rusty-view's
 libs compile with `@angular/core` 21.2.17, so the app's `@angular/*` use the
 `~21.2.0` range and resolve `core`/`compiler-cli` to 21.2.17.
 
-## Open item — transcript row rendering (upstream)
+## Transcript rendering (resolved)
 
-The RP shell mounts rusty-view's `TranscriptViewportComponent` and passes it the
-message array (verified: the input receives the messages). However, the base
-viewport does **not** paint message rows in this consumption setup.
+Consumes `@rusty-view/*` >= 0.0.6 (partial-compiled; published packages link
+fine — the linker runs, no unlinked `ngDeclare` markers in the consumer bundle).
+The base `TranscriptViewportComponent` renders message rows here, including a
+**preloaded** session (messages present at init). Two upstream fixes got it there:
 
-Diagnosis: `TranscriptViewportComponent` renders messages with a plain `@for`
-inside a `cdk-virtual-scroll-viewport` driven by a fixed-size virtual-scroll
-strategy (`[itemSize]="50"`). A CDK virtual-scroll viewport only renders rows
-provided through `*cdkVirtualFor` (or an autosize strategy from
-`@angular/cdk-experimental`); a plain `@for` yields an empty rendered range.
-rusty-view's own unit tests skip `detectChanges()` and assert only the input /
-projection, so DOM row rendering is not validated upstream.
+1. **rusty-view #3241:** the template used a plain `@for` inside the CDK
+   virtual-scroll viewport, which never registers rows with the scroll strategy;
+   now `*cdkVirtualFor`.
+2. **rusty-view #3248:** with messages present at init, CDK registered a data
+   length of 0 while the viewport was still measured at 0 (layout behind the
+   profile `@if`), so nothing rendered until the next data change. The viewport
+   now drives `*cdkVirtualFor` from an internal signal and emits the data only
+   once it has a real size.
 
-This is a rusty-view component concern, not a rusty-roleplay boundary/consumption
-failure — confirmed with a single aligned Angular instance, no runtime errors,
-and the message array reaching the viewport input. Recommended upstream fix:
-rusty-view's `TranscriptViewportComponent` should use `*cdkVirtualFor` (or wire
-the autosize experimental strategy). Once published, no change is needed here.
+The boundary-proof e2e asserts rendered rows + the narrator decorator prefix.
 
 ## Commands
 

@@ -4,18 +4,17 @@ import { expect, test } from '@playwright/test';
  * Milestone 4 — Package Boundary Proof.
  *
  * Verifies, against the running app, that rusty-roleplay consumes rusty-view
- * without forking: the base transcript viewport and message input (imported
- * from @rusty-view/*) mount inside the RP shell, an RP sidebar panel is added
- * through the layout's extension slot, and the profile gate is exercised on the
- * way in.
+ * (published @rusty-view/* packages, partial-compiled) without forking: the base
+ * transcript renders a preloaded session via the imported renderer, an RP
+ * message decorator is applied by that base renderer, an RP sidebar panel is
+ * added through the layout's extension slot, and the profile gate is exercised
+ * on the way in.
  *
- * Note: the transcript viewport mounts and receives the message array, but the
- * base TranscriptViewportComponent does not paint message rows in this setup —
- * see frontend/NOTES.md ("Transcript row rendering"). That is an upstream
- * rusty-view virtual-scroll concern, not a consumption/boundary failure, so
- * this spec asserts the boundary facts rather than rendered row text.
+ * This also covers the "preloaded transcript renders rows" path (messages
+ * present at init), the regression scenario for rusty-view's virtual-scroll
+ * init handling.
  */
-test('profile gate → rusty-view shell mounts with RP extensions', async ({
+test('profile gate → transcript rows, decorator, and RP extensions', async ({
   page,
 }) => {
   await page.goto('/');
@@ -29,8 +28,17 @@ test('profile gate → rusty-view shell mounts with RP extensions', async ({
 
   // Base chat mechanics consumed from rusty-view, mounted in the RP shell.
   await expect(page.locator('rv-transcript-viewport')).toBeVisible();
-  await expect(page.locator('cdk-virtual-scroll-viewport')).toBeAttached();
   await expect(page.locator('rv-message-input')).toBeVisible();
+
+  // The transcript renders real message ROWS (preloaded at init) via the
+  // imported base renderer.
+  await expect(page.locator('.rv-transcript__item')).toHaveCount(3);
+  await expect(
+    page.getByText('The northern road is quiet', { exact: false }),
+  ).toBeVisible();
+
+  // RP message decorator applied by the base renderer (narrator prefix marker).
+  await expect(page.locator('.rv-message__prefix').first()).toContainText('📖');
 
   // RP-specific extensions added without touching the base packages.
   await expect(page.getByRole('heading', { name: 'Lorebook' })).toBeVisible();
