@@ -5,12 +5,9 @@ import {
   output,
 } from '@angular/core';
 
-/** A character available in the current campaign/scene. */
-export interface RpCharacter {
-  readonly id: string;
-  readonly name: string;
-  readonly tagline: string;
-}
+import type { RpCharacter } from '../character.model';
+
+export type { RpCharacter } from '../character.model';
 
 /**
  * Character selector for the current scene. Presentational: the container owns
@@ -31,7 +28,9 @@ export interface RpCharacter {
               (click)="activate.emit(character.id)"
             >
               <span class="name">{{ character.name }}</span>
-              <span class="tagline">{{ character.tagline }}</span>
+              <span class="tagline">{{
+                character.tagline || character.description
+              }}</span>
             </button>
           </li>
         }

@@ -1,5 +1,4 @@
 import type { ChatMessage } from '@rusty-view/chat-domain';
-import type { RpCharacter } from '@rusty-roleplay/rp-character-menu';
 import type {
   DiagnosticLine,
   MechanicProposal,
@@ -57,15 +56,6 @@ export const DEMO_MESSAGES: readonly ChatMessage[] = [
     'Narrator',
     'Boot prints, half-filled with fresh snow — a small party passed within the hour, heading toward the baron’s hall.',
   ),
-];
-
-export const DEMO_CHARACTERS: readonly RpCharacter[] = [
-  {
-    id: 'xavier',
-    name: 'Xavier Thorne',
-    tagline: 'Duelist of the Silver Flame',
-  },
-  { id: 'caleb', name: 'Caleb Vance', tagline: 'Estranged rival' },
 ];
 
 export const DEMO_PROPOSALS: readonly MechanicProposal[] = [

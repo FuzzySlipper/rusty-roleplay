@@ -7,8 +7,8 @@ import {
 } from './rp-character-menu';
 
 const CHARACTERS: readonly RpCharacter[] = [
-  { id: 'xavier', name: 'Xavier', tagline: 'Duelist' },
-  { id: 'caleb', name: 'Caleb', tagline: 'Rival' },
+  character('xavier', 'Xavier', 'Duelist'),
+  character('caleb', 'Caleb', 'Rival'),
 ];
 
 describe('RpCharacterMenuComponent', () => {
@@ -34,3 +34,22 @@ describe('RpCharacterMenuComponent', () => {
     expect(emitted).toBe('xavier');
   });
 });
+
+function character(id: string, name: string, tagline: string): RpCharacter {
+  return {
+    id,
+    name,
+    tagline,
+    description: tagline,
+    personality: '',
+    scenario: '',
+    firstMessage: '',
+    alternateGreetings: [],
+    exampleMessages: [],
+    tags: [],
+    avatarUrl: undefined,
+    status: 'active',
+    createdAt: undefined,
+    updatedAt: undefined,
+  };
+}

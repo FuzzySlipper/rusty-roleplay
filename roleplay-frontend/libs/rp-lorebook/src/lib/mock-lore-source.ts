@@ -57,9 +57,7 @@ export class MockLoreSource implements LoreSource {
     return MOCK_ENTRIES.find((e) => e.slug === slug) ?? null;
   }
 
-  async listCampaigns(
-    _profileId: string,
-  ): Promise<readonly LoreCampaignSummary[]> {
+  async listCampaigns(): Promise<readonly LoreCampaignSummary[]> {
     return MOCK_CAMPAIGNS;
   }
 }
