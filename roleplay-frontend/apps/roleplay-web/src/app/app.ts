@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
 } from '@angular/core';
-import type { ChatMessage } from '@rusty-view/chat-domain';
+import { ChatStore } from '@rusty-view/chat-store';
+import type { StreamStatusKind } from '@rusty-view/chat-components';
 import {
   ProfileStore,
   RpProfileSelectorComponent,
@@ -27,12 +29,8 @@ import {
   type RpMode,
 } from '@rusty-roleplay/rp-mechanic';
 
-import {
-  DEMO_CHARACTERS,
-  DEMO_LOGS,
-  DEMO_MESSAGES,
-  DEMO_PROPOSALS,
-} from './demo-data';
+import { DEMO_CHARACTERS, DEMO_LOGS, DEMO_PROPOSALS } from './demo-data';
+import { deriveNarratorPhase } from './narrator-phase';
 
 /**
  * Roleplay-web shell. Container component: it injects ProfileStore, gates the
@@ -54,13 +52,19 @@ import {
   template: `
     @if (profileStore.activeProfile(); as profile) {
       <rp-layout
-        [messages]="messages()"
+        [messages]="chatStore.messages()"
         [profileName]="profile.name"
-        connectionStatus="connected"
+        [connectionStatus]="connectionStatus()"
+        [phase]="phase()"
         [sceneLabel]="sceneLabel()"
+        [sendDisabled]="sendDisabled()"
         (send)="onSend($event)"
+        (reconnect)="onReconnect()"
       >
         <div rpSidebar>
+          @if (sessionError(); as error) {
+            <p class="session-error">{{ error }}</p>
+          }
           <rp-character-menu
             [characters]="characters"
             [activeId]="activeCharacterId()"
@@ -101,26 +105,48 @@ import {
         gap: 1rem;
         height: 100%;
       }
+
+      .session-error {
+        margin: 0 0 0.75rem;
+        color: var(--rv-color-danger, #cf222e);
+        font-size: var(--rv-font-size-sm, 0.8125rem);
+      }
     `,
   ],
 })
 export class App {
   protected readonly profileStore = inject(ProfileStore);
+  protected readonly chatStore = inject(ChatStore);
   private readonly loreSource = inject(LORE_SOURCE);
 
   protected readonly campaignId = 'eldoria';
-  protected readonly messages = signal<readonly ChatMessage[]>(DEMO_MESSAGES);
   protected readonly characters = DEMO_CHARACTERS;
   protected readonly lore = signal<readonly LoreEntry[]>([]);
   protected readonly proposals = DEMO_PROPOSALS;
   protected readonly logs = DEMO_LOGS;
 
   protected readonly activeCharacterId = signal<string | undefined>('xavier');
-  protected readonly phase = signal<NarratorPhase>('idle');
   protected readonly mood = signal<SceneMood>('tense');
   protected readonly mode = signal<RpMode>('roleplay');
-  protected readonly sceneLabel = signal('Northmarch — the northern road');
   protected readonly selectError = signal<string | undefined>(undefined);
+  protected readonly sessionError = signal<string | undefined>(undefined);
+
+  protected readonly phase = computed<NarratorPhase>(() =>
+    deriveNarratorPhase(this.chatStore.rawEvents()),
+  );
+  protected readonly sceneLabel = computed(() => {
+    const session = this.chatStore.activeSession();
+    return session?.title ?? session?.session_id ?? 'No session selected';
+  });
+  protected readonly connectionStatus = computed<StreamStatusKind>(() =>
+    toStreamStatus(this.chatStore.connectionState().status),
+  );
+  protected readonly sendDisabled = computed(
+    () =>
+      this.chatStore.activeSessionId() === null ||
+      this.chatStore.activeSession()?.status === 'archived' ||
+      this.chatStore.pendingSends().some((send) => send.status === 'sending'),
+  );
 
   constructor() {
     // Lore comes through the LoreSource boundary (mock today, lorekeep HTTP later).
@@ -141,31 +167,72 @@ export class App {
           ? 'Incorrect password.'
           : 'Unknown profile.',
     );
+    if (result.ok) {
+      void this.connectToProfile(selection.profileId);
+    }
   }
 
   protected onSend(text: string): void {
-    const id = `m${this.messages().length + 1}`;
-    const message: ChatMessage = {
-      id,
-      sessionId: 'rp-session-a',
-      author: { role: 'user', displayName: 'Xavier' },
-      createdAt: new Date().toISOString(),
-      status: 'completed',
-      blocks: [
-        {
-          id: `${id}-b0`,
-          messageId: id,
-          kind: 'text',
-          content: text,
-          estimatedHeight: undefined,
-          renderPolicy: 'full',
-        },
-      ],
-    };
-    this.messages.update((list) => [...list, message]);
+    void this.chatStore.sendMessage(text).catch((error: unknown) => {
+      this.sessionError.set(readErrorMessage(error));
+    });
+  }
+
+  protected onReconnect(): void {
+    void this.chatStore.reconnect().catch((error: unknown) => {
+      this.sessionError.set(readErrorMessage(error));
+    });
   }
 
   protected onLoreSelected(entry: LoreEntry): void {
-    this.sceneLabel.set(`Lore: ${entry.title}`);
+    this.sessionError.set(`Selected lore: ${entry.title}`);
   }
+
+  private async connectToProfile(profileId: string): Promise<void> {
+    this.sessionError.set(undefined);
+    try {
+      await this.chatStore.refreshSessions();
+      const sessions = this.chatStore.sessions();
+      const matching = sessions.find(
+        (session) =>
+          session.profile_id === profileId && session.status !== 'archived',
+      );
+      const fallback = sessions.find(
+        (session) => session.status !== 'archived',
+      );
+      const selected = matching ?? fallback ?? sessions[0];
+      if (selected === undefined) {
+        this.sessionError.set(
+          'No chat sessions are available from rusty-crew.',
+        );
+        return;
+      }
+      if (selected.status === 'archived') {
+        this.sessionError.set(
+          'Only archived chat sessions are available; opening read-only history.',
+        );
+      }
+      await this.chatStore.selectSession(selected.session_id);
+    } catch (error: unknown) {
+      this.sessionError.set(readErrorMessage(error));
+    }
+  }
+}
+
+function toStreamStatus(status: string): StreamStatusKind {
+  switch (status) {
+    case 'connecting':
+    case 'connected':
+    case 'reconnecting':
+    case 'closed':
+    case 'error':
+      return status;
+    case 'idle':
+    default:
+      return 'idle';
+  }
+}
+
+function readErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

@@ -5,8 +5,16 @@ import {
   output,
 } from '@angular/core';
 import type { ChatMessage } from '@rusty-view/chat-domain';
-import { MessageInputComponent } from '@rusty-view/chat-components';
+import {
+  MessageInputComponent,
+  StreamStatusComponent,
+  type StreamStatusKind,
+} from '@rusty-view/chat-components';
 import { TranscriptViewportComponent } from '@rusty-view/transcript-renderer';
+import {
+  NarratorPhaseIndicatorComponent,
+  type NarratorPhase,
+} from '@rusty-roleplay/rp-scene-controls';
 
 /**
  * Roleplay shell layout. Composes rusty-view's base chat mechanics — the
@@ -21,15 +29,22 @@ import { TranscriptViewportComponent } from '@rusty-view/transcript-renderer';
 @Component({
   selector: 'rp-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranscriptViewportComponent, MessageInputComponent],
+  imports: [
+    TranscriptViewportComponent,
+    MessageInputComponent,
+    StreamStatusComponent,
+    NarratorPhaseIndicatorComponent,
+  ],
   template: `
     <div class="rp-layout">
       <header class="header">
         <span class="brand">rusty-roleplay</span>
         <span class="scene">{{ sceneLabel() }}</span>
-        <span class="status" [attr.data-status]="connectionStatus()">
-          {{ connectionStatus() }}
-        </span>
+        <rv-stream-status
+          class="status"
+          [status]="connectionStatus()"
+          (reconnect)="reconnect.emit()"
+        />
         <span class="profile">{{ profileName() }}</span>
       </header>
 
@@ -39,6 +54,9 @@ import { TranscriptViewportComponent } from '@rusty-view/transcript-renderer';
 
       <main class="transcript-region">
         <rv-transcript-viewport class="transcript" [messages]="messages()" />
+        <div class="phase-bar">
+          <rp-narrator-phase-indicator [phase]="phase()" />
+        </div>
         <div class="input">
           <rv-message-input
             [disabled]="sendDisabled()"
@@ -76,11 +94,6 @@ import { TranscriptViewportComponent } from '@rusty-view/transcript-renderer';
       }
       .status {
         margin-left: auto;
-        font-size: 0.8rem;
-        opacity: 0.8;
-      }
-      .status[data-status='connected'] {
-        color: #2a8f3c;
       }
       .sidebar {
         grid-area: sidebar;
@@ -91,12 +104,22 @@ import { TranscriptViewportComponent } from '@rusty-view/transcript-renderer';
       .transcript-region {
         grid-area: transcript;
         display: grid;
-        grid-template-rows: 1fr auto;
+        grid-template-rows: 1fr auto auto;
         min-height: 0;
       }
       .transcript {
         min-height: 0;
         overflow: hidden;
+      }
+      .phase-bar {
+        min-height: 2rem;
+        padding: 0.35rem 1rem;
+        border-top: 1px solid rgba(128, 128, 128, 0.25);
+        background: color-mix(
+          in srgb,
+          var(--rv-color-surface, #fff) 90%,
+          transparent
+        );
       }
       .input {
         border-top: 1px solid rgba(128, 128, 128, 0.4);
@@ -114,9 +137,11 @@ import { TranscriptViewportComponent } from '@rusty-view/transcript-renderer';
 export class RpLayoutComponent {
   readonly messages = input.required<readonly ChatMessage[]>();
   readonly profileName = input<string>('');
-  readonly connectionStatus = input<string>('offline');
+  readonly connectionStatus = input<StreamStatusKind>('idle');
+  readonly phase = input<NarratorPhase>('idle');
   readonly sceneLabel = input<string>('');
   readonly sendDisabled = input<boolean>(false);
 
   readonly send = output<string>();
+  readonly reconnect = output<void>();
 }

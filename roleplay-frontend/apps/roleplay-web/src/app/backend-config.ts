@@ -1,4 +1,10 @@
-import { InjectionToken } from '@angular/core';
+import { InjectionToken, type Provider } from '@angular/core';
+import { ChatTransport } from '@rusty-view/transport';
+import {
+  CHAT_STORAGE_ADAPTER,
+  ChatStore,
+  IndexedDbChatStorage,
+} from '@rusty-view/chat-store';
 
 /**
  * Runtime resolution of backend service URLs, so a single build works whether
@@ -15,7 +21,10 @@ import { InjectionToken } from '@angular/core';
  * foundation those clients build on.
  */
 export interface BackendConfig {
-  /** rusty-crew chat API base, e.g. http://den-k8:9347 */
+  /**
+   * rusty-crew chat API base, e.g. http://den-k8:9347 live or
+   * http://den-k8:9348 debug.
+   */
   readonly rustyCrewBaseUrl: string;
   /** lorekeep lore/memory API base, e.g. http://den-k8:8790 */
   readonly lorekeepBaseUrl: string;
@@ -54,8 +63,9 @@ export type ServingOrigin = Pick<Location, 'protocol' | 'hostname' | 'search'>;
  *   1. `?api=<url>` / `?lore=<url>` query param — explicit, ephemeral.
  *   2. `window.__RUSTY_ROLEPLAY_CONFIG__` — injected at deploy time.
  *   3. The serving host, on the default port — the view loaded from
- *      `http://den-k8:4200` talks to `http://den-k8:9347` (chat) and
- *      `http://den-k8:8790` (lorekeep).
+ *      `http://den-k8:4200` talks to `http://den-k8:9347` (live chat) and
+ *      `http://den-k8:8790` (lorekeep). For disposable testing, pass
+ *      `?api=http://den-k8:9348` to target the Rusty Crew debug service.
  */
 export function resolveBackendConfigFrom(
   origin: ServingOrigin,
@@ -107,3 +117,20 @@ export const BACKEND_CONFIG = new InjectionToken<BackendConfig>(
   'BACKEND_CONFIG',
   { providedIn: 'root', factory: resolveBackendConfig },
 );
+
+/** Angular providers for rusty-view's generic chat transport/store boundary. */
+export const CHAT_BACKEND_PROVIDERS: Provider[] = [
+  {
+    provide: ChatTransport,
+    useFactory: (config: BackendConfig) =>
+      new ChatTransport({
+        baseUrl: config.rustyCrewBaseUrl,
+        ...(config.bearerToken === undefined
+          ? {}
+          : { bearerToken: config.bearerToken }),
+      }),
+    deps: [BACKEND_CONFIG],
+  },
+  { provide: CHAT_STORAGE_ADAPTER, useClass: IndexedDbChatStorage },
+  ChatStore,
+];

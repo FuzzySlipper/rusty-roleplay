@@ -28,6 +28,11 @@ Key prior art:
 - **rusty-view** (`/home/dev/rusty-view`) — Boring debug chat client + reusable chat client kit. Separate repo. RP frontend here consumes rusty-view packages.
 - **den-memory** (`/home/dev/den-memory`) — Graph-guided memory substrate. Architectural template for lorekeep, but wrong domain fit for direct use.
 
+Rusty Crew has two local development service roots. Use port `9347`
+(`/home/system/rusty-crew`, PostgreSQL) for long-lived manual RP use and port
+`9348` (`/home/system/rusty-crew-debug`, SQLite) for noisy tests and disposable
+live quality spikes. See `rusty-crew-service-topology.md`.
+
 ## Related design documents
 
 Existing docs that informed this design:
@@ -48,6 +53,7 @@ Existing docs that informed this design:
 | `04-quillforge-postmortem.md` | What QuillForge did right/wrong, what carries forward |
 | `06-context-compaction.md` | Scene-aware compaction, director's notes, fact extraction, tool-result lifecycle |
 | `05-project-layout.md` | Repos, services, dependency graph, implementation phases |
+| `rusty-crew-service-topology.md` | Which local Rusty Crew service to use for live RP vs debug/test work |
 
 ## Naming
 

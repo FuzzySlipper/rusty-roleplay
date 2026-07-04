@@ -51,7 +51,16 @@ host into the build. Resolution order per URL (first match wins):
 2. `window.__RUSTY_ROLEPLAY_CONFIG__` injected at deploy time (may also carry a
    `bearerToken`).
 3. Derived from the serving host on the default port — view at `http://host:4200`
-   → chat `http://host:9347`, lorekeep `http://host:8790`.
+   → live chat `http://host:9347`, lorekeep `http://host:8790`.
+
+Rusty Crew has two local service roots on the shared development machine:
+
+- live agent service: `/home/system/rusty-crew`, port `9347`, PostgreSQL;
+- debug/test service: `/home/system/rusty-crew-debug`, port `9348`, SQLite.
+
+Use `?api=http://host:9348` for noisy frontend testing, roleplay quality
+spikes, and disposable live LLM experiments. Leave the derived `9347` default
+for production-like/manual RP use that should not pollute debug storage.
 
 This is the foundation only. The app currently renders mock data
 (`DEMO_MESSAGES`, `MockLoreSource`) and does not yet wire the rusty-crew chat

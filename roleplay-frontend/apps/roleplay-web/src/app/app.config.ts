@@ -7,11 +7,13 @@ import { provideRpMessageDecorators } from '@rusty-roleplay/rp-message-decorator
 import { provideMockLoreSource } from '@rusty-roleplay/rp-lorebook';
 
 import { appRoutes } from './app.routes';
+import { CHAT_BACKEND_PROVIDERS } from './backend-config';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),
+    ...CHAT_BACKEND_PROVIDERS,
     // Boundary proof: register RP message decoration on rusty-view's
     // CHAT_MESSAGE_DECORATORS extension token without touching the base renderer.
     ...provideRpMessageDecorators(),
