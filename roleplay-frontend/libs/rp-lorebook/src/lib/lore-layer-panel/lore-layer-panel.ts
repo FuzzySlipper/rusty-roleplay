@@ -6,6 +6,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { TooltipDirective } from '@rusty-view/chat-components';
 
 import { CreateLayerDialogComponent } from '../create-layer-dialog/create-layer-dialog';
 import type {
@@ -18,7 +19,7 @@ import type {
 @Component({
   selector: 'rp-lore-layer-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CreateLayerDialogComponent],
+  imports: [CreateLayerDialogComponent, TooltipDirective],
   template: `
     <section class="layers">
       <header>
@@ -28,7 +29,14 @@ import type {
             <span class="count">{{ activeCount() }} active</span>
           }
         </div>
-        <button type="button" (click)="creating.set(true)">New</button>
+        <button
+          type="button"
+          rvTooltip="Create a lore layer for world, story, character, or faction facts"
+          rvTooltipPlacement="bottom"
+          (click)="creating.set(true)"
+        >
+          New
+        </button>
       </header>
 
       <rp-create-layer-dialog
@@ -70,6 +78,8 @@ import type {
                 <span>{{ layer.purpose }}</span>
                 <button
                   type="button"
+                  rvTooltip="Move this lore layer earlier in retrieval priority"
+                  rvTooltipPlacement="top"
                   [disabled]="first"
                   (click)="
                     layerReorder.emit({
@@ -82,6 +92,8 @@ import type {
                 </button>
                 <button
                   type="button"
+                  rvTooltip="Move this lore layer later in retrieval priority"
+                  rvTooltipPlacement="top"
                   [disabled]="last"
                   (click)="
                     layerReorder.emit({

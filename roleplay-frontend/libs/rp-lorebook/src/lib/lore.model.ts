@@ -5,9 +5,20 @@
  * whatever the LoreSource provides.
  */
 export interface LoreEntry {
+  readonly recordId: string;
+  readonly revision: number;
+  readonly layerIds: readonly string[];
+  readonly sourceLayerId: string | undefined;
+  readonly sourceLayerWritePolicy: string | undefined;
   readonly slug: string;
   readonly title: string;
   readonly summary: string;
+  readonly body: string;
   readonly canonLevel: string;
   readonly tags: readonly string[];
+  readonly capturedBy: string;
+  readonly captureReason: string;
+  readonly capturedAt: string;
+  readonly supersedesRecordId: string;
+  readonly supersededByRecordId: string;
 }

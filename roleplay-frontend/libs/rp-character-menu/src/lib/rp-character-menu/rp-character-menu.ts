@@ -4,6 +4,7 @@ import {
   input,
   output,
 } from '@angular/core';
+import { TooltipDirective } from '@rusty-view/chat-components';
 
 import type { RpCharacter } from '../character.model';
 
@@ -16,6 +17,7 @@ export type { RpCharacter } from '../character.model';
 @Component({
   selector: 'rp-character-menu',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TooltipDirective],
   template: `
     <section class="rp-character-menu">
       <h3>Characters</h3>
@@ -24,6 +26,8 @@ export type { RpCharacter } from '../character.model';
           <li>
             <button
               type="button"
+              rvTooltip="Activate this character for the scene"
+              rvTooltipPlacement="right"
               [class.active]="character.id === activeId()"
               (click)="activate.emit(character.id)"
             >

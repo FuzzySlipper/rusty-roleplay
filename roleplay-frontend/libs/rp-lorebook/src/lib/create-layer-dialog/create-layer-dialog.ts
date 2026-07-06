@@ -5,6 +5,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { TooltipDirective } from '@rusty-view/chat-components';
 
 import type {
   CreateLoreLayerRequest,
@@ -29,6 +30,7 @@ const WRITE_POLICIES: readonly LoreLayerWritePolicy[] = [
 @Component({
   selector: 'rp-create-layer-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TooltipDirective],
   template: `
     @if (open()) {
       <form class="dialog" (submit)="submit($event)">
@@ -70,8 +72,20 @@ const WRITE_POLICIES: readonly LoreLayerWritePolicy[] = [
           </label>
         </div>
         <div class="actions">
-          <button type="button" (click)="dialogCancel.emit()">Cancel</button>
-          <button type="submit" [disabled]="name().trim().length === 0">
+          <button
+            type="button"
+            rvTooltip="Close without creating a lore layer"
+            rvTooltipPlacement="top"
+            (click)="dialogCancel.emit()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            rvTooltip="Create this lore layer"
+            rvTooltipPlacement="top"
+            [disabled]="name().trim().length === 0"
+          >
             Create
           </button>
         </div>

@@ -58,11 +58,85 @@ describe('RpCharacterManagerComponent', () => {
     ) as HTMLInputElement;
     name.value = 'New Hero';
     name.dispatchEvent(new Event('input'));
+
+    buttonWithText(fixture.nativeElement, 'Scene').click();
+    fixture.detectChanges();
+    buttonWithText(fixture.nativeElement, 'Add greeting').click();
+    fixture.detectChanges();
+    const greeting = fixture.nativeElement.querySelector(
+      'rp-string-list-editor textarea',
+    ) as HTMLTextAreaElement;
+    greeting.value = 'Welcome to the ruins.';
+    greeting.dispatchEvent(new Event('input'));
+
+    buttonWithText(fixture.nativeElement, 'Examples').click();
+    fixture.detectChanges();
+    buttonWithText(fixture.nativeElement, 'Add example').click();
+    fixture.detectChanges();
+    const example = fixture.nativeElement.querySelector(
+      'rp-string-list-editor textarea',
+    ) as HTMLTextAreaElement;
+    example.value = '{{char}}: Stay close.';
+    example.dispatchEvent(new Event('input'));
+
     fixture.nativeElement
       .querySelector('form')
       .dispatchEvent(new Event('submit'));
 
-    expect(emitted).toMatchObject([{ name: 'New Hero' }]);
+    expect(emitted).toMatchObject([
+      {
+        name: 'New Hero',
+        alternateGreetings: ['Welcome to the ruins.'],
+        exampleMessages: ['{{char}}: Stay close.'],
+      },
+    ]);
+  });
+
+  it('renders first message preview and validation hints', () => {
+    const fixture = TestBed.createComponent(RpCharacterManagerComponent);
+    fixture.componentRef.setInput('characters', []);
+    fixture.detectChanges();
+
+    fixture.nativeElement
+      .querySelector('header button')
+      .dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+    buttonWithText(fixture.nativeElement, 'Scene').click();
+    fixture.detectChanges();
+
+    const textareas = fixture.nativeElement.querySelectorAll('textarea');
+    const firstMessage = textareas[1] as HTMLTextAreaElement;
+    firstMessage.value = 'The door opens with a silver sigh.';
+    firstMessage.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('First message: 34/800 chars');
+    expect(
+      fixture.nativeElement.querySelector('.message-preview')?.textContent,
+    ).toContain('The door opens with a silver sigh.');
+  });
+
+  it('shows a save confirmation after submitting', () => {
+    const fixture = TestBed.createComponent(RpCharacterManagerComponent);
+    fixture.componentRef.setInput('characters', []);
+    fixture.detectChanges();
+
+    fixture.nativeElement
+      .querySelector('header button')
+      .dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+    const name = fixture.nativeElement.querySelector(
+      'input[name="name"]',
+    ) as HTMLInputElement;
+    name.value = 'Saved Hero';
+    name.dispatchEvent(new Event('input'));
+    fixture.nativeElement
+      .querySelector('form')
+      .dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Character saved.');
   });
 });
 
@@ -77,7 +151,7 @@ function character(input: {
     description: `${input.name} description`,
     personality: '',
     scenario: '',
-    firstMessage: '',
+    firstMessage: 'Hello.',
     alternateGreetings: [],
     exampleMessages: [],
     tags: input.tags,
@@ -86,4 +160,14 @@ function character(input: {
     createdAt: undefined,
     updatedAt: undefined,
   };
+}
+
+function buttonWithText(element: HTMLElement, text: string): HTMLButtonElement {
+  const button = [...element.querySelectorAll('button')].find(
+    (candidate) => candidate.textContent?.trim() === text,
+  );
+  if (button === undefined) {
+    throw new Error(`Button ${text} was not found.`);
+  }
+  return button as HTMLButtonElement;
 }

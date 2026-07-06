@@ -38,6 +38,20 @@ describe('ProfileStore', () => {
     });
   });
 
+  it('replaces seed profiles from a backend registry', () => {
+    const s = store();
+    s.setProfiles([
+      { id: 'rp-narrator', name: 'RP Narrator', hasPassword: false },
+    ]);
+
+    expect(s.select('sister-a')).toEqual({
+      ok: false,
+      reason: 'unknown_profile',
+    });
+    expect(s.select('rp-narrator')).toEqual({ ok: true });
+    expect(s.activeProfile()?.name).toBe('RP Narrator');
+  });
+
   it('signs out back to the selector', () => {
     const s = store();
     s.select('sister-a');

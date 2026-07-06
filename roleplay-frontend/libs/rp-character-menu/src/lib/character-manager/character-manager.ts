@@ -6,7 +6,9 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { TooltipDirective } from '@rusty-view/chat-components';
 
+import { StringListEditorComponent } from '../string-list-editor/string-list-editor';
 import type {
   CharacterUpdateRequest,
   CharacterWriteRequest,
@@ -23,20 +25,33 @@ interface CharacterDraft {
   readonly personality: string;
   readonly scenario: string;
   readonly firstMessage: string;
-  readonly alternateGreetingsText: string;
-  readonly exampleMessagesText: string;
+  readonly alternateGreetings: readonly string[];
+  readonly exampleMessages: readonly string[];
   readonly tagsText: string;
   readonly avatarUrl: string;
 }
 
+type CharacterDraftTextField = Exclude<
+  keyof CharacterDraft,
+  'alternateGreetings' | 'exampleMessages'
+>;
+
 @Component({
   selector: 'rp-character-manager',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [StringListEditorComponent, TooltipDirective],
   template: `
     <section class="characters">
       <header>
         <h3>Characters</h3>
-        <button type="button" (click)="newCharacter()">New</button>
+        <button
+          type="button"
+          rvTooltip="Create a character profile for roleplay sessions"
+          rvTooltipPlacement="bottom"
+          (click)="newCharacter()"
+        >
+          New
+        </button>
       </header>
 
       <div class="toolbar">
@@ -64,6 +79,8 @@ interface CharacterDraft {
             <button
               type="button"
               class="summary"
+              rvTooltip="Activate this character for the current scene"
+              rvTooltipPlacement="right"
               (click)="characterActivate.emit(character.id)"
             >
               @if (character.avatarUrl) {
@@ -88,11 +105,18 @@ interface CharacterDraft {
               </div>
             }
             <div class="actions">
-              <button type="button" (click)="editCharacter(character)">
+              <button
+                type="button"
+                rvTooltip="Edit this character profile"
+                rvTooltipPlacement="top"
+                (click)="editCharacter(character)"
+              >
                 Edit
               </button>
               <button
                 type="button"
+                rvTooltip="Archive this character without deleting its record"
+                rvTooltipPlacement="top"
                 (click)="characterArchive.emit(character.id)"
               >
                 Archive
@@ -158,6 +182,16 @@ interface CharacterDraft {
                   [value]="currentDraft.description"
                   (input)="updateDraft('description', inputValue($event))"
                 ></textarea>
+                <span
+                  class="hint"
+                  [class.over-limit]="
+                    isOverLimit(currentDraft.description, limits.description)
+                  "
+                >
+                  Description:
+                  {{ currentDraft.description.length }}/{{ limits.description }}
+                  chars
+                </span>
               </label>
               <label>
                 Personality
@@ -166,6 +200,16 @@ interface CharacterDraft {
                   [value]="currentDraft.personality"
                   (input)="updateDraft('personality', inputValue($event))"
                 ></textarea>
+                <span
+                  class="hint"
+                  [class.over-limit]="
+                    isOverLimit(currentDraft.personality, limits.personality)
+                  "
+                >
+                  Personality:
+                  {{ currentDraft.personality.length }}/{{ limits.personality }}
+                  chars
+                </span>
               </label>
             }
             @case ('scene') {
@@ -176,6 +220,17 @@ interface CharacterDraft {
                   [value]="currentDraft.scenario"
                   (input)="updateDraft('scenario', inputValue($event))"
                 ></textarea>
+                <span
+                  class="hint"
+                  [class.over-limit]="
+                    isOverLimit(currentDraft.scenario, limits.scenario)
+                  "
+                >
+                  Scenario: {{ currentDraft.scenario.length }}/{{
+                    limits.scenario
+                  }}
+                  chars
+                </span>
               </label>
               <label>
                 First message
@@ -184,29 +239,51 @@ interface CharacterDraft {
                   [value]="currentDraft.firstMessage"
                   (input)="updateDraft('firstMessage', inputValue($event))"
                 ></textarea>
-              </label>
-              <label>
-                Alternate greetings
-                <textarea
-                  rows="4"
-                  [value]="currentDraft.alternateGreetingsText"
-                  (input)="
-                    updateDraft('alternateGreetingsText', inputValue($event))
+                <span
+                  class="hint"
+                  [class.over-limit]="
+                    isOverLimit(currentDraft.firstMessage, limits.firstMessage)
                   "
-                ></textarea>
+                >
+                  First message: {{ currentDraft.firstMessage.length }}/{{
+                    limits.firstMessage
+                  }}
+                  chars
+                </span>
               </label>
+              @if (currentDraft.firstMessage.trim()) {
+                <article
+                  class="message-preview"
+                  aria-label="First message preview"
+                >
+                  <span class="preview-author">{{
+                    currentDraft.name || 'Character'
+                  }}</span>
+                  <p>{{ currentDraft.firstMessage }}</p>
+                </article>
+              }
+              <section class="editor-section">
+                <h4>Alternate greetings</h4>
+                <rp-string-list-editor
+                  [items]="currentDraft.alternateGreetings"
+                  placeholder="Write an alternate opening message"
+                  addLabel="Add greeting"
+                  emptyMessage="No alternate greetings yet."
+                  (itemsChange)="updateList('alternateGreetings', $event)"
+                />
+              </section>
             }
             @case ('examples') {
-              <label>
-                Example messages
-                <textarea
-                  rows="5"
-                  [value]="currentDraft.exampleMessagesText"
-                  (input)="
-                    updateDraft('exampleMessagesText', inputValue($event))
-                  "
-                ></textarea>
-              </label>
+              <section class="editor-section">
+                <h4>Example messages</h4>
+                <rp-string-list-editor
+                  [items]="currentDraft.exampleMessages"
+                  placeholder="Write an example dialogue line"
+                  addLabel="Add example"
+                  emptyMessage="No example messages yet."
+                  (itemsChange)="updateList('exampleMessages', $event)"
+                />
+              </section>
               <label>
                 Tags
                 <input
@@ -215,183 +292,45 @@ interface CharacterDraft {
                   [value]="currentDraft.tagsText"
                   (input)="updateDraft('tagsText', inputValue($event))"
                 />
+                <span
+                  class="hint"
+                  [class.over-limit]="
+                    isOverLimit(currentDraft.tagsText, limits.tags)
+                  "
+                >
+                  Tags: {{ currentDraft.tagsText.length }}/{{ limits.tags }}
+                  chars
+                </span>
               </label>
             }
           }
 
           <div class="editor-actions">
-            <button type="button" (click)="cancelEdit()">Cancel</button>
-            <button type="submit" [disabled]="currentDraft.name.trim() === ''">
-              Save
+            <button
+              type="button"
+              rvTooltip="Close the character editor without saving"
+              rvTooltipPlacement="top"
+              (click)="cancelEdit()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              rvTooltip="Save this character profile"
+              rvTooltipPlacement="top"
+              [disabled]="currentDraft.name.trim() === ''"
+            >
+              {{ saveConfirmed() ? 'Saved' : 'Save' }}
             </button>
           </div>
         </form>
       }
+      @if (saveConfirmed()) {
+        <p class="save-confirmation" role="status">Character saved.</p>
+      }
     </section>
   `,
-  styles: [
-    `
-      .characters {
-        display: grid;
-        gap: 0.65rem;
-      }
-
-      header,
-      .toolbar,
-      .actions,
-      .editor-actions,
-      .tabs {
-        display: flex;
-        align-items: center;
-        gap: 0.45rem;
-      }
-
-      header {
-        justify-content: space-between;
-      }
-
-      h3,
-      p {
-        margin: 0;
-      }
-
-      .toolbar {
-        align-items: stretch;
-      }
-
-      .toolbar input {
-        min-width: 0;
-        flex: 1;
-      }
-
-      ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: grid;
-        gap: 0.5rem;
-      }
-
-      li {
-        display: grid;
-        gap: 0.35rem;
-        padding: 0.55rem;
-        border: 1px solid var(--rv-color-border, #d7dbe0);
-        border-radius: var(--rv-radius, 4px);
-        background: var(--rv-color-surface, #fff);
-      }
-
-      li.active {
-        outline: 2px solid currentColor;
-      }
-
-      .summary {
-        display: grid;
-        grid-template-columns: 2rem minmax(0, 1fr);
-        align-items: center;
-        gap: 0.55rem;
-        padding: 0;
-        border: 0;
-        background: transparent;
-        text-align: left;
-        cursor: pointer;
-      }
-
-      img,
-      .avatar {
-        width: 2rem;
-        height: 2rem;
-        border-radius: 50%;
-      }
-
-      img {
-        object-fit: cover;
-      }
-
-      .avatar {
-        display: grid;
-        place-items: center;
-        background: var(--rv-color-surface-alt, #f6f7f9);
-        font-size: var(--rv-font-size-xs, 0.75rem);
-        font-weight: 700;
-      }
-
-      .copy {
-        min-width: 0;
-        display: grid;
-        gap: 0.1rem;
-      }
-
-      .name {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-weight: 600;
-      }
-
-      .description,
-      .state,
-      .tags {
-        color: var(--rv-color-text-secondary, #48515d);
-        font-size: var(--rv-font-size-sm, 0.8125rem);
-      }
-
-      .error {
-        color: var(--rv-color-danger, #cf222e);
-      }
-
-      .tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.25rem;
-      }
-
-      .tags span {
-        padding: 0.05rem 0.3rem;
-        border: 1px solid var(--rv-color-border, #d7dbe0);
-        border-radius: var(--rv-radius, 4px);
-      }
-
-      .actions {
-        justify-content: flex-end;
-      }
-
-      .empty {
-        color: var(--rv-color-text-muted, #7a828d);
-      }
-
-      .editor {
-        display: grid;
-        gap: 0.55rem;
-        padding: 0.65rem;
-        border: 1px solid var(--rv-color-border, #d7dbe0);
-        border-radius: var(--rv-radius, 4px);
-        background: var(--rv-color-surface, #fff);
-      }
-
-      .tabs button.active {
-        outline: 2px solid currentColor;
-      }
-
-      label {
-        display: grid;
-        gap: 0.25rem;
-        font-size: var(--rv-font-size-sm, 0.8125rem);
-      }
-
-      input,
-      textarea,
-      select {
-        min-width: 0;
-        width: 100%;
-        font: inherit;
-      }
-
-      .editor-actions {
-        justify-content: flex-end;
-      }
-    `,
-  ],
+  styleUrl: './character-manager.css',
 })
 export class RpCharacterManagerComponent {
   readonly characters = input.required<readonly RpCharacter[]>();
@@ -409,6 +348,14 @@ export class RpCharacterManagerComponent {
   protected readonly tab = signal<CharacterEditorTab>('basic');
   protected readonly editingId = signal<string | undefined>(undefined);
   protected readonly draft = signal<CharacterDraft | undefined>(undefined);
+  protected readonly saveConfirmed = signal(false);
+  protected readonly limits = {
+    description: 500,
+    personality: 1200,
+    scenario: 1200,
+    firstMessage: 800,
+    tags: 200,
+  } as const;
   protected readonly filteredCharacters = computed(() => {
     const query = this.query().trim().toLowerCase();
     const filtered = this.characters().filter((character) => {
@@ -448,8 +395,8 @@ export class RpCharacterManagerComponent {
       personality: character.personality,
       scenario: character.scenario,
       firstMessage: character.firstMessage,
-      alternateGreetingsText: character.alternateGreetings.join('\n'),
-      exampleMessagesText: character.exampleMessages.join('\n'),
+      alternateGreetings: [...character.alternateGreetings],
+      exampleMessages: [...character.exampleMessages],
       tagsText: character.tags.join(', '),
       avatarUrl: character.avatarUrl ?? '',
     });
@@ -473,10 +420,20 @@ export class RpCharacterManagerComponent {
     } else {
       this.characterUpdate.emit({ id: editingId, patch: request });
     }
+    this.showSaveConfirmation();
     this.cancelEdit();
   }
 
-  protected updateDraft(key: keyof CharacterDraft, value: string): void {
+  protected updateDraft(key: CharacterDraftTextField, value: string): void {
+    this.draft.update((draft) =>
+      draft === undefined ? draft : { ...draft, [key]: value },
+    );
+  }
+
+  protected updateList(
+    key: 'alternateGreetings' | 'exampleMessages',
+    value: readonly string[],
+  ): void {
     this.draft.update((draft) =>
       draft === undefined ? draft : { ...draft, [key]: value },
     );
@@ -498,6 +455,15 @@ export class RpCharacterManagerComponent {
       .map((part) => part[0]?.toUpperCase() ?? '')
       .join('');
   }
+
+  protected isOverLimit(value: string, limit: number): boolean {
+    return value.length > limit;
+  }
+
+  private showSaveConfirmation(): void {
+    this.saveConfirmed.set(true);
+    setTimeout(() => this.saveConfirmed.set(false), 1800);
+  }
 }
 
 function emptyDraft(): CharacterDraft {
@@ -508,8 +474,8 @@ function emptyDraft(): CharacterDraft {
     personality: '',
     scenario: '',
     firstMessage: '',
-    alternateGreetingsText: '',
-    exampleMessagesText: '',
+    alternateGreetings: [],
+    exampleMessages: [],
     tagsText: '',
     avatarUrl: '',
   };
@@ -522,8 +488,8 @@ function draftToRequest(draft: CharacterDraft): CharacterWriteRequest {
     personality: draft.personality.trim(),
     scenario: draft.scenario.trim(),
     firstMessage: draft.firstMessage.trim(),
-    alternateGreetings: lines(draft.alternateGreetingsText),
-    exampleMessages: lines(draft.exampleMessagesText),
+    alternateGreetings: cleanItems(draft.alternateGreetings),
+    exampleMessages: cleanItems(draft.exampleMessages),
     tags: draft.tagsText
       .split(',')
       .map((tag) => tag.trim())
@@ -534,9 +500,6 @@ function draftToRequest(draft: CharacterDraft): CharacterWriteRequest {
   };
 }
 
-function lines(value: string): readonly string[] {
-  return value
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
+function cleanItems(value: readonly string[]): readonly string[] {
+  return value.map((item) => item.trim()).filter(Boolean);
 }

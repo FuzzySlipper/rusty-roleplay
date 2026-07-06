@@ -1,6 +1,7 @@
 import { InjectionToken } from '@angular/core';
 
 import { LoreEntry } from './lore.model';
+import type { LoreEntrySearchOptions } from './lore-entry-api';
 
 /** A campaign summary as the lorebook UI lists it. */
 export interface LoreCampaignSummary {
@@ -18,6 +19,7 @@ export interface LoreSource {
   searchEntries(
     campaignId: string,
     query: string,
+    options?: LoreEntrySearchOptions,
   ): Promise<readonly LoreEntry[]>;
   getEntry(campaignId: string, slug: string): Promise<LoreEntry | null>;
   listCampaigns(profileId: string): Promise<readonly LoreCampaignSummary[]>;

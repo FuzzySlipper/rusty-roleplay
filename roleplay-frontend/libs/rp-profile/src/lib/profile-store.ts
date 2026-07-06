@@ -53,6 +53,18 @@ export class ProfileStore {
     this.activeIdSig.set(null);
   }
 
+  /** Replaces the selectable profiles from a backend-owned registry. */
+  setProfiles(profiles: readonly Profile[]): void {
+    this.profilesSig.set(profiles);
+    const activeId = this.activeIdSig();
+    if (
+      activeId !== null &&
+      profiles.every((profile) => profile.id !== activeId)
+    ) {
+      this.activeIdSig.set(null);
+    }
+  }
+
   /** Adds a new profile, optionally with a plain-text password. */
   addProfile(name: string, password?: string): Profile {
     const id = slugify(name);

@@ -12,3 +12,4 @@ export {
 } from './lib/character-api';
 export { RpCharacterManagerComponent } from './lib/character-manager/character-manager';
 export { RpCharacterMenuComponent } from './lib/rp-character-menu/rp-character-menu';
+export { StringListEditorComponent } from './lib/string-list-editor/string-list-editor';

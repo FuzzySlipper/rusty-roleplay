@@ -1,13 +1,17 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
+  effect,
   input,
   output,
   signal,
 } from '@angular/core';
 
 import { LoreEntry } from '../lore.model';
+import type { LoreLayer } from '../lore-layer.model';
+import type { PromoteLoreEntryRequest } from '../lore-entry-api';
+import { LoreEntryDetailsComponent } from '../lore-entry-details/lore-entry-details';
+import { LoreEntryListComponent } from '../lore-entry-list/lore-entry-list';
 
 /**
  * Lorebook sidebar panel. Browses and filters lore entries and emits a
@@ -20,36 +24,27 @@ import { LoreEntry } from '../lore.model';
 @Component({
   selector: 'rp-lorebook-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [LoreEntryDetailsComponent, LoreEntryListComponent],
   template: `
     <section class="rp-lorebook">
       <header>
         <h3>Lorebook</h3>
-        <input
-          type="search"
-          placeholder="Search lore…"
-          [value]="query()"
-          (input)="setQuery($event)"
-        />
       </header>
-      <ul class="entries">
-        @for (entry of filtered(); track entry.slug) {
-          <li>
-            <button
-              type="button"
-              class="entry"
-              (click)="selectEntry.emit(entry)"
-            >
-              <span class="title">{{ entry.title }}</span>
-              <span class="canon" [attr.data-canon]="entry.canonLevel">{{
-                entry.canonLevel
-              }}</span>
-              <span class="summary">{{ entry.summary }}</span>
-            </button>
-          </li>
-        } @empty {
-          <li class="empty">No matching lore.</li>
-        }
-      </ul>
+      <rp-lore-entry-list
+        [entries]="entries()"
+        [query]="query()"
+        [canonFilter]="canonFilter()"
+        [selectedSlug]="selected()?.slug ?? ''"
+        [loading]="loading()"
+        [errorMessage]="errorMessage()"
+        [promoteTargetLayers]="promoteTargetLayers()"
+        [promotingEntryId]="promotingEntryId()"
+        (queryChange)="setQuery($event)"
+        (canonFilterChange)="canonFilter.set($event)"
+        (entrySelect)="select($event)"
+        (promoteEntry)="promoteEntry.emit($event)"
+      />
+      <rp-lore-entry-details [entry]="selected()" />
     </section>
   `,
   styles: [
@@ -60,63 +55,40 @@ import { LoreEntry } from '../lore.model';
         gap: 0.5rem;
         height: 100%;
       }
-      header {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-      }
-      .entries {
-        list-style: none;
-        padding: 0;
+      h3 {
         margin: 0;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-      }
-      .entry {
-        display: grid;
-        gap: 0.15rem;
-        width: 100%;
-        text-align: left;
-        padding: 0.5rem;
-        cursor: pointer;
-      }
-      .canon {
-        font-size: 0.75rem;
-        opacity: 0.7;
-      }
-      .summary {
-        font-size: 0.85rem;
-        opacity: 0.85;
-      }
-      .empty {
-        opacity: 0.6;
-        font-style: italic;
       }
     `,
   ],
 })
 export class RpLorebookPanelComponent {
   readonly entries = input.required<readonly LoreEntry[]>();
+  readonly loading = input(false);
+  readonly errorMessage = input<string | undefined>(undefined);
+  readonly selectedEntry = input<LoreEntry | null>(null);
+  readonly promoteTargetLayers = input<readonly LoreLayer[]>([]);
+  readonly promotingEntryId = input<string | undefined>(undefined);
+  readonly queryChange = output<string>();
   readonly selectEntry = output<LoreEntry>();
+  readonly promoteEntry = output<PromoteLoreEntryRequest>();
 
   protected readonly query = signal('');
+  protected readonly canonFilter = signal('');
+  protected readonly selected = signal<LoreEntry | null>(null);
 
-  protected readonly filtered = computed<readonly LoreEntry[]>(() => {
-    const q = this.query().trim().toLowerCase();
-    if (!q) {
-      return this.entries();
-    }
-    return this.entries().filter(
-      (e) =>
-        e.title.toLowerCase().includes(q) ||
-        e.summary.toLowerCase().includes(q) ||
-        e.tags.some((t) => t.toLowerCase().includes(q)),
-    );
-  });
+  constructor() {
+    effect(() => {
+      this.selected.set(this.selectedEntry());
+    });
+  }
 
-  protected setQuery(event: Event): void {
-    this.query.set((event.target as HTMLInputElement).value);
+  protected setQuery(query: string): void {
+    this.query.set(query);
+    this.queryChange.emit(query);
+  }
+
+  protected select(entry: LoreEntry): void {
+    this.selected.set(entry);
+    this.selectEntry.emit(entry);
   }
 }

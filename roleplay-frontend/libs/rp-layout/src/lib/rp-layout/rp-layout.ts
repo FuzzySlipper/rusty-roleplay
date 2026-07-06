@@ -10,6 +10,7 @@ import {
   StreamStatusComponent,
   type StreamStatusKind,
 } from '@rusty-view/chat-components';
+import { TopMenuComponent } from '@rusty-view/chat-shell';
 import { TranscriptViewportComponent } from '@rusty-view/transcript-renderer';
 import {
   NarratorPhaseIndicatorComponent,
@@ -33,12 +34,14 @@ import {
     TranscriptViewportComponent,
     MessageInputComponent,
     StreamStatusComponent,
+    TopMenuComponent,
     NarratorPhaseIndicatorComponent,
   ],
   template: `
     <div class="rp-layout">
       <header class="header">
         <span class="brand">rusty-roleplay</span>
+        <rv-top-menu />
         <span class="scene">{{ sceneLabel() }}</span>
         <rv-stream-status
           class="status"
@@ -48,12 +51,12 @@ import {
         <span class="profile">{{ profileName() }}</span>
       </header>
 
-      <aside class="sidebar">
-        <ng-content select="[rpSidebar]" />
-      </aside>
-
       <main class="transcript-region">
-        <rv-transcript-viewport class="transcript" [messages]="messages()" />
+        <rv-transcript-viewport
+          class="transcript"
+          [messages]="messages()"
+          [searchEnabled]="searchEnabled()"
+        />
         <div class="phase-bar">
           <rp-narrator-phase-indicator [phase]="phase()" />
         </div>
@@ -64,21 +67,17 @@ import {
           />
         </div>
       </main>
-
-      <aside class="panel">
-        <ng-content select="[rpPanel]" />
-      </aside>
     </div>
   `,
   styles: [
     `
       .rp-layout {
         display: grid;
-        grid-template-columns: 16rem 1fr 18rem;
+        grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto 1fr;
         grid-template-areas:
-          'header header header'
-          'sidebar transcript panel';
+          'header'
+          'transcript';
         height: 100vh;
       }
       .header {
@@ -94,12 +93,6 @@ import {
       }
       .status {
         margin-left: auto;
-      }
-      .sidebar {
-        grid-area: sidebar;
-        padding: 0.75rem;
-        border-right: 1px solid rgba(128, 128, 128, 0.4);
-        overflow-y: auto;
       }
       .transcript-region {
         grid-area: transcript;
@@ -125,12 +118,6 @@ import {
         border-top: 1px solid rgba(128, 128, 128, 0.4);
         padding: 0.5rem;
       }
-      .panel {
-        grid-area: panel;
-        padding: 0.75rem;
-        border-left: 1px solid rgba(128, 128, 128, 0.4);
-        overflow-y: auto;
-      }
     `,
   ],
 })
@@ -141,6 +128,7 @@ export class RpLayoutComponent {
   readonly phase = input<NarratorPhase>('idle');
   readonly sceneLabel = input<string>('');
   readonly sendDisabled = input<boolean>(false);
+  readonly searchEnabled = input<boolean>(false);
 
   readonly send = output<string>();
   readonly reconnect = output<void>();

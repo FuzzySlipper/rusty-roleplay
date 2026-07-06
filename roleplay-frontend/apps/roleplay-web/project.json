@@ -4,16 +4,11 @@
   "projectType": "application",
   "prefix": "app",
   "sourceRoot": "apps/roleplay-web/src",
-  "tags": [
-    "type:app",
-    "scope:rp"
-  ],
+  "tags": ["type:app", "scope:rp"],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/roleplay-web",
@@ -26,6 +21,7 @@
           }
         ],
         "styles": [
+          "node_modules/@angular/cdk/overlay-prebuilt.css",
           "apps/roleplay-web/src/styles.css"
         ]
       },

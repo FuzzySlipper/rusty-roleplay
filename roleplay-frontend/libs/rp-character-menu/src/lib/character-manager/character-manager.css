@@ -1,0 +1,201 @@
+.characters {
+  display: grid;
+  gap: 0.65rem;
+}
+
+header,
+.toolbar,
+.actions,
+.editor-actions,
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+header {
+  justify-content: space-between;
+}
+
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+h4 {
+  font-size: var(--rv-font-size-sm, 0.8125rem);
+}
+
+.toolbar {
+  align-items: stretch;
+}
+
+.toolbar input {
+  min-width: 0;
+  flex: 1;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+li {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.55rem;
+  border: 1px solid var(--rv-color-border, #d7dbe0);
+  border-radius: var(--rv-radius, 4px);
+  background: var(--rv-color-surface, #fff);
+}
+
+li.active {
+  outline: 2px solid currentColor;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+img,
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+}
+
+img {
+  object-fit: cover;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  background: var(--rv-color-surface-alt, #f6f7f9);
+  font-size: var(--rv-font-size-xs, 0.75rem);
+  font-weight: 700;
+}
+
+.copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.description,
+.state,
+.tags {
+  color: var(--rv-color-text-secondary, #48515d);
+  font-size: var(--rv-font-size-sm, 0.8125rem);
+}
+
+.error,
+.over-limit {
+  color: var(--rv-color-danger, #cf222e);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.tags span {
+  padding: 0.05rem 0.3rem;
+  border: 1px solid var(--rv-color-border, #d7dbe0);
+  border-radius: var(--rv-radius, 4px);
+}
+
+.actions {
+  justify-content: flex-end;
+}
+
+.empty,
+.hint {
+  color: var(--rv-color-text-muted, #7a828d);
+}
+
+.editor {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.65rem;
+  border: 1px solid var(--rv-color-border, #d7dbe0);
+  border-radius: var(--rv-radius, 4px);
+  background: var(--rv-color-surface, #fff);
+}
+
+.tabs button.active {
+  outline: 2px solid currentColor;
+}
+
+label,
+.editor-section {
+  display: grid;
+  gap: 0.25rem;
+  font-size: var(--rv-font-size-sm, 0.8125rem);
+}
+
+input,
+textarea,
+select {
+  min-width: 0;
+  width: 100%;
+  font: inherit;
+}
+
+.hint {
+  font-size: var(--rv-font-size-xs, 0.75rem);
+}
+
+.message-preview {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.6rem;
+  border: 1px solid var(--rv-color-border, #d7dbe0);
+  border-radius: var(--rv-radius, 4px);
+  background: var(--rv-color-surface-alt, #f6f7f9);
+  color: var(--rv-color-text-primary, #1b1f24);
+}
+
+.preview-author {
+  color: var(--rv-color-text-muted, #7a828d);
+  font-size: var(--rv-font-size-xs, 0.75rem);
+  font-weight: 600;
+}
+
+.message-preview p {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.editor-actions {
+  justify-content: flex-end;
+}
+
+.save-confirmation {
+  justify-self: end;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--rv-color-success, #1a7f37);
+  border-radius: var(--rv-radius, 4px);
+  color: var(--rv-color-success, #1a7f37);
+  font-size: var(--rv-font-size-sm, 0.8125rem);
+}

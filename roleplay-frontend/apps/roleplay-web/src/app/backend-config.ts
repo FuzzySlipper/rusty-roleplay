@@ -1,10 +1,4 @@
-import { InjectionToken, type Provider } from '@angular/core';
-import { ChatTransport } from '@rusty-view/transport';
-import {
-  CHAT_STORAGE_ADAPTER,
-  ChatStore,
-  IndexedDbChatStorage,
-} from '@rusty-view/chat-store';
+import { InjectionToken } from '@angular/core';
 
 /**
  * Runtime resolution of backend service URLs, so a single build works whether
@@ -117,20 +111,3 @@ export const BACKEND_CONFIG = new InjectionToken<BackendConfig>(
   'BACKEND_CONFIG',
   { providedIn: 'root', factory: resolveBackendConfig },
 );
-
-/** Angular providers for rusty-view's generic chat transport/store boundary. */
-export const CHAT_BACKEND_PROVIDERS: Provider[] = [
-  {
-    provide: ChatTransport,
-    useFactory: (config: BackendConfig) =>
-      new ChatTransport({
-        baseUrl: config.rustyCrewBaseUrl,
-        ...(config.bearerToken === undefined
-          ? {}
-          : { bearerToken: config.bearerToken }),
-      }),
-    deps: [BACKEND_CONFIG],
-  },
-  { provide: CHAT_STORAGE_ADAPTER, useClass: IndexedDbChatStorage },
-  ChatStore,
-];

@@ -6,18 +6,40 @@ import type { LoreEntry } from '../lore.model';
 
 const ENTRIES: readonly LoreEntry[] = [
   {
+    recordId: 'a',
+    revision: 1,
+    layerIds: [],
+    sourceLayerId: undefined,
+    sourceLayerWritePolicy: undefined,
     slug: 'a',
     title: 'Northmarch Taxes',
     summary: 'politics',
-    canonLevel: 'canon',
+    body: 'politics',
+    canonLevel: 'established',
     tags: ['politics'],
+    capturedBy: 'test',
+    captureReason: 'fixture',
+    capturedAt: '2026-07-05T00:00:00.000Z',
+    supersedesRecordId: '',
+    supersededByRecordId: '',
   },
   {
+    recordId: 'b',
+    revision: 1,
+    layerIds: [],
+    sourceLayerId: undefined,
+    sourceLayerWritePolicy: undefined,
     slug: 'b',
     title: 'Silver Flame',
     summary: 'an order',
-    canonLevel: 'canon',
+    body: 'an order',
+    canonLevel: 'established',
     tags: ['faction'],
+    capturedBy: 'test',
+    captureReason: 'fixture',
+    capturedAt: '2026-07-05T00:00:00.000Z',
+    supersedesRecordId: '',
+    supersededByRecordId: '',
   },
 ];
 
@@ -29,18 +51,19 @@ describe('RpLorebookPanelComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.entry').length).toBe(2);
   });
 
-  it('filters entries by the search query', () => {
+  it('emits search query changes', () => {
     const fixture = TestBed.createComponent(RpLorebookPanelComponent);
     fixture.componentRef.setInput('entries', ENTRIES);
     fixture.detectChanges();
+    let query = '';
+    fixture.componentInstance.queryChange.subscribe((value) => {
+      query = value;
+    });
     const search = fixture.nativeElement.querySelector(
       'input',
     ) as HTMLInputElement;
     search.value = 'silver';
     search.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    const entries = fixture.nativeElement.querySelectorAll('.entry');
-    expect(entries.length).toBe(1);
-    expect(entries[0].textContent).toContain('Silver Flame');
+    expect(query).toBe('silver');
   });
 });

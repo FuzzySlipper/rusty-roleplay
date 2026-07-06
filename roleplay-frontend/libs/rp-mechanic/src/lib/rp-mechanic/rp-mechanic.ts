@@ -4,6 +4,7 @@ import {
   input,
   output,
 } from '@angular/core';
+import { TooltipDirective } from '@rusty-view/chat-components';
 
 /** Top-level UI mode: in-character roleplay vs out-of-character diagnostics. */
 export type RpMode = 'roleplay' | 'mechanic';
@@ -29,11 +30,21 @@ export interface DiagnosticLine {
 @Component({
   selector: 'rp-mechanic-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TooltipDirective],
   template: `
     <section class="rp-mechanic">
       <header>
         <h3>Mechanic</h3>
-        <button type="button" (click)="toggleMode()">
+        <button
+          type="button"
+          [rvTooltip]="
+            mode() === 'mechanic'
+              ? 'Return to normal in-character roleplay controls'
+              : 'Open out-of-character diagnostics and proposal review'
+          "
+          rvTooltipPlacement="bottom"
+          (click)="toggleMode()"
+        >
           {{
             mode() === 'mechanic' ? 'Return to roleplay' : 'Enter mechanic mode'
           }}
@@ -48,10 +59,20 @@ export interface DiagnosticLine {
               <p class="summary">{{ proposal.summary }}</p>
               <p class="reason">{{ proposal.reason }}</p>
               <div class="actions">
-                <button type="button" (click)="apply.emit(proposal.id)">
+                <button
+                  type="button"
+                  rvTooltip="Apply this mechanic proposal"
+                  rvTooltipPlacement="top"
+                  (click)="apply.emit(proposal.id)"
+                >
                   Apply
                 </button>
-                <button type="button" (click)="reject.emit(proposal.id)">
+                <button
+                  type="button"
+                  rvTooltip="Dismiss this mechanic proposal"
+                  rvTooltipPlacement="top"
+                  (click)="reject.emit(proposal.id)"
+                >
                   Reject
                 </button>
               </div>
