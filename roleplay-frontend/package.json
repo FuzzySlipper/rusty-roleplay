@@ -75,5 +75,18 @@
     "vite": "8.0.9",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "~4.1.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@swc/core",
+      "esbuild",
+      "less",
+      "lmdb",
+      "msgpackr-extract",
+      "nx",
+      "unrs-resolver"
+    ],
+    "onlyBuiltDependenciesFile": ""
   }
 }

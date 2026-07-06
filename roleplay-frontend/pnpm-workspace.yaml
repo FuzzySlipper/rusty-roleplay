@@ -2,6 +2,16 @@ packages:
   - 'apps/*'
   - 'libs/*'
 
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
+  esbuild: true
+  less: true
+  lmdb: true
+  msgpackr-extract: true
+  nx: true
+  unrs-resolver: true
+
 # Local dev consumes @rusty-view/* from a local verdaccio registry where
 # packages are (re)published moments before install, so the supply-chain
 # release-age gate does not apply here.
