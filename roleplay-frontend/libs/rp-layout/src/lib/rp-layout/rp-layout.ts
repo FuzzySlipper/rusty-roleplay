@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   input,
   output,
 } from '@angular/core';
@@ -8,9 +9,10 @@ import type { ChatMessage } from '@rusty-view/chat-domain';
 import {
   MessageInputComponent,
   StreamStatusComponent,
+  TooltipDirective,
   type StreamStatusKind,
 } from '@rusty-view/chat-components';
-import { TopMenuComponent } from '@rusty-view/chat-shell';
+import { TopMenuComponent, TopMenuController } from '@rusty-view/chat-shell';
 import { TranscriptViewportComponent } from '@rusty-view/transcript-renderer';
 import {
   NarratorPhaseIndicatorComponent,
@@ -34,6 +36,7 @@ import {
     TranscriptViewportComponent,
     MessageInputComponent,
     StreamStatusComponent,
+    TooltipDirective,
     TopMenuComponent,
     NarratorPhaseIndicatorComponent,
   ],
@@ -42,7 +45,14 @@ import {
       <header class="header">
         <span class="brand">rusty-roleplay</span>
         <rv-top-menu />
-        <span class="scene">{{ sceneLabel() }}</span>
+        <button
+          class="scene"
+          type="button"
+          rvTooltip="Open sessions"
+          (click)="openSessionsPanel()"
+        >
+          {{ sceneLabel() }}
+        </button>
         <rv-stream-status
           class="status"
           [status]="connectionStatus()"
@@ -91,6 +101,24 @@ import {
       .brand {
         font-weight: 600;
       }
+      .scene {
+        appearance: none;
+        border: 1px solid var(--rv-color-border, rgba(128, 128, 128, 0.4));
+        border-radius: var(--rv-radius, 4px);
+        background: var(--rv-color-surface-raised, transparent);
+        color: inherit;
+        cursor: pointer;
+        font: inherit;
+        max-width: min(24rem, 35vw);
+        overflow: hidden;
+        padding: 0.25rem 0.5rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .scene:hover,
+      .scene:focus-visible {
+        border-color: var(--rv-color-accent, currentColor);
+      }
       .status {
         margin-left: auto;
       }
@@ -122,6 +150,8 @@ import {
   ],
 })
 export class RpLayoutComponent {
+  private readonly topMenu = inject(TopMenuController);
+
   readonly messages = input.required<readonly ChatMessage[]>();
   readonly profileName = input<string>('');
   readonly connectionStatus = input<StreamStatusKind>('idle');
@@ -132,4 +162,8 @@ export class RpLayoutComponent {
 
   readonly send = output<string>();
   readonly reconnect = output<void>();
+
+  protected openSessionsPanel(): void {
+    this.topMenu.openPanel('rp-sessions');
+  }
 }
