@@ -1,6 +1,6 @@
 import { Provider } from '@angular/core';
 
-import { LoreEntry } from './lore.model';
+import { DEFAULT_LORE_CONTROLS, LoreEntry } from './lore.model';
 import { LORE_SOURCE, LoreCampaignSummary, LoreSource } from './lore-source';
 
 const MOCK_ENTRIES: readonly LoreEntry[] = [
@@ -17,6 +17,7 @@ const MOCK_ENTRIES: readonly LoreEntry[] = [
     body: 'The barons of Northmarch have withheld taxes from the crown for three seasons.',
     canonLevel: 'established',
     tags: ['politics', 'conflict'],
+    loreControls: DEFAULT_LORE_CONTROLS,
     capturedBy: 'mock',
     captureReason: 'Seed fixture',
     capturedAt: '2026-07-05T00:00:00.000Z',
@@ -35,6 +36,7 @@ const MOCK_ENTRIES: readonly LoreEntry[] = [
     body: 'A martial order loyal to the crown; Xavier is a sworn duelist.',
     canonLevel: 'established',
     tags: ['faction'],
+    loreControls: DEFAULT_LORE_CONTROLS,
     capturedBy: 'mock',
     captureReason: 'Seed fixture',
     capturedAt: '2026-07-05T00:00:00.000Z',
@@ -53,6 +55,7 @@ const MOCK_ENTRIES: readonly LoreEntry[] = [
     body: 'A hidden city rumored to be controlled by the Black Flame.',
     canonLevel: 'speculative',
     tags: ['location', 'mystery'],
+    loreControls: DEFAULT_LORE_CONTROLS,
     capturedBy: 'mock',
     captureReason: 'Seed fixture',
     capturedAt: '2026-07-05T00:00:00.000Z',

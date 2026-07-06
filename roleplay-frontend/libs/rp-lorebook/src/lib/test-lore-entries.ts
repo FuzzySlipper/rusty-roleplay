@@ -1,4 +1,4 @@
-import type { LoreEntry } from './lore.model';
+import { DEFAULT_LORE_CONTROLS, type LoreEntry } from './lore.model';
 
 export const testEntries: readonly LoreEntry[] = [
   {
@@ -13,6 +13,12 @@ export const testEntries: readonly LoreEntry[] = [
     body: 'The barons withheld taxes.',
     canonLevel: 'established',
     tags: ['politics'],
+    loreControls: {
+      ...DEFAULT_LORE_CONTROLS,
+      primaryKeys: ['taxes'],
+      constant: true,
+      insertionOrder: 2,
+    },
     capturedBy: 'test',
     captureReason: 'fixture',
     capturedAt: '2026-07-05T00:00:00.000Z',
@@ -31,6 +37,7 @@ export const testEntries: readonly LoreEntry[] = [
     body: 'A hidden city.',
     canonLevel: 'speculative',
     tags: ['location'],
+    loreControls: DEFAULT_LORE_CONTROLS,
     capturedBy: 'test',
     captureReason: 'fixture',
     capturedAt: '2026-07-05T00:00:00.000Z',

@@ -1,4 +1,12 @@
-export type { LoreEntry } from './lib/lore.model';
+export {
+  DEFAULT_LORE_CONTROLS,
+  DEFAULT_LORE_CONTROL_SUPPORT,
+  type LoreControlSupport,
+  type LoreControls,
+  type LoreEntry,
+  type LoreInsertionPosition,
+  type LoreRetrievalRole,
+} from './lib/lore.model';
 export type {
   ChatLoreLayer,
   CreateLoreLayerRequest,

@@ -7,6 +7,7 @@ import {
   mapLoreEntry,
   mapLoreEntryDetail,
 } from './lore-entry-api';
+import { DEFAULT_LORE_CONTROLS } from './lore.model';
 
 describe('LoreEntryApi', () => {
   afterEach(() => {
@@ -27,8 +28,19 @@ describe('LoreEntryApi', () => {
         created_at: '2026-07-05T00:00:00Z',
         revision: 3,
         content: { metadata_json: { tags: ['clockmaker', 'song'] } },
+        lore_controls: {
+          primary_keys: ['clockmaker'],
+          secondary_keys: ['dusk'],
+          enabled: true,
+          constant: true,
+          scan_depth: 8,
+          insertion_position: 'after_history',
+          insertion_order: 3,
+          probability: 0.75,
+          retrieval_role: 'narrator',
+        },
       }),
-    ).toEqual({
+    ).toMatchObject({
       recordId: 'entry-a',
       revision: 3,
       layerIds: [],
@@ -40,11 +52,56 @@ describe('LoreEntryApi', () => {
       body: 'The clockmaker sings three notes at dusk.',
       canonLevel: 'established',
       tags: ['clockmaker', 'song'],
+      loreControls: {
+        primaryKeys: ['clockmaker'],
+        secondaryKeys: ['dusk'],
+        enabled: true,
+        constant: true,
+        scanDepth: 8,
+        insertionPosition: 'after_history',
+        insertionOrder: 3,
+        probability: 0.75,
+        retrievalRole: 'narrator',
+      },
       capturedBy: 'import',
       captureReason: 'Seeded by browser smoke.',
       capturedAt: '2026-07-05T00:00:00Z',
       supersedesRecordId: '',
       supersededByRecordId: '',
+    });
+  });
+
+  it('maps layer-entry controls over stored controls', () => {
+    expect(
+      mapLoreEntry({
+        layer_id: 'world-main',
+        record_id: 'entry-a',
+        constant: true,
+        insertion_order: 2,
+        record: {
+          record_id: 'entry-a',
+          revision: 1,
+          title: 'Clockmaker Song',
+          body: 'A song.',
+          content: {
+            lore_controls: {
+              constant: false,
+              insertion_order: 9,
+              primary_keys: ['clockmaker'],
+            },
+          },
+        },
+      }),
+    ).toMatchObject({
+      recordId: 'entry-a',
+      layerIds: ['world-main'],
+      sourceLayerId: 'world-main',
+      title: 'Clockmaker Song',
+      loreControls: {
+        primaryKeys: ['clockmaker'],
+        constant: true,
+        insertionOrder: 2,
+      },
     });
   });
 
@@ -187,6 +244,12 @@ describe('LoreEntryApi', () => {
       body: 'A song.',
       tags: ['song'],
       canonLevel: 'speculative',
+      loreControls: {
+        ...DEFAULT_LORE_CONTROLS,
+        primaryKeys: ['clockmaker'],
+        constant: true,
+        insertionOrder: 7,
+      },
     });
 
     const [url, init] = fetchMock.mock.calls[0] ?? [];
@@ -203,14 +266,61 @@ describe('LoreEntryApi', () => {
         content: {
           tags: ['song'],
           metadata_json: { tags: ['song'] },
+          lore_controls: {
+            primary_keys: ['clockmaker'],
+            constant: true,
+            insertion_order: 7,
+          },
+        },
+        lore_controls: {
+          primary_keys: ['clockmaker'],
+          constant: true,
+          insertion_order: 7,
         },
       },
     });
   });
 
   it('updates a Crew lore entry with the expected revision', async () => {
-    const fetchMock = vi.fn(async () =>
-      jsonResponse({
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const path = new URL(url).pathname;
+      if (path.includes('/lore/layers/world-main/entries/entry-a')) {
+        return jsonResponse({
+          ok: true,
+          data: {
+            layerEntry: {
+              layer_id: 'world-main',
+              record_id: 'entry-a',
+              constant: true,
+              insertion_order: 5,
+            },
+          },
+          meta: { request_id: 'req', schema_version: 1 },
+        });
+      }
+      if (init === undefined || init.method === undefined) {
+        return jsonResponse({
+          ok: true,
+          data: {
+            entry: {
+              record_id: 'entry-a',
+              revision: 4,
+              title: 'Clockmaker Song',
+              body: 'A revised song.',
+            },
+            layerEntries: [
+              {
+                layer_id: 'world-main',
+                record_id: 'entry-a',
+                constant: true,
+                insertion_order: 5,
+              },
+            ],
+          },
+          meta: { request_id: 'req', schema_version: 1 },
+        });
+      }
+      return jsonResponse({
         ok: true,
         data: {
           entry: {
@@ -221,8 +331,8 @@ describe('LoreEntryApi', () => {
           },
         },
         meta: { request_id: 'req', schema_version: 1 },
-      }),
-    );
+      });
+    });
     vi.stubGlobal('fetch', fetchMock);
     const api = createApi();
 
@@ -233,6 +343,12 @@ describe('LoreEntryApi', () => {
       body: 'A revised song.',
       tags: ['song', 'clockmaker'],
       canonLevel: 'established',
+      loreControls: {
+        ...DEFAULT_LORE_CONTROLS,
+        primaryKeys: ['clockmaker'],
+        constant: true,
+        insertionOrder: 5,
+      },
       scope: { layerIds: ['world-main'] },
     });
 
@@ -249,8 +365,30 @@ describe('LoreEntryApi', () => {
       canon_status: 'canon',
       content: {
         tags: ['song', 'clockmaker'],
+        lore_controls: {
+          primary_keys: ['clockmaker'],
+          constant: true,
+          insertion_order: 5,
+        },
+      },
+      lore_controls: {
+        primary_keys: ['clockmaker'],
+        constant: true,
+        insertion_order: 5,
       },
     });
+    const [layerUrl, layerInit] = fetchMock.mock.calls[1] ?? [];
+    expect(new URL(String(layerUrl)).pathname).toBe(
+      '/v1/admin/roleplay/lore/layers/world-main/entries/entry-a',
+    );
+    expect(layerInit?.method).toBe('PATCH');
+    expect(JSON.parse(String(layerInit?.body))).toEqual({
+      constant: true,
+      insertion_order: 5,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(entry.loreControls.constant).toBe(true);
+    expect(entry.loreControls.insertionOrder).toBe(5);
   });
 
   it('calls Crew lore entry promote route', async () => {

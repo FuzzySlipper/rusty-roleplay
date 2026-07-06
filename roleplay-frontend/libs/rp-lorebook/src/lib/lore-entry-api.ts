@@ -5,7 +5,14 @@ import {
   type Provider,
 } from '@angular/core';
 
-import { LoreEntry } from './lore.model';
+import {
+  DEFAULT_LORE_CONTROLS,
+  DEFAULT_LORE_CONTROL_SUPPORT,
+  LoreControls,
+  LoreEntry,
+  type LoreInsertionPosition,
+  type LoreRetrievalRole,
+} from './lore.model';
 import { LORE_SOURCE, LoreCampaignSummary, LoreSource } from './lore-source';
 
 export interface LoreEntryApiConfig {
@@ -41,6 +48,7 @@ export interface LoreEntryWriteRequest {
   readonly body: string;
   readonly tags: readonly string[];
   readonly canonLevel: string;
+  readonly loreControls?: LoreControls;
 }
 
 export interface LoreEntryCreateRequest extends LoreEntryWriteRequest {
@@ -195,7 +203,45 @@ export class LoreEntryApi implements LoreSource {
         }),
       },
     );
-    return mapRequiredLoreEntryDetail(data);
+    const entry = mapRequiredLoreEntryDetail(data);
+    const layerId = request.scope?.layerIds?.[0] ?? entry.sourceLayerId;
+    if (request.loreControls !== undefined && layerId !== undefined) {
+      return this.updateLayerEntryControls(
+        layerId,
+        request.recordId,
+        request.loreControls,
+        request.scope,
+      );
+    }
+    return entry;
+  }
+
+  async updateLayerEntryControls(
+    layerId: string,
+    recordId: string,
+    controls: Pick<LoreControls, 'constant' | 'insertionOrder'>,
+    scope: LoreEntryDetailOptions = {},
+  ): Promise<LoreEntry> {
+    await this.request<{
+      readonly layerEntry?: ApiRecord;
+    }>(
+      `/v1/admin/roleplay/lore/layers/${encodeURIComponent(layerId)}/entries/${encodeURIComponent(recordId)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({
+          constant: controls.constant,
+          insertion_order: controls.insertionOrder,
+        }),
+      },
+    );
+    const refreshed = await this.readEntry(recordId, {
+      ...scope,
+      layerIds: scope.layerIds ?? [layerId],
+    });
+    if (refreshed === null) {
+      throw new Error('Roleplay lore entry was not readable after save.');
+    }
+    return refreshed;
   }
 
   async promoteEntry(request: PromoteLoreEntryRequest): Promise<LoreEntry> {
@@ -262,58 +308,69 @@ export function provideLoreEntryApi(config: LoreEntryApiConfig): Provider[] {
 }
 
 export function mapLoreEntry(record: ApiRecord): LoreEntry {
-  const content = readRecord(record['content']);
+  const nestedRecord = readRecord(record['record']);
+  const source =
+    Object.keys(nestedRecord).length > 0 ? nestedRecord : record;
+  const content = readRecord(source['content']);
   const metadata = readRecord(content['metadata_json']);
-  const evidenceRefs = readRecordArray(record['evidence_refs']);
+  const evidenceRefs = readRecordArray(source['evidence_refs']);
   const firstEvidence = evidenceRefs[0] ?? {};
   const recordId =
+    readString(source, 'record_id') ??
+    readString(source, 'recordId') ??
+    readString(content, 'record_id') ??
     readString(record, 'record_id') ??
     readString(record, 'recordId') ??
-    readString(content, 'record_id') ??
     '';
   const title =
-    readString(record, 'title') ??
+    readString(source, 'title') ??
     readString(content, 'title') ??
     'Untitled lore entry';
   const body =
-    readString(record, 'body') ??
+    readString(source, 'body') ??
     readString(content, 'body') ??
-    readString(record, 'summary') ??
+    readString(source, 'summary') ??
     '';
   return {
     recordId,
     revision:
-      readNumber(record, 'revision') ?? readNumber(content, 'revision') ?? 0,
-    layerIds: [],
-    sourceLayerId: undefined,
+      readNumber(source, 'revision') ?? readNumber(content, 'revision') ?? 0,
+    layerIds:
+      readString(record, 'layer_id') === undefined
+        ? []
+        : [readString(record, 'layer_id') ?? ''],
+    sourceLayerId: readString(record, 'layer_id'),
     sourceLayerWritePolicy: undefined,
     slug: recordId,
     title,
     summary: summaryFrom(body, title),
     body,
     canonLevel: canonLevelFrom(
-      readString(record, 'status'),
-      readString(record, 'canon_status') ?? readString(content, 'canon_status'),
+      readString(source, 'status'),
+      readString(source, 'canon_status') ?? readString(content, 'canon_status'),
     ),
     tags: readStringArray(
-      content['tags'] ?? metadata['tags'] ?? record['tags'],
+      content['tags'] ?? metadata['tags'] ?? source['tags'],
     ),
+    loreControls: mapLoreControls(source, record),
     capturedBy:
-      readString(record, 'source') ?? readString(content, 'source') ?? '',
+      readString(source, 'source') ?? readString(content, 'source') ?? '',
     captureReason:
-      readString(record, 'durability_rationale') ??
-      readString(record, 'capture_reason') ??
+      readString(source, 'durability_rationale') ??
+      readString(source, 'capture_reason') ??
       readString(firstEvidence, 'label') ??
       '',
     capturedAt:
-      readString(record, 'created_at') ?? readString(record, 'createdAt') ?? '',
+      readString(source, 'created_at') ??
+      readString(source, 'createdAt') ??
+      '',
     supersedesRecordId:
-      readString(record, 'supersedes_record_id') ??
-      readString(record, 'supersedesRecordId') ??
+      readString(source, 'supersedes_record_id') ??
+      readString(source, 'supersedesRecordId') ??
       '',
     supersededByRecordId:
-      readString(record, 'superseded_by_record_id') ??
-      readString(record, 'supersededByRecordId') ??
+      readString(source, 'superseded_by_record_id') ??
+      readString(source, 'supersededByRecordId') ??
       '',
   };
 }
@@ -368,6 +425,10 @@ export function mapLoreEntryDetail(data: {
       readString(supersession, 'supersededByRecordId') ??
       readString(supersession, 'superseded_by_record_id') ??
       entry.supersededByRecordId,
+    loreControls:
+      layerEntries.length === 0
+        ? entry.loreControls
+        : mapLoreControls(data.entry, layerEntries[0]),
   };
 }
 
@@ -426,6 +487,9 @@ function loreWriteFromRequest(
     canon_status: canonStatusFromLevel(request.canonLevel),
     tags: request.tags,
     metadata_json: { tags: request.tags },
+    ...(request.loreControls !== undefined
+      ? { lore_controls: loreControlsToApi(request.loreControls) }
+      : {}),
   };
   return {
     ...(request.worldId !== undefined ? { world_id: request.worldId } : {}),
@@ -434,8 +498,198 @@ function loreWriteFromRequest(
     body: request.body,
     canon_status: canonStatusFromLevel(request.canonLevel),
     visibility: 'public',
+    ...(request.loreControls !== undefined
+      ? {
+          ...loreControlsToApi(request.loreControls),
+          lore_controls: loreControlsToApi(request.loreControls),
+        }
+      : {}),
     content,
   };
+}
+
+function mapLoreControls(
+  entry: ApiRecord,
+  layerEntry: ApiRecord = {},
+): LoreControls {
+  const content = readRecord(entry['content']);
+  const directControls = readRecord(entry['lore_controls']);
+  const contentControls = readRecord(content['lore_controls']);
+  const layerControls = readRecord(layerEntry['lore_controls']);
+  const raw = {
+    ...contentControls,
+    ...directControls,
+    ...layerControls,
+    ...controlFieldsFromRecord(entry),
+    ...controlFieldsFromRecord(layerEntry),
+  };
+  const support = {
+    ...DEFAULT_LORE_CONTROL_SUPPORT,
+    ...mapControlSupport(
+      readRecord(entry['lore_control_support']),
+      readRecord(layerEntry['lore_control_support']),
+    ),
+  };
+  return {
+    primaryKeys: readStringArray(raw['primary_keys'] ?? raw['primaryKeys']),
+    secondaryKeys: readStringArray(
+      raw['secondary_keys'] ?? raw['secondaryKeys'],
+    ),
+    enabled: readBoolean(raw, 'enabled') ?? DEFAULT_LORE_CONTROLS.enabled,
+    constant: readBoolean(raw, 'constant') ?? DEFAULT_LORE_CONTROLS.constant,
+    scanDepth: clampInteger(
+      readNumber(raw, 'scan_depth') ?? readNumber(raw, 'scanDepth'),
+      DEFAULT_LORE_CONTROLS.scanDepth,
+      0,
+      200,
+    ),
+    insertionPosition: insertionPositionFrom(
+      readString(raw, 'insertion_position') ??
+        readString(raw, 'insertionPosition'),
+    ),
+    insertionOrder: clampInteger(
+      readNumber(raw, 'insertion_order') ?? readNumber(raw, 'insertionOrder'),
+      DEFAULT_LORE_CONTROLS.insertionOrder,
+      -1_000_000,
+      1_000_000,
+    ),
+    probability: clampNumber(
+      readNumber(raw, 'probability'),
+      DEFAULT_LORE_CONTROLS.probability,
+      0,
+      1,
+    ),
+    retrievalRole: retrievalRoleFrom(
+      readString(raw, 'retrieval_role') ?? readString(raw, 'retrievalRole'),
+    ),
+    support,
+  };
+}
+
+function controlFieldsFromRecord(record: ApiRecord): ApiRecord {
+  return {
+    ...(record['primary_keys'] !== undefined
+      ? { primary_keys: record['primary_keys'] }
+      : {}),
+    ...(record['secondary_keys'] !== undefined
+      ? { secondary_keys: record['secondary_keys'] }
+      : {}),
+    ...(record['enabled'] !== undefined ? { enabled: record['enabled'] } : {}),
+    ...(record['constant'] !== undefined
+      ? { constant: record['constant'] }
+      : {}),
+    ...(record['scan_depth'] !== undefined
+      ? { scan_depth: record['scan_depth'] }
+      : {}),
+    ...(record['insertion_position'] !== undefined
+      ? { insertion_position: record['insertion_position'] }
+      : {}),
+    ...(record['insertion_order'] !== undefined
+      ? { insertion_order: record['insertion_order'] }
+      : {}),
+    ...(record['probability'] !== undefined
+      ? { probability: record['probability'] }
+      : {}),
+    ...(record['retrieval_role'] !== undefined
+      ? { retrieval_role: record['retrieval_role'] }
+      : {}),
+  };
+}
+
+function mapControlSupport(
+  entrySupport: ApiRecord,
+  layerSupport: ApiRecord,
+): Partial<LoreControls['support']> {
+  const support = { ...entrySupport, ...layerSupport };
+  const mapped: Partial<Record<keyof LoreControls['support'], string>> = {};
+  copySupport(support, mapped, 'primary_keys', 'primaryKeys');
+  copySupport(support, mapped, 'secondary_keys', 'secondaryKeys');
+  copySupport(support, mapped, 'enabled', 'enabled');
+  copySupport(support, mapped, 'constant', 'constant');
+  copySupport(support, mapped, 'scan_depth', 'scanDepth');
+  copySupport(support, mapped, 'insertion_position', 'insertionPosition');
+  copySupport(support, mapped, 'insertion_order', 'insertionOrder');
+  copySupport(support, mapped, 'probability', 'probability');
+  copySupport(support, mapped, 'retrieval_role', 'retrievalRole');
+  return mapped;
+}
+
+function copySupport(
+  source: ApiRecord,
+  target: Partial<Record<keyof LoreControls['support'], string>>,
+  sourceKey: string,
+  targetKey: keyof LoreControls['support'],
+): void {
+  const value = readString(source, sourceKey);
+  if (value !== undefined) {
+    target[targetKey] = value;
+  }
+}
+
+function loreControlsToApi(controls: LoreControls): ApiRecord {
+  return {
+    primary_keys: controls.primaryKeys,
+    secondary_keys: controls.secondaryKeys,
+    enabled: controls.enabled,
+    constant: controls.constant,
+    scan_depth: controls.scanDepth,
+    insertion_position: controls.insertionPosition,
+    insertion_order: controls.insertionOrder,
+    probability: controls.probability,
+    retrieval_role: controls.retrievalRole,
+  };
+}
+
+function insertionPositionFrom(
+  value: string | undefined,
+): LoreInsertionPosition {
+  switch (value) {
+    case 'before_history':
+    case 'after_history':
+    case 'before_author_note':
+    case 'after_author_note':
+    case 'system':
+    case 'lore_block':
+      return value;
+    default:
+      return DEFAULT_LORE_CONTROLS.insertionPosition;
+  }
+}
+
+function retrievalRoleFrom(value: string | undefined): LoreRetrievalRole {
+  switch (value) {
+    case 'system':
+    case 'user':
+    case 'assistant':
+    case 'narrator':
+      return value;
+    default:
+      return DEFAULT_LORE_CONTROLS.retrievalRole;
+  }
+}
+
+function clampInteger(
+  value: number | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  if (value === undefined || !Number.isSafeInteger(value)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, value));
+}
+
+function clampNumber(
+  value: number | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  if (value === undefined || !Number.isFinite(value)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, value));
 }
 
 function summaryFrom(body: string, fallback: string): string {
@@ -498,6 +752,11 @@ function readString(record: ApiRecord, key: string): string | undefined {
 function readNumber(record: ApiRecord, key: string): number | undefined {
   const value = record[key];
   return typeof value === 'number' ? value : undefined;
+}
+
+function readBoolean(record: ApiRecord, key: string): boolean | undefined {
+  const value = record[key];
+  return typeof value === 'boolean' ? value : undefined;
 }
 
 function readStringArray(value: unknown): readonly string[] {
