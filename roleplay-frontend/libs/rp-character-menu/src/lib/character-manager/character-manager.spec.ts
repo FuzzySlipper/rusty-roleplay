@@ -92,6 +92,57 @@ describe('RpCharacterManagerComponent', () => {
     ]);
   });
 
+  it('imports JSON character cards into the editor before saving', async () => {
+    const fixture = TestBed.createComponent(RpCharacterManagerComponent);
+    fixture.componentRef.setInput('characters', []);
+    const emitted: unknown[] = [];
+    fixture.componentInstance.characterCreate.subscribe((event) =>
+      emitted.push(event),
+    );
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      'header input[type="file"]',
+    ) as HTMLInputElement;
+    Object.defineProperty(input, 'files', {
+      value: [
+        new File(
+          [
+            JSON.stringify({
+              data: {
+                name: 'Imported Hero',
+                first_mes: 'A velvet-gloved hand reaches out.',
+                tags: ['imported'],
+              },
+            }),
+          ],
+          'hero.json',
+          { type: 'application/json' },
+        ),
+      ],
+    });
+    input.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(
+      (fixture.nativeElement.querySelector('input[name="name"]') as HTMLInputElement)
+        .value,
+    ).toBe('Imported Hero');
+    fixture.nativeElement
+      .querySelector('form')
+      .dispatchEvent(new Event('submit'));
+
+    expect(emitted).toMatchObject([
+      {
+        name: 'Imported Hero',
+        firstMessage: 'A velvet-gloved hand reaches out.',
+        tags: ['imported'],
+      },
+    ]);
+  });
+
   it('renders first message preview and validation hints', () => {
     const fixture = TestBed.createComponent(RpCharacterManagerComponent);
     fixture.componentRef.setInput('characters', []);

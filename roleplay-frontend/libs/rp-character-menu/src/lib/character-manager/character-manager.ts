@@ -9,6 +9,10 @@ import {
 import { TooltipDirective } from '@rusty-view/chat-components';
 
 import { StringListEditorComponent } from '../string-list-editor/string-list-editor';
+import {
+  characterToTavernCardJson,
+  importCharacterCardFile,
+} from '../character-card-codec';
 import type {
   CharacterUpdateRequest,
   CharacterWriteRequest,
@@ -52,6 +56,18 @@ type CharacterDraftTextField = Exclude<
         >
           New
         </button>
+        <label
+          class="import-button"
+          rvTooltip="Import a SillyTavern JSON or PNG character card"
+          rvTooltipPlacement="bottom"
+        >
+          Import
+          <input
+            type="file"
+            accept="application/json,.json,image/png,.png"
+            (change)="importCharacter($event)"
+          />
+        </label>
       </header>
 
       <div class="toolbar">
@@ -71,6 +87,9 @@ type CharacterDraftTextField = Exclude<
         <p class="state">Loading characters...</p>
       } @else if (errorMessage()) {
         <p class="state error">{{ errorMessage() }}</p>
+      }
+      @if (importError()) {
+        <p class="state error">{{ importError() }}</p>
       }
 
       <ul>
@@ -112,6 +131,14 @@ type CharacterDraftTextField = Exclude<
                 (click)="editCharacter(character)"
               >
                 Edit
+              </button>
+              <button
+                type="button"
+                rvTooltip="Export this character as a Tavern Card JSON file"
+                rvTooltipPlacement="top"
+                (click)="exportCharacter(character)"
+              >
+                Export
               </button>
               <button
                 type="button"
@@ -175,6 +202,22 @@ type CharacterDraftTextField = Exclude<
                   (input)="updateDraft('avatarUrl', inputValue($event))"
                 />
               </label>
+              <label>
+                Avatar image
+                <input
+                  name="avatarFile"
+                  type="file"
+                  accept="image/*"
+                  (change)="setAvatarFile($event)"
+                />
+              </label>
+              @if (currentDraft.avatarUrl) {
+                <img
+                  class="avatar-preview"
+                  [src]="currentDraft.avatarUrl"
+                  alt="Character avatar preview"
+                />
+              }
               <label>
                 Description
                 <textarea
@@ -349,6 +392,7 @@ export class RpCharacterManagerComponent {
   protected readonly editingId = signal<string | undefined>(undefined);
   protected readonly draft = signal<CharacterDraft | undefined>(undefined);
   protected readonly saveConfirmed = signal(false);
+  protected readonly importError = signal<string | undefined>(undefined);
   protected readonly limits = {
     description: 500,
     personality: 1200,
@@ -380,12 +424,14 @@ export class RpCharacterManagerComponent {
   });
 
   protected newCharacter(): void {
+    this.importError.set(undefined);
     this.editingId.set(undefined);
     this.tab.set('basic');
     this.draft.set(emptyDraft());
   }
 
   protected editCharacter(character: RpCharacter): void {
+    this.importError.set(undefined);
     this.editingId.set(character.id);
     this.tab.set('basic');
     this.draft.set({
@@ -405,6 +451,51 @@ export class RpCharacterManagerComponent {
   protected cancelEdit(): void {
     this.editingId.set(undefined);
     this.draft.set(undefined);
+  }
+
+  protected async importCharacter(event: Event): Promise<void> {
+    this.importError.set(undefined);
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (file === undefined) {
+      return;
+    }
+
+    try {
+      this.loadImportedCharacter(await importCharacterCardFile(file));
+    } catch (error: unknown) {
+      this.importError.set(readErrorMessage(error));
+    }
+  }
+
+  protected exportCharacter(character: RpCharacter): void {
+    const blob = new Blob([characterToTavernCardJson(character)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${safeFileName(character.name)}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  protected setAvatarFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (file === undefined) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      this.updateDraft('avatarUrl', String(reader.result));
+    });
+    reader.addEventListener('error', () => {
+      this.importError.set('Could not read avatar image.');
+    });
+    reader.readAsDataURL(file);
   }
 
   protected saveDraft(event: Event): void {
@@ -464,6 +555,23 @@ export class RpCharacterManagerComponent {
     this.saveConfirmed.set(true);
     setTimeout(() => this.saveConfirmed.set(false), 1800);
   }
+
+  private loadImportedCharacter(request: CharacterWriteRequest): void {
+    this.editingId.set(undefined);
+    this.tab.set('basic');
+    this.draft.set({
+      id: request.id ?? '',
+      name: request.name,
+      description: request.description,
+      personality: request.personality,
+      scenario: request.scenario,
+      firstMessage: request.firstMessage,
+      alternateGreetings: [...request.alternateGreetings],
+      exampleMessages: [...request.exampleMessages],
+      tagsText: request.tags.join(', '),
+      avatarUrl: request.avatarUrl ?? '',
+    });
+  }
 }
 
 function emptyDraft(): CharacterDraft {
@@ -502,4 +610,18 @@ function draftToRequest(draft: CharacterDraft): CharacterWriteRequest {
 
 function cleanItems(value: readonly string[]): readonly string[] {
   return value.map((item) => item.trim()).filter(Boolean);
+}
+
+function safeFileName(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || 'character'
+  );
+}
+
+function readErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

@@ -17,6 +17,21 @@ header {
   justify-content: space-between;
 }
 
+.import-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--rv-color-border, #d7dbe0);
+  border-radius: var(--rv-radius, 4px);
+  background: var(--rv-color-surface-alt, #f6f7f9);
+  cursor: pointer;
+}
+
+.import-button input {
+  display: none;
+}
+
 h3,
 h4,
 p {
@@ -141,6 +156,12 @@ img {
   border: 1px solid var(--rv-color-border, #d7dbe0);
   border-radius: var(--rv-radius, 4px);
   background: var(--rv-color-surface, #fff);
+}
+
+.avatar-preview {
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid var(--rv-color-border, #d7dbe0);
 }
 
 .tabs button.active {
