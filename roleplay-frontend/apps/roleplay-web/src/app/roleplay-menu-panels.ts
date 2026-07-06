@@ -15,6 +15,7 @@ import {
 import { RpMechanicPanelComponent } from '@rusty-roleplay/rp-mechanic';
 import { RpSceneControlsComponent } from '@rusty-roleplay/rp-scene-controls';
 
+import { ContextBreakdownComponent } from './context/context-breakdown';
 import { NarratorConfigPanelComponent } from './narrator-config/narrator-config-panel';
 import { RoleplaySessionPanelComponent } from './session-management/roleplay-session-panel';
 import { RoleplayWorkbench } from './roleplay-workbench';
@@ -204,7 +205,7 @@ export class RoleplayLoreMenuPanelComponent {
 @Component({
   selector: 'app-roleplay-narrator-menu-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NarratorConfigPanelComponent],
+  imports: [ContextBreakdownComponent, NarratorConfigPanelComponent],
   template: `
     @if (workbench.activeProfile(); as profile) {
       <app-narrator-config-panel
@@ -214,6 +215,13 @@ export class RoleplayLoreMenuPanelComponent {
         [errorMessage]="workbench.narratorConfigError()"
         (configReload)="workbench.reloadNarratorConfig(profile.id)"
         (configSave)="workbench.saveNarratorConfig(profile.id, $event)"
+      />
+      <app-context-breakdown
+        [usage]="workbench.contextUsage()"
+        [activeSessionId]="workbench.chatStore.activeSessionId() ?? undefined"
+        [loading]="workbench.contextLoading()"
+        [errorMessage]="workbench.contextError()"
+        (refresh)="workbench.refreshContextUsage()"
       />
     } @else {
       <p class="panel-state">Select a profile first.</p>

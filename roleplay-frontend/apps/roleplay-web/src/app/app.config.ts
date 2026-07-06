@@ -26,6 +26,7 @@ import {
 import { appRoutes } from './app.routes';
 import { BACKEND_CONFIG, type BackendConfig } from './backend-config';
 import { CHAT_BACKEND_PROVIDERS } from './chat-backend-providers';
+import { ContextApi } from './context/context-api';
 import { NarratorConfigApi } from './narrator-config/narrator-config-api';
 import { ProfileRegistryApi } from './profile-registry/profile-registry-api';
 import {
@@ -186,6 +187,7 @@ export const appConfig: ApplicationConfig = {
       deps: [BACKEND_CONFIG],
     },
     CharacterApi,
+    ContextApi,
     NarratorConfigApi,
     ProfileRegistryApi,
     RoleplaySessionApi,

@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { ChatStore } from '@rusty-view/chat-store';
 import type { StreamStatusKind } from '@rusty-view/chat-components';
 import {
@@ -31,6 +31,10 @@ import type {
 } from '@rusty-roleplay/rp-scene-controls';
 import type { RpMode } from '@rusty-roleplay/rp-mechanic';
 
+import {
+  ContextApi,
+  type ContextUsageResponse,
+} from './context/context-api';
 import { DEMO_LOGS, DEMO_PROPOSALS } from './demo-data';
 import { deriveNarratorPhase } from './narrator-phase';
 import { NarratorConfigApi } from './narrator-config/narrator-config-api';
@@ -54,6 +58,7 @@ export class RoleplayWorkbench {
   private readonly roleplaySessionApi = inject(RoleplaySessionApi);
   private readonly narratorConfigApi = inject(NarratorConfigApi);
   private readonly profileRegistryApi = inject(ProfileRegistryApi);
+  private readonly contextApi = inject(ContextApi);
 
   readonly campaignId = 'eldoria';
   readonly characters = signal<readonly RpCharacter[]>([]);
@@ -86,7 +91,11 @@ export class RoleplayWorkbench {
   readonly narratorConfigSaving = signal(false);
   readonly narratorConfigError = signal<string | undefined>(undefined);
   readonly transcriptSearchEnabled = signal(false);
+  readonly contextUsage = signal<ContextUsageResponse | null>(null);
+  readonly contextLoading = signal(false);
+  readonly contextError = signal<string | undefined>(undefined);
   private loreRequestId = 0;
+  private lastContextRefreshKey: string | undefined;
 
   readonly activeProfile = this.profileStore.activeProfile;
   readonly phase = computed<NarratorPhase>(() =>
@@ -152,6 +161,24 @@ export class RoleplayWorkbench {
   );
 
   constructor() {
+    effect(() => {
+      const sessionId = this.chatStore.activeSessionId();
+      const latestFinishedId = latestAssistantTurnFinishedEventId(
+        this.chatStore.rawEvents(),
+      );
+
+      if (sessionId === null || latestFinishedId === undefined) {
+        return;
+      }
+
+      const refreshKey = `${sessionId}:${latestFinishedId}`;
+      if (refreshKey !== this.lastContextRefreshKey) {
+        this.lastContextRefreshKey = refreshKey;
+        queueMicrotask(() => {
+          void this.loadContextUsage(sessionId);
+        });
+      }
+    });
     void this.loadProfiles();
   }
 
@@ -163,6 +190,34 @@ export class RoleplayWorkbench {
       }
     } catch (error: unknown) {
       this.selectError.set(readErrorMessage(error));
+    }
+  }
+
+  private async sendAndRefreshContext(text: string): Promise<void> {
+    try {
+      await this.chatStore.sendMessage(text);
+      this.refreshContextUsage();
+    } catch (error: unknown) {
+      this.sessionError.set(readErrorMessage(error));
+    }
+  }
+
+  private async loadContextUsage(sessionId: string): Promise<void> {
+    this.contextLoading.set(true);
+    this.contextError.set(undefined);
+    try {
+      const usage = await this.contextApi.readContext(sessionId);
+      if (this.chatStore.activeSessionId() === sessionId) {
+        this.contextUsage.set(usage);
+      }
+    } catch (error: unknown) {
+      if (this.chatStore.activeSessionId() === sessionId) {
+        this.contextError.set(readErrorMessage(error));
+      }
+    } finally {
+      if (this.chatStore.activeSessionId() === sessionId) {
+        this.contextLoading.set(false);
+      }
     }
   }
 
@@ -184,9 +239,7 @@ export class RoleplayWorkbench {
   }
 
   send(text: string): void {
-    void this.chatStore.sendMessage(text).catch((error: unknown) => {
-      this.sessionError.set(readErrorMessage(error));
-    });
+    void this.sendAndRefreshContext(text);
   }
 
   reconnect(): void {
@@ -197,6 +250,17 @@ export class RoleplayWorkbench {
 
   toggleTranscriptSearch(): void {
     this.transcriptSearchEnabled.update((enabled) => !enabled);
+  }
+
+  refreshContextUsage(): void {
+    const sessionId = this.chatStore.activeSessionId();
+    if (sessionId === null) {
+      this.contextUsage.set(null);
+      this.contextLoading.set(false);
+      this.contextError.set(undefined);
+      return;
+    }
+    void this.loadContextUsage(sessionId);
   }
 
   selectLore(entry: LoreEntry): void {
@@ -348,6 +412,7 @@ export class RoleplayWorkbench {
       this.syncActiveCharacterFromSession(selected.session_id);
       await this.loadChatLayers(selected.session_id);
       await this.loadLoreEntries();
+      await this.loadContextUsage(selected.session_id);
     } catch (error: unknown) {
       this.sessionError.set(readErrorMessage(error));
     }
@@ -381,6 +446,7 @@ export class RoleplayWorkbench {
       this.syncActiveCharacterFromSession(sessionId);
       await this.loadChatLayers(sessionId);
       await this.loadLoreEntries();
+      await this.loadContextUsage(sessionId);
       void this.loadRoleplaySessions(profileId);
     } catch (error: unknown) {
       this.sessionError.set(readErrorMessage(error));
@@ -405,6 +471,7 @@ export class RoleplayWorkbench {
       this.activeCharacterId.set(session.characterId);
       await this.loadChatLayers(session.sessionId);
       await this.loadLoreEntries();
+      await this.loadContextUsage(session.sessionId);
     } catch (error: unknown) {
       this.sessionsError.set(readErrorMessage(error));
     }
@@ -900,6 +967,22 @@ function toStreamStatus(status: string): StreamStatusKind {
     default:
       return 'idle';
   }
+}
+
+function latestAssistantTurnFinishedEventId(
+  events: readonly {
+    readonly kind?: string;
+    readonly event_id?: string;
+    readonly eventId?: string;
+  }[],
+): string | undefined {
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index];
+    if (event?.kind === 'assistant_turn_finished') {
+      return event.event_id ?? event.eventId ?? String(index);
+    }
+  }
+  return undefined;
 }
 
 function readErrorMessage(error: unknown): string {
