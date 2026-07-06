@@ -47,6 +47,18 @@ const LAYERS: readonly LoreLayer[] = [
     createdAt: undefined,
     updatedAt: undefined,
   },
+  {
+    layerId: 'secrets',
+    profileId: 'profile-a',
+    name: 'Secrets',
+    description: '',
+    purpose: 'world',
+    writePolicy: 'manual',
+    archived: false,
+    entryCount: 0,
+    createdAt: undefined,
+    updatedAt: undefined,
+  },
 ];
 
 describe('RoleplaySessionPanelComponent', () => {
@@ -56,6 +68,39 @@ describe('RoleplaySessionPanelComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('active');
     expect(text).not.toContain('archived');
+  });
+
+  it('shows richer session metadata and active transcript preview', () => {
+    const fixture = createFixture();
+    fixture.componentRef.setInput('activeSessionPreview', 'The latest scene beat');
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Hero');
+    expect(text).toContain('2 layers');
+    expect(text).toContain('The latest scene beat');
+  });
+
+  it('expands active layer names from the layer badge', () => {
+    const fixture = createFixture();
+
+    fixture.nativeElement.querySelector('.layer-badge').click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('World');
+    expect(fixture.nativeElement.textContent).toContain('Secrets');
+  });
+
+  it('opens the creator from the empty state', () => {
+    const fixture = createFixture([]);
+
+    fixture.nativeElement.querySelector('.empty button').click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Create your first RP session',
+    );
+    expect(fixture.nativeElement.querySelector('form.creator')).not.toBeNull();
   });
 
   it('emits create requests with character and layer selections', () => {
@@ -118,9 +163,9 @@ describe('RoleplaySessionPanelComponent', () => {
   });
 });
 
-function createFixture() {
+function createFixture(sessions: readonly RoleplaySessionSummary[] = SESSIONS) {
   const fixture = TestBed.createComponent(RoleplaySessionPanelComponent);
-  fixture.componentRef.setInput('sessions', SESSIONS);
+  fixture.componentRef.setInput('sessions', sessions);
   fixture.componentRef.setInput('characters', CHARACTERS);
   fixture.componentRef.setInput('layers', LAYERS);
   fixture.componentRef.setInput('activeSessionId', 'active');
@@ -151,11 +196,11 @@ function session(input: {
     agentId: 'agent-a',
     status: input.archived ? 'archived' : 'idle',
     displayName: input.id,
-    characterId: undefined,
-    characterName: undefined,
-    activeLayerIds: [],
-    activeLayerCount: 0,
-    lastMessagePreview: undefined,
+    characterId: 'hero',
+    characterName: 'Hero',
+    activeLayerIds: ['world', 'secrets'],
+    activeLayerCount: 2,
+    lastMessagePreview: 'Stored preview',
     archived: input.archived,
     createdAt: input.updatedAt,
     updatedAt: input.updatedAt,

@@ -53,10 +53,17 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
 
       <ul>
         @for (session of visibleSessions(); track session.sessionId) {
-          <li [class.active]="session.sessionId === activeSessionId()">
-            <div class="summary">
+          <li
+            [class.active]="session.sessionId === activeSessionId()"
+            [class.created]="session.sessionId === highlightedSessionId()"
+          >
+            <div class="card-top">
+              <span class="avatar" aria-hidden="true">{{
+                characterInitials(session)
+              }}</span>
               <button
                 type="button"
+                class="session-main"
                 rvTooltip="Open this roleplay session"
                 rvTooltipPlacement="right"
                 (click)="sessionSelect.emit(session.sessionId)"
@@ -64,14 +71,32 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
                 <span class="name">{{
                   session.displayName || session.sessionId
                 }}</span>
-                <span class="meta">{{
-                  session.characterName || 'No character'
-                }}</span>
+                <span class="meta">
+                  {{ session.characterName || 'No character' }}
+                  <span aria-hidden="true">/</span>
+                  {{ relativeTimestamp(session) }}
+                </span>
               </button>
-              <span class="count">{{ session.activeLayerCount }}</span>
+              <button
+                type="button"
+                class="layer-badge"
+                [attr.aria-expanded]="expandedLayerSessionId() === session.sessionId"
+                rvTooltip="Show active lore layers for this session"
+                rvTooltipPlacement="left"
+                (click)="toggleLayerDetails(session.sessionId)"
+              >
+                {{ layerSummary(session) }}
+              </button>
             </div>
-            @if (session.lastMessagePreview) {
-              <p class="preview">{{ session.lastMessagePreview }}</p>
+            <p class="preview">{{ previewFor(session) }}</p>
+            @if (expandedLayerSessionId() === session.sessionId) {
+              <div class="layer-details">
+                @for (layer of sessionLayerNames(session); track layer) {
+                  <span>{{ layer }}</span>
+                } @empty {
+                  <span>No active lore layers.</span>
+                }
+              </div>
             }
             <div class="actions">
               @if (renamingId() === session.sessionId) {
@@ -129,7 +154,18 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
             </div>
           </li>
         } @empty {
-          <li class="empty">No sessions.</li>
+          <li class="empty">
+            <strong>Create your first RP session</strong>
+            <span>Pick a character, choose lore layers, and start a scene.</span>
+            <button
+              type="button"
+              rvTooltip="Open the guided session creator"
+              rvTooltipPlacement="top"
+              (click)="startCreate()"
+            >
+              New Session
+            </button>
+          </li>
         }
       </ul>
 
@@ -277,17 +313,34 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
       }
 
       li.active {
-        outline: 2px solid currentColor;
+        border-color: var(--rv-color-accent, #3b82f6);
+        box-shadow: 0 0 0 1px var(--rv-color-accent, #3b82f6);
       }
 
-      .summary {
+      li.created {
+        animation: created-session 1800ms ease-out;
+      }
+
+      .card-top {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: 2rem minmax(0, 1fr) auto;
         align-items: center;
         gap: 0.45rem;
       }
 
-      .summary button {
+      .avatar {
+        display: inline-grid;
+        place-items: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 999px;
+        background: var(--rv-color-surface-alt, #f6f7f9);
+        color: var(--rv-color-text-primary, #1b1f24);
+        font-size: var(--rv-font-size-xs, 0.75rem);
+        font-weight: 700;
+      }
+
+      .session-main {
         min-width: 0;
         display: grid;
         gap: 0.1rem;
@@ -296,6 +349,10 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
         background: transparent;
         text-align: left;
         cursor: pointer;
+      }
+
+      .session-main:hover .name {
+        color: var(--rv-color-accent, #0969da);
       }
 
       .name {
@@ -307,21 +364,50 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
 
       .meta,
       .preview,
+      .layer-details,
       .state {
         color: var(--rv-color-text-secondary, #48515d);
         font-size: var(--rv-font-size-sm, 0.8125rem);
+      }
+
+      .preview {
+        display: -webkit-box;
+        line-height: 1.35;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
       }
 
       .error {
         color: var(--rv-color-danger, #cf222e);
       }
 
-      .count {
-        min-width: 1.5rem;
+      .layer-badge {
+        min-height: 1.5rem;
+        max-width: 7rem;
+        overflow: hidden;
+        padding: 0.1rem 0.45rem;
         text-align: center;
         border-radius: 999px;
+        border: 1px solid var(--rv-color-border, #d7dbe0);
         background: var(--rv-color-surface-alt, #f6f7f9);
+        color: var(--rv-color-text-secondary, #48515d);
         font-size: var(--rv-font-size-xs, 0.75rem);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .layer-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+      }
+
+      .layer-details span {
+        border: 1px solid var(--rv-color-border, #d7dbe0);
+        border-radius: 999px;
+        padding: 0.1rem 0.4rem;
       }
 
       .actions {
@@ -335,7 +421,16 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
       }
 
       .empty {
+        align-items: center;
         color: var(--rv-color-text-muted, #7a828d);
+        gap: 0.5rem;
+        justify-items: center;
+        padding: 1rem;
+        text-align: center;
+      }
+
+      .empty strong {
+        color: var(--rv-color-text-primary, #1b1f24);
       }
 
       .creator {
@@ -378,6 +473,19 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
       .creator-actions {
         justify-content: flex-end;
       }
+
+      @keyframes created-session {
+        0% {
+          background: color-mix(
+            in srgb,
+            var(--rv-color-accent, #0969da) 18%,
+            var(--rv-color-surface, #fff)
+          );
+        }
+        100% {
+          background: var(--rv-color-surface, #fff);
+        }
+      }
     `,
   ],
 })
@@ -386,6 +494,8 @@ export class RoleplaySessionPanelComponent {
   readonly characters = input.required<readonly RpCharacter[]>();
   readonly layers = input.required<readonly LoreLayer[]>();
   readonly activeSessionId = input<string | null>(null);
+  readonly activeSessionPreview = input<string | undefined>(undefined);
+  readonly highlightedSessionId = input<string | undefined>(undefined);
   readonly loading = input<boolean>(false);
   readonly errorMessage = input<string | undefined>(undefined);
 
@@ -409,6 +519,9 @@ export class RoleplaySessionPanelComponent {
   protected readonly draftName = signal('');
   protected readonly renamingId = signal<string | undefined>(undefined);
   protected readonly renameValue = signal('');
+  protected readonly expandedLayerSessionId = signal<string | undefined>(
+    undefined,
+  );
   protected readonly visibleSessions = computed(() => {
     const filter = this.filter();
     return [...this.sessions()]
@@ -445,6 +558,51 @@ export class RoleplaySessionPanelComponent {
 
   protected cancelCreate(): void {
     this.creating.set(false);
+  }
+
+  protected toggleLayerDetails(sessionId: string): void {
+    this.expandedLayerSessionId.update((current) =>
+      current === sessionId ? undefined : sessionId,
+    );
+  }
+
+  protected previewFor(session: RoleplaySessionSummary): string {
+    const activePreview =
+      session.sessionId === this.activeSessionId()
+        ? this.activeSessionPreview()
+        : undefined;
+    return activePreview ?? session.lastMessagePreview ?? 'No messages yet.';
+  }
+
+  protected characterInitials(session: RoleplaySessionSummary): string {
+    const label = session.characterName ?? session.displayName ?? session.sessionId;
+    const initials = label
+      .split(/\s+/)
+      .filter((part) => part.length > 0)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('');
+    return initials || '?';
+  }
+
+  protected relativeTimestamp(session: RoleplaySessionSummary): string {
+    return relativeTimestamp(session.updatedAt ?? session.createdAt);
+  }
+
+  protected layerSummary(session: RoleplaySessionSummary): string {
+    const count = session.activeLayerCount;
+    return `${count} ${count === 1 ? 'layer' : 'layers'}`;
+  }
+
+  protected sessionLayerNames(
+    session: RoleplaySessionSummary,
+  ): readonly string[] {
+    const layerNames = new Map(
+      this.layers().map((layer) => [layer.layerId, layer.name]),
+    );
+    return session.activeLayerIds.map(
+      (layerId) => layerNames.get(layerId) ?? layerId,
+    );
   }
 
   protected nextStep(): void {
@@ -512,4 +670,42 @@ export class RoleplaySessionPanelComponent {
   protected inputValue(event: Event): string {
     return (event.target as HTMLInputElement | HTMLSelectElement).value;
   }
+}
+
+function relativeTimestamp(value: string | undefined): string {
+  if (value === undefined) {
+    return 'No date';
+  }
+
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) {
+    return 'No date';
+  }
+
+  const elapsedMs = Date.now() - timestamp;
+  const elapsedMinutes = Math.max(0, Math.round(elapsedMs / 60_000));
+  if (elapsedMinutes < 1) {
+    return 'just now';
+  }
+  if (elapsedMinutes < 60) {
+    return `${elapsedMinutes}m ago`;
+  }
+
+  const elapsedHours = Math.round(elapsedMinutes / 60);
+  if (elapsedHours < 24) {
+    return `${elapsedHours}h ago`;
+  }
+  if (elapsedHours < 48) {
+    return 'yesterday';
+  }
+
+  const elapsedDays = Math.round(elapsedHours / 24);
+  if (elapsedDays < 7) {
+    return `${elapsedDays}d ago`;
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(timestamp));
 }

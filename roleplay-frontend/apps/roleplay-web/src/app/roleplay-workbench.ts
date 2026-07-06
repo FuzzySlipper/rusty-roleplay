@@ -1,4 +1,5 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import type { ChatMessage } from '@rusty-view/chat-domain';
 import { ChatStore } from '@rusty-view/chat-store';
 import type { StreamStatusKind } from '@rusty-view/chat-components';
 import {
@@ -94,6 +95,7 @@ export class RoleplayWorkbench {
   readonly contextUsage = signal<ContextUsageResponse | null>(null);
   readonly contextLoading = signal(false);
   readonly contextError = signal<string | undefined>(undefined);
+  readonly highlightedSessionId = signal<string | undefined>(undefined);
   private loreRequestId = 0;
   private lastContextRefreshKey: string | undefined;
 
@@ -117,6 +119,9 @@ export class RoleplayWorkbench {
     const session = this.chatStore.activeSession();
     return session?.title ?? session?.session_id ?? 'No session selected';
   });
+  readonly activeSessionPreview = computed(() =>
+    lastTranscriptPreview(this.chatStore.messages()),
+  );
   readonly connectionStatus = computed<StreamStatusKind>(() =>
     toStreamStatus(this.chatStore.connectionState().status),
   );
@@ -469,6 +474,7 @@ export class RoleplayWorkbench {
       await this.chatStore.refreshSessions();
       await this.chatStore.selectSession(session.sessionId);
       this.activeCharacterId.set(session.characterId);
+      this.highlightCreatedSession(session.sessionId);
       await this.loadChatLayers(session.sessionId);
       await this.loadLoreEntries();
       await this.loadContextUsage(session.sessionId);
@@ -661,6 +667,15 @@ export class RoleplayWorkbench {
       (candidate) => candidate.sessionId === sessionId,
     );
     this.activeCharacterId.set(session?.characterId);
+  }
+
+  private highlightCreatedSession(sessionId: string): void {
+    this.highlightedSessionId.set(sessionId);
+    window.setTimeout(() => {
+      if (this.highlightedSessionId() === sessionId) {
+        this.highlightedSessionId.set(undefined);
+      }
+    }, 2400);
   }
 
   private async loadProfileLayers(profileId: string): Promise<void> {
@@ -980,6 +995,23 @@ function latestAssistantTurnFinishedEventId(
     const event = events[index];
     if (event?.kind === 'assistant_turn_finished') {
       return event.event_id ?? event.eventId ?? String(index);
+    }
+  }
+  return undefined;
+}
+
+function lastTranscriptPreview(
+  messages: readonly ChatMessage[],
+): string | undefined {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    const content = message?.blocks
+      .map((block) => block.content.trim())
+      .filter((block) => block.length > 0)
+      .join(' ')
+      .trim();
+    if (content !== undefined && content.length > 0) {
+      return content.length > 160 ? `${content.slice(0, 157)}...` : content;
     }
   }
   return undefined;
