@@ -59,7 +59,8 @@ export type ServingOrigin = Pick<Location, 'protocol' | 'hostname' | 'search'>;
  *   3. The serving host, on the default port — the view loaded from
  *      `http://den-k8:4200` talks to `http://den-k8:9347` (live chat) and
  *      `http://den-k8:8790` (lorekeep). For disposable testing, pass
- *      `?api=http://den-k8:9348` to target the Rusty Crew debug service.
+ *      `?api=http://den-k8:9348` or `?api=den-k8:9348` to target the
+ *      Rusty Crew debug service.
  */
 export function resolveBackendConfigFrom(
   origin: ServingOrigin,
@@ -77,7 +78,8 @@ export function resolveBackendConfigFrom(
   ): string => {
     const fromQuery = params.get(queryKey)?.trim();
     const queryValue = fromQuery ? fromQuery : undefined;
-    return queryValue ?? configValue ?? derive(port);
+    const value = queryValue ?? configValue;
+    return value === undefined ? derive(port) : normalizeBaseUrl(value, origin);
   };
 
   return {
@@ -101,6 +103,17 @@ export function resolveBackendConfig(): BackendConfig {
     window.location,
     window.__RUSTY_ROLEPLAY_CONFIG__,
   );
+}
+
+function normalizeBaseUrl(value: string, origin: ServingOrigin): string {
+  const trimmed = value.trim();
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('//')) {
+    return `${origin.protocol}${trimmed}`;
+  }
+  return `${origin.protocol}//${trimmed}`;
 }
 
 /**

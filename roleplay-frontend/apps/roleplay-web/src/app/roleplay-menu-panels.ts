@@ -17,8 +17,10 @@ import { RpSceneControlsComponent } from '@rusty-roleplay/rp-scene-controls';
 
 import { ContextBreakdownComponent } from './context/context-breakdown';
 import { NarratorConfigPanelComponent } from './narrator-config/narrator-config-panel';
+import { PlayerPersonaManagerComponent } from './persona-management/player-persona-manager';
 import { RoleplaySessionPanelComponent } from './session-management/roleplay-session-panel';
 import { RoleplayWorkbench } from './roleplay-workbench';
+import { RoleplayTextStylePanelComponent } from './transcript-presentation/roleplay-text-style-panel';
 
 const panelStyles = `
   :host {
@@ -65,8 +67,15 @@ const panelStyles = `
       @if (workbench.sessionError(); as error) {
         <p class="panel-error">{{ error }}</p>
       }
+      @if (workbench.revisionError(); as error) {
+        <p class="panel-error">{{ error }}</p>
+      }
+      @if (workbench.revisionLoading()) {
+        <p class="panel-state">Updating message alternatives...</p>
+      }
       <app-roleplay-session-panel
         [sessions]="workbench.roleplaySessions()"
+        [personas]="workbench.playerPersonas()"
         [characters]="workbench.characters()"
         [layers]="workbench.profileLayers()"
         [activeSessionId]="workbench.chatStore.activeSessionId()"
@@ -87,6 +96,32 @@ const panelStyles = `
   styles: [panelStyles],
 })
 export class RoleplaySessionsMenuPanelComponent {
+  protected readonly workbench = inject(RoleplayWorkbench);
+}
+
+@Component({
+  selector: 'app-roleplay-personas-menu-panel',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [PlayerPersonaManagerComponent],
+  template: `
+    @if (workbench.activeProfile(); as profile) {
+      <app-player-persona-manager
+        [personas]="workbench.playerPersonas()"
+        [activeId]="workbench.activePlayerPersonaId()"
+        [loading]="workbench.playerPersonasLoading()"
+        [errorMessage]="workbench.playerPersonasError()"
+        (personaActivate)="workbench.activatePlayerPersona($event)"
+        (personaCreate)="workbench.createPlayerPersona(profile.id, $event)"
+        (personaUpdate)="workbench.updatePlayerPersona(profile.id, $event)"
+        (personaArchive)="workbench.archivePlayerPersona(profile.id, $event)"
+      />
+    } @else {
+      <p class="panel-state">Select a profile first.</p>
+    }
+  `,
+  styles: [panelStyles],
+})
+export class RoleplayPersonasMenuPanelComponent {
   protected readonly workbench = inject(RoleplayWorkbench);
 }
 
@@ -113,6 +148,26 @@ export class RoleplaySessionsMenuPanelComponent {
   styles: [panelStyles],
 })
 export class RoleplayCharactersMenuPanelComponent {
+  protected readonly workbench = inject(RoleplayWorkbench);
+}
+
+@Component({
+  selector: 'app-roleplay-text-style-menu-panel',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RoleplayTextStylePanelComponent],
+  template: `
+    @if (workbench.activeProfile()) {
+      <app-roleplay-text-style-panel
+        [settings]="workbench.textStyleSettings()"
+        (settingsChange)="workbench.updateTextStyle($event)"
+      />
+    } @else {
+      <p class="panel-state">Select a profile first.</p>
+    }
+  `,
+  styles: [panelStyles],
+})
+export class RoleplayTextStyleMenuPanelComponent {
   protected readonly workbench = inject(RoleplayWorkbench);
 }
 

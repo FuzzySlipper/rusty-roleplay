@@ -10,6 +10,7 @@ import { TooltipDirective } from '@rusty-view/chat-components';
 import type { RpCharacter } from '@rusty-roleplay/rp-character-menu';
 import type { LoreLayer } from '@rusty-roleplay/rp-lorebook';
 
+import type { PlayerPersona } from '../persona-management/player-persona.model';
 import type {
   CreateRoleplaySessionRequest,
   RoleplaySessionSummary,
@@ -17,7 +18,7 @@ import type {
 } from './roleplay-session.model';
 
 type SessionFilter = 'active' | 'archived' | 'all';
-type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
+type CreateStep = 'persona' | 'character' | 'layers' | 'name' | 'confirm';
 
 @Component({
   selector: 'app-roleplay-session-panel',
@@ -71,7 +72,9 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
                 <span class="name">{{
                   session.displayName || session.sessionId
                 }}</span>
-                <span class="meta">
+              <span class="meta">
+                  {{ session.playerPersonaName || 'No persona' }}
+                  <span aria-hidden="true">as</span>
                   {{ session.characterName || 'No character' }}
                   <span aria-hidden="true">/</span>
                   {{ relativeTimestamp(session) }}
@@ -186,6 +189,20 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
           </div>
 
           @switch (step()) {
+            @case ('persona') {
+              <label>
+                Player persona
+                <select
+                  [value]="draftPersonaId()"
+                  (change)="draftPersonaId.set(inputValue($event))"
+                >
+                  <option value="">None</option>
+                  @for (persona of personas(); track persona.id) {
+                    <option [value]="persona.id">{{ persona.name }}</option>
+                  }
+                </select>
+              </label>
+            }
             @case ('character') {
               <label>
                 Character
@@ -230,6 +247,7 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
             @case ('confirm') {
               <div class="confirm">
                 <strong>{{ draftName().trim() || 'Untitled session' }}</strong>
+                <span>{{ selectedPersonaName() || 'No player persona' }}</span>
                 <span>{{ selectedCharacterName() || 'No character' }}</span>
                 <span>{{ draftLayerIds().length }} layers</span>
               </div>
@@ -491,6 +509,7 @@ type CreateStep = 'character' | 'layers' | 'name' | 'confirm';
 })
 export class RoleplaySessionPanelComponent {
   readonly sessions = input.required<readonly RoleplaySessionSummary[]>();
+  readonly personas = input.required<readonly PlayerPersona[]>();
   readonly characters = input.required<readonly RpCharacter[]>();
   readonly layers = input.required<readonly LoreLayer[]>();
   readonly activeSessionId = input<string | null>(null);
@@ -506,6 +525,7 @@ export class RoleplaySessionPanelComponent {
   readonly sessionRestore = output<string>();
 
   protected readonly createSteps: readonly CreateStep[] = [
+    'persona',
     'character',
     'layers',
     'name',
@@ -513,7 +533,8 @@ export class RoleplaySessionPanelComponent {
   ];
   protected readonly filter = signal<SessionFilter>('active');
   protected readonly creating = signal(false);
-  protected readonly step = signal<CreateStep>('character');
+  protected readonly step = signal<CreateStep>('persona');
+  protected readonly draftPersonaId = signal('');
   protected readonly draftCharacterId = signal('');
   protected readonly draftLayerIds = signal<readonly string[]>([]);
   protected readonly draftName = signal('');
@@ -543,6 +564,10 @@ export class RoleplaySessionPanelComponent {
     const id = this.draftCharacterId();
     return this.characters().find((character) => character.id === id)?.name;
   });
+  protected readonly selectedPersonaName = computed(() => {
+    const id = this.draftPersonaId();
+    return this.personas().find((persona) => persona.id === id)?.name;
+  });
 
   protected setFilter(event: Event): void {
     this.filter.set((event.target as HTMLSelectElement).value as SessionFilter);
@@ -550,7 +575,8 @@ export class RoleplaySessionPanelComponent {
 
   protected startCreate(): void {
     this.creating.set(true);
-    this.step.set('character');
+    this.step.set('persona');
+    this.draftPersonaId.set('');
     this.draftCharacterId.set('');
     this.draftLayerIds.set([]);
     this.draftName.set('');
@@ -575,7 +601,11 @@ export class RoleplaySessionPanelComponent {
   }
 
   protected characterInitials(session: RoleplaySessionSummary): string {
-    const label = session.characterName ?? session.displayName ?? session.sessionId;
+    const label =
+      session.playerPersonaName ??
+      session.characterName ??
+      session.displayName ??
+      session.sessionId;
     const initials = label
       .split(/\s+/)
       .filter((part) => part.length > 0)
@@ -620,9 +650,11 @@ export class RoleplaySessionPanelComponent {
       return;
     }
     const characterId = this.draftCharacterId() || undefined;
+    const playerPersonaId = this.draftPersonaId() || undefined;
     this.sessionCreate.emit({
       displayName,
       characterId,
+      playerPersonaId,
       activeLayerIds: this.draftLayerIds(),
     });
     this.cancelCreate();
@@ -656,6 +688,8 @@ export class RoleplaySessionPanelComponent {
 
   protected createStepTooltip(step: CreateStep): string {
     switch (step) {
+      case 'persona':
+        return 'Choose the player identity used for your messages';
       case 'character':
         return 'Choose the character focus for this session';
       case 'layers':

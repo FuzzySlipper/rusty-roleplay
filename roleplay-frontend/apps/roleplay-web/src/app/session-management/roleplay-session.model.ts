@@ -6,6 +6,9 @@ export interface RoleplaySessionSummary {
   readonly displayName: string | undefined;
   readonly characterId: string | undefined;
   readonly characterName: string | undefined;
+  readonly playerPersonaId: string | undefined;
+  readonly playerPersonaName: string | undefined;
+  readonly playerPersonaAvatarUrl: string | undefined;
   readonly activeLayerIds: readonly string[];
   readonly activeLayerCount: number;
   readonly lastMessagePreview: string | undefined;
@@ -17,6 +20,7 @@ export interface RoleplaySessionSummary {
 export interface CreateRoleplaySessionRequest {
   readonly displayName: string;
   readonly characterId: string | undefined;
+  readonly playerPersonaId: string | undefined;
   readonly activeLayerIds: readonly string[];
 }
 
@@ -24,5 +28,6 @@ export interface UpdateRoleplaySessionRequest {
   readonly sessionId: string;
   readonly displayName?: string | undefined;
   readonly characterId?: string | undefined;
+  readonly playerPersonaId?: string | undefined;
   readonly activeLayerIds?: readonly string[] | undefined;
 }

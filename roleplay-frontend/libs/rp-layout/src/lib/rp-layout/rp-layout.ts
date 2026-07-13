@@ -6,6 +6,7 @@ import {
   output,
 } from '@angular/core';
 import type { ChatMessage } from '@rusty-view/chat-domain';
+import type { MessageAlternateSlot } from '@rusty-view/chat-domain';
 import {
   MessageInputComponent,
   StreamStatusComponent,
@@ -14,6 +15,10 @@ import {
 } from '@rusty-view/chat-components';
 import { TopMenuComponent, TopMenuController } from '@rusty-view/chat-shell';
 import { TranscriptViewportComponent } from '@rusty-view/transcript-renderer';
+import type {
+  MessageRevisionAction,
+  MessageRevisionCapabilities,
+} from '@rusty-view/transcript-renderer';
 import {
   NarratorPhaseIndicatorComponent,
   type NarratorPhase,
@@ -66,6 +71,9 @@ import {
           class="transcript"
           [messages]="messages()"
           [searchEnabled]="searchEnabled()"
+          [alternateSlots]="alternateSlots()"
+          [revisionCapabilities]="revisionCapabilities()"
+          (revisionRequested)="revisionRequested.emit($event)"
         />
         <div class="phase-bar">
           <rp-narrator-phase-indicator [phase]="phase()" />
@@ -159,9 +167,12 @@ export class RpLayoutComponent {
   readonly sceneLabel = input<string>('');
   readonly sendDisabled = input<boolean>(false);
   readonly searchEnabled = input<boolean>(false);
+  readonly alternateSlots = input<readonly MessageAlternateSlot[]>([]);
+  readonly revisionCapabilities = input<MessageRevisionCapabilities>({});
 
   readonly send = output<string>();
   readonly reconnect = output<void>();
+  readonly revisionRequested = output<MessageRevisionAction>();
 
   protected openSessionsPanel(): void {
     this.topMenu.openPanel('rp-sessions');

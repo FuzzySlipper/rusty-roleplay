@@ -28,16 +28,24 @@ import { BACKEND_CONFIG, type BackendConfig } from './backend-config';
 import { CHAT_BACKEND_PROVIDERS } from './chat-backend-providers';
 import { ContextApi } from './context/context-api';
 import { NarratorConfigApi } from './narrator-config/narrator-config-api';
+import { PlayerPersonaApi } from './persona-management/player-persona-api';
+import { PromptStackApi } from './prompt-stack/prompt-stack-api';
+import { PromptStackPanelComponent } from './prompt-stack/prompt-stack-panel';
 import { ProfileRegistryApi } from './profile-registry/profile-registry-api';
 import {
   RoleplayCharactersMenuPanelComponent,
   RoleplayLoreMenuPanelComponent,
   RoleplayMechanicsMenuPanelComponent,
   RoleplayNarratorMenuPanelComponent,
+  RoleplayPersonasMenuPanelComponent,
   RoleplaySessionsMenuPanelComponent,
+  RoleplayTextStyleMenuPanelComponent,
 } from './roleplay-menu-panels';
 import { RoleplayWorkbench } from './roleplay-workbench';
+import { RoleplayBranchingApi } from './session-management/roleplay-branching-api';
 import { RoleplaySessionApi } from './session-management/roleplay-session-api';
+import { StImportPanelComponent } from './st-import/st-import-panel';
+import { StPacketImportApi } from './st-import/st-packet-import-api';
 
 const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
   {
@@ -49,33 +57,64 @@ const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
     component: RoleplaySessionsMenuPanelComponent,
   },
   {
+    id: 'rp-personas',
+    label: 'Personas',
+    title: 'Player Personas',
+    order: 12,
+    width: 'wide',
+    component: RoleplayPersonasMenuPanelComponent,
+  },
+  {
     id: 'rp-characters',
     label: 'Characters',
     title: 'Characters',
-    order: 12,
+    order: 13,
     width: 'wide',
     component: RoleplayCharactersMenuPanelComponent,
+  },
+  {
+    id: 'rp-text-style',
+    label: 'Text Style',
+    title: 'Roleplay Text Style',
+    order: 14,
+    component: RoleplayTextStyleMenuPanelComponent,
   },
   {
     id: 'rp-lore',
     label: 'Lore',
     title: 'Lore',
-    order: 13,
+    order: 15,
     width: 'wide',
     component: RoleplayLoreMenuPanelComponent,
+  },
+  {
+    id: 'rp-st-import',
+    label: 'ST Import',
+    title: 'SillyTavern Import',
+    order: 16,
+    width: 'wide',
+    component: StImportPanelComponent,
+  },
+  {
+    id: 'rp-prompt-stack',
+    label: 'Prompt',
+    title: 'Prompt Stack',
+    order: 17,
+    width: 'wide',
+    component: PromptStackPanelComponent,
   },
   {
     id: 'rp-narrator',
     label: 'Narrator',
     title: 'Narrator Config',
-    order: 14,
+    order: 18,
     component: RoleplayNarratorMenuPanelComponent,
   },
   {
     id: 'rp-mechanics',
     label: 'Mechanics',
     title: 'Scene Mechanics',
-    order: 15,
+    order: 19,
     component: RoleplayMechanicsMenuPanelComponent,
   },
 ];
@@ -93,12 +132,28 @@ const ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS: readonly Omit<
     order: 11,
   },
   {
+    id: 'rp-personas',
+    label: 'Personas',
+    tooltip: 'Manage player-side identities and bind one to the session',
+    kind: 'panel',
+    panelId: 'rp-personas',
+    order: 12,
+  },
+  {
     id: 'rp-characters',
     label: 'Characters',
     tooltip: 'Manage scene characters and activate one for the current session',
     kind: 'panel',
     panelId: 'rp-characters',
-    order: 12,
+    order: 13,
+  },
+  {
+    id: 'rp-text-style',
+    label: 'Text Style',
+    tooltip: 'Tune dialogue, narration, emphasis, and OOC transcript colors',
+    kind: 'panel',
+    panelId: 'rp-text-style',
+    order: 14,
   },
   {
     id: 'rp-lore',
@@ -106,7 +161,24 @@ const ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS: readonly Omit<
     tooltip: 'Browse lore entries and choose active lore layers',
     kind: 'panel',
     panelId: 'rp-lore',
-    order: 13,
+    order: 15,
+  },
+  {
+    id: 'rp-st-import',
+    label: 'ST Import',
+    tooltip:
+      'Import ST characters, personas, lorebooks, transcripts, and swipes without replaying legacy prompt ceremony',
+    kind: 'panel',
+    panelId: 'rp-st-import',
+    order: 16,
+  },
+  {
+    id: 'rp-prompt-stack',
+    label: 'Prompt',
+    tooltip: 'Inspect the compiled prompt sections and source trace',
+    kind: 'panel',
+    panelId: 'rp-prompt-stack',
+    order: 17,
   },
   {
     id: 'rp-narrator',
@@ -114,7 +186,7 @@ const ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS: readonly Omit<
     tooltip: 'Tune the editable narrator style prompt and review pass',
     kind: 'panel',
     panelId: 'rp-narrator',
-    order: 14,
+    order: 18,
   },
   {
     id: 'rp-mechanics',
@@ -122,7 +194,7 @@ const ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS: readonly Omit<
     tooltip: 'Open out-of-character diagnostics and proposed fixes',
     kind: 'panel',
     panelId: 'rp-mechanics',
-    order: 15,
+    order: 19,
   },
 ];
 
@@ -189,7 +261,11 @@ export const appConfig: ApplicationConfig = {
     CharacterApi,
     ContextApi,
     NarratorConfigApi,
+    PlayerPersonaApi,
+    PromptStackApi,
     ProfileRegistryApi,
+    RoleplayBranchingApi,
     RoleplaySessionApi,
+    StPacketImportApi,
   ],
 };

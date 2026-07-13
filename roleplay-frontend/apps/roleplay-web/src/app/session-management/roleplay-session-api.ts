@@ -43,6 +43,7 @@ export class RoleplaySessionApi {
           profileId,
           displayName: request.displayName,
           characterId: request.characterId,
+          playerPersonaId: request.playerPersonaId,
           activeLayerIds: request.activeLayerIds,
         }),
       },
@@ -59,6 +60,9 @@ export class RoleplaySessionApi {
     }
     if (request.characterId !== undefined) {
       body['characterId'] = request.characterId;
+    }
+    if (request.playerPersonaId !== undefined) {
+      body['playerPersonaId'] = request.playerPersonaId;
     }
     if (request.activeLayerIds !== undefined) {
       body['activeLayerIds'] = request.activeLayerIds;
@@ -133,6 +137,15 @@ export function mapRoleplaySession(record: ApiRecord): RoleplaySessionSummary {
     characterName:
       readString(record, 'character_name') ??
       readString(record, 'characterName'),
+    playerPersonaId:
+      readString(record, 'player_persona_id') ??
+      readString(record, 'playerPersonaId'),
+    playerPersonaName:
+      readString(record, 'player_persona_name') ??
+      readString(record, 'playerPersonaName'),
+    playerPersonaAvatarUrl:
+      readString(record, 'player_persona_avatar_url') ??
+      readString(record, 'playerPersonaAvatarUrl'),
     activeLayerIds: readStringArray(
       record['active_layer_ids'] ?? record['activeLayerIds'],
     ),

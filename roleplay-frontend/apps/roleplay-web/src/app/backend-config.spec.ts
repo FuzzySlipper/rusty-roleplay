@@ -35,6 +35,15 @@ describe('resolveBackendConfigFrom', () => {
     expect(config.lorekeepBaseUrl).toBe('http://lore:2222');
   });
 
+  it('normalizes host-port query params into full URLs', () => {
+    const config = resolveBackendConfigFrom(
+      origin('den-k8', '?api=192.168.1.22:9348&lore=192.168.1.22:8790'),
+      undefined,
+    );
+    expect(config.rustyCrewBaseUrl).toBe('http://192.168.1.22:9348');
+    expect(config.lorekeepBaseUrl).toBe('http://192.168.1.22:8790');
+  });
+
   it('uses injected window config when no query param is present', () => {
     const config = resolveBackendConfigFrom(origin('den-k8'), {
       rustyCrewBaseUrl: 'http://crew.example:9000',
@@ -54,6 +63,15 @@ describe('resolveBackendConfigFrom', () => {
       },
     );
     expect(config.rustyCrewBaseUrl).toBe('http://q:1');
+  });
+
+  it('normalizes host-port window config with the serving protocol', () => {
+    const config = resolveBackendConfigFrom(origin('den-k8', '', 'https:'), {
+      rustyCrewBaseUrl: 'crew.example:9000',
+      lorekeepBaseUrl: '//lore.example:8790',
+    });
+    expect(config.rustyCrewBaseUrl).toBe('https://crew.example:9000');
+    expect(config.lorekeepBaseUrl).toBe('https://lore.example:8790');
   });
 
   it('ignores a blank query param and falls through', () => {

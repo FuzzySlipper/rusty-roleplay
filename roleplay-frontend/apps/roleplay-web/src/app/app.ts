@@ -19,15 +19,18 @@ import { RoleplayWorkbench } from './roleplay-workbench';
   template: `
     @if (workbench.activeProfile(); as profile) {
       <rp-layout
-        [messages]="workbench.chatStore.messages()"
+        [messages]="workbench.transcriptMessages()"
         [profileName]="profile.name"
         [connectionStatus]="workbench.connectionStatus()"
         [phase]="workbench.phase()"
         [sceneLabel]="workbench.sceneLabel()"
         [sendDisabled]="workbench.sendDisabled()"
         [searchEnabled]="workbench.transcriptSearchEnabled()"
+        [alternateSlots]="workbench.alternateSlots()"
+        [revisionCapabilities]="workbench.revisionCapabilities()"
         (send)="workbench.send($event)"
         (reconnect)="workbench.reconnect()"
+        (revisionRequested)="workbench.handleRevisionAction($event)"
       />
     } @else {
       <rp-profile-selector

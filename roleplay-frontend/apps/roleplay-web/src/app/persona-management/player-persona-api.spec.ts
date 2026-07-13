@@ -12,54 +12,44 @@ vi.mock('@rusty-view/chat-store', () => ({
 }));
 
 import { BACKEND_CONFIG } from '../backend-config';
-import { mapRoleplaySession, RoleplaySessionApi } from './roleplay-session-api';
+import { mapPlayerPersona, PlayerPersonaApi } from './player-persona-api';
 
-describe('RoleplaySessionApi', () => {
+describe('PlayerPersonaApi', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('maps roleplay session metadata from snake_case records', () => {
+  it('maps persona records from snake_case payloads', () => {
     expect(
-      mapRoleplaySession({
-        session_id: 'session-a',
+      mapPlayerPersona({
+        persona_id: 'persona-a',
         profile_id: 'profile-a',
-        agent_id: 'agent-a',
-        status: 'idle',
-        display_name: 'The Gate',
-        character_id: 'hero',
-        character_name: 'Hero',
-        player_persona_id: 'persona-a',
-        player_persona_name: 'Jorge',
-        player_persona_avatar_url: 'https://example.test/jorge.png',
-        active_layer_ids: ['world'],
-        active_layer_count: 1,
-        last_message_preview: 'Hello',
-        archived: false,
+        display_name: 'Jorge',
+        avatar_url: 'https://example.test/jorge.png',
+        avatar_asset_ref: 'asset-a',
+        description: 'A player character',
+        notes: 'Private notes',
+        tags: ['mage'],
+        status: 'active',
         created_at: '2026-07-04T00:00:00Z',
         updated_at: '2026-07-04T00:00:01Z',
       }),
     ).toEqual({
-      sessionId: 'session-a',
+      id: 'persona-a',
       profileId: 'profile-a',
-      agentId: 'agent-a',
-      status: 'idle',
-      displayName: 'The Gate',
-      characterId: 'hero',
-      characterName: 'Hero',
-      playerPersonaId: 'persona-a',
-      playerPersonaName: 'Jorge',
-      playerPersonaAvatarUrl: 'https://example.test/jorge.png',
-      activeLayerIds: ['world'],
-      activeLayerCount: 1,
-      lastMessagePreview: 'Hello',
-      archived: false,
+      name: 'Jorge',
+      avatarUrl: 'https://example.test/jorge.png',
+      avatarAssetRef: 'asset-a',
+      description: 'A player character',
+      notes: 'Private notes',
+      tags: ['mage'],
+      status: 'active',
       createdAt: '2026-07-04T00:00:00Z',
       updatedAt: '2026-07-04T00:00:01Z',
     });
   });
 
-  it('creates roleplay sessions with RP metadata and auth headers', async () => {
+  it('creates personas with auth headers', async () => {
     const fetchMock = vi.fn(
       async (input: RequestInfo | URL, init?: RequestInit) => {
         void input;
@@ -67,37 +57,38 @@ describe('RoleplaySessionApi', () => {
         return jsonResponse({
           ok: true,
           data: {
-            session: {
-              session_id: 'session-a',
+            persona: {
+              persona_id: 'persona-a',
               profile_id: 'profile-a',
-              display_name: 'The Gate',
+              display_name: 'Jorge',
             },
           },
-          meta: { request_id: 'req', schema_version: 1 },
         });
       },
     );
     vi.stubGlobal('fetch', fetchMock);
     const api = createApi();
 
-    const session = await api.createSession('profile-a', {
-      displayName: 'The Gate',
-      characterId: 'hero',
-      playerPersonaId: 'persona-a',
-      activeLayerIds: ['world'],
+    const persona = await api.createPersona('profile-a', {
+      name: 'Jorge',
+      avatarUrl: 'data:image/png;base64,abc',
+      description: 'A player character',
+      notes: 'Private notes',
+      tags: ['mage'],
     });
 
-    expect(session.sessionId).toBe('session-a');
+    expect(persona.id).toBe('persona-a');
     expect(fetchMock).toHaveBeenCalledWith(
-      'http://crew.test/v1/admin/roleplay/sessions',
+      'http://crew.test/v1/admin/roleplay/profiles/profile-a/personas',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
-          profileId: 'profile-a',
-          displayName: 'The Gate',
-          characterId: 'hero',
-          playerPersonaId: 'persona-a',
-          activeLayerIds: ['world'],
+          name: 'Jorge',
+          displayName: 'Jorge',
+          description: 'A player character',
+          notes: 'Private notes',
+          tags: ['mage'],
+          avatarUrl: 'data:image/png;base64,abc',
         }),
         headers: expect.any(Headers),
       }),
@@ -110,10 +101,10 @@ describe('RoleplaySessionApi', () => {
   });
 });
 
-function createApi(): RoleplaySessionApi {
+function createApi(): PlayerPersonaApi {
   TestBed.configureTestingModule({
     providers: [
-      RoleplaySessionApi,
+      PlayerPersonaApi,
       {
         provide: BACKEND_CONFIG,
         useValue: {
@@ -124,7 +115,7 @@ function createApi(): RoleplaySessionApi {
       },
     ],
   });
-  return TestBed.inject(RoleplaySessionApi);
+  return TestBed.inject(PlayerPersonaApi);
 }
 
 function jsonResponse(body: unknown, status = 200): Response {

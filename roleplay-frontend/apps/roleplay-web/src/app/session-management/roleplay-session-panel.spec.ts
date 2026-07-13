@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { RpCharacter } from '@rusty-roleplay/rp-character-menu';
 import type { LoreLayer } from '@rusty-roleplay/rp-lorebook';
 
+import type { PlayerPersona } from '../persona-management/player-persona.model';
 import type { RoleplaySessionSummary } from './roleplay-session.model';
 import { RoleplaySessionPanelComponent } from './roleplay-session-panel';
 
@@ -28,6 +29,22 @@ const CHARACTERS: readonly RpCharacter[] = [
     exampleMessages: [],
     tags: [],
     avatarUrl: undefined,
+    status: 'active',
+    createdAt: undefined,
+    updatedAt: undefined,
+  },
+];
+
+const PERSONAS: readonly PlayerPersona[] = [
+  {
+    id: 'persona-a',
+    profileId: 'profile-a',
+    name: 'Jorge',
+    avatarUrl: undefined,
+    avatarAssetRef: undefined,
+    description: 'A test persona',
+    notes: '',
+    tags: [],
     status: 'active',
     createdAt: undefined,
     updatedAt: undefined,
@@ -77,6 +94,7 @@ describe('RoleplaySessionPanelComponent', () => {
 
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Hero');
+    expect(text).toContain('Jorge');
     expect(text).toContain('2 layers');
     expect(text).toContain('The latest scene beat');
   });
@@ -103,7 +121,7 @@ describe('RoleplaySessionPanelComponent', () => {
     expect(fixture.nativeElement.querySelector('form.creator')).not.toBeNull();
   });
 
-  it('emits create requests with character and layer selections', () => {
+  it('emits create requests with persona, character, and layer selections', () => {
     const fixture = createFixture();
     const emitted: unknown[] = [];
     fixture.componentInstance.sessionCreate.subscribe((event) =>
@@ -112,6 +130,8 @@ describe('RoleplaySessionPanelComponent', () => {
 
     fixture.nativeElement.querySelector('header button').click();
     fixture.detectChanges();
+    selectValue(fixture.nativeElement.querySelector('.creator select'), 'persona-a');
+    advance(fixture);
     selectValue(fixture.nativeElement.querySelector('.creator select'), 'hero');
     advance(fixture);
     const checkbox = fixture.nativeElement.querySelector(
@@ -134,6 +154,7 @@ describe('RoleplaySessionPanelComponent', () => {
       {
         displayName: 'New Session',
         characterId: 'hero',
+        playerPersonaId: 'persona-a',
         activeLayerIds: ['world'],
       },
     ]);
@@ -166,6 +187,7 @@ describe('RoleplaySessionPanelComponent', () => {
 function createFixture(sessions: readonly RoleplaySessionSummary[] = SESSIONS) {
   const fixture = TestBed.createComponent(RoleplaySessionPanelComponent);
   fixture.componentRef.setInput('sessions', sessions);
+  fixture.componentRef.setInput('personas', PERSONAS);
   fixture.componentRef.setInput('characters', CHARACTERS);
   fixture.componentRef.setInput('layers', LAYERS);
   fixture.componentRef.setInput('activeSessionId', 'active');
@@ -198,6 +220,9 @@ function session(input: {
     displayName: input.id,
     characterId: 'hero',
     characterName: 'Hero',
+    playerPersonaId: 'persona-a',
+    playerPersonaName: 'Jorge',
+    playerPersonaAvatarUrl: undefined,
     activeLayerIds: ['world', 'secrets'],
     activeLayerCount: 2,
     lastMessagePreview: 'Stored preview',

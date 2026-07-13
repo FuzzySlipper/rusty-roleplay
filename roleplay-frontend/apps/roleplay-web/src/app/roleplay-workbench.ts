@@ -1,7 +1,11 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
-import type { ChatMessage } from '@rusty-view/chat-domain';
+import type { ChatMessage, MessageAlternateSlot } from '@rusty-view/chat-domain';
 import { ChatStore } from '@rusty-view/chat-store';
 import type { StreamStatusKind } from '@rusty-view/chat-components';
+import type {
+  MessageRevisionAction,
+  MessageRevisionCapabilities,
+} from '@rusty-view/transcript-renderer';
 import {
   ProfileStore,
   type ProfileSelection,
@@ -40,13 +44,28 @@ import { DEMO_LOGS, DEMO_PROPOSALS } from './demo-data';
 import { deriveNarratorPhase } from './narrator-phase';
 import { NarratorConfigApi } from './narrator-config/narrator-config-api';
 import type { NarratorConfig } from './narrator-config/narrator-config.model';
+import { PlayerPersonaApi } from './persona-management/player-persona-api';
+import type {
+  PlayerPersona,
+  PlayerPersonaUpdateRequest,
+  PlayerPersonaWriteRequest,
+} from './persona-management/player-persona.model';
 import { ProfileRegistryApi } from './profile-registry/profile-registry-api';
+import { RoleplayBranchingApi } from './session-management/roleplay-branching-api';
 import { RoleplaySessionApi } from './session-management/roleplay-session-api';
 import type {
   CreateRoleplaySessionRequest,
   RoleplaySessionSummary,
   UpdateRoleplaySessionRequest,
 } from './session-management/roleplay-session.model';
+import type { StPacketImportResult } from './st-import/st-packet-import-api';
+import {
+  applyRoleplayTextStyle,
+  decorateRoleplayMessages,
+  loadRoleplayTextStyle,
+  saveRoleplayTextStyle,
+  type RoleplayTextStyleSettings,
+} from './transcript-presentation/roleplay-transcript-presentation';
 
 @Injectable()
 export class RoleplayWorkbench {
@@ -58,8 +77,10 @@ export class RoleplayWorkbench {
   private readonly characterApi = inject(CharacterApi);
   private readonly roleplaySessionApi = inject(RoleplaySessionApi);
   private readonly narratorConfigApi = inject(NarratorConfigApi);
+  private readonly playerPersonaApi = inject(PlayerPersonaApi);
   private readonly profileRegistryApi = inject(ProfileRegistryApi);
   private readonly contextApi = inject(ContextApi);
+  private readonly branchingApi = inject(RoleplayBranchingApi);
 
   readonly campaignId = 'eldoria';
   readonly characters = signal<readonly RpCharacter[]>([]);
@@ -74,6 +95,10 @@ export class RoleplayWorkbench {
   readonly logs = DEMO_LOGS;
 
   readonly activeCharacterId = signal<string | undefined>(undefined);
+  readonly activePlayerPersonaId = signal<string | undefined>(undefined);
+  readonly playerPersonas = signal<readonly PlayerPersona[]>([]);
+  readonly playerPersonasLoading = signal(false);
+  readonly playerPersonasError = signal<string | undefined>(undefined);
   readonly mood = signal<SceneMood>('tense');
   readonly mode = signal<RpMode>('roleplay');
   readonly selectError = signal<string | undefined>(undefined);
@@ -92,9 +117,20 @@ export class RoleplayWorkbench {
   readonly narratorConfigSaving = signal(false);
   readonly narratorConfigError = signal<string | undefined>(undefined);
   readonly transcriptSearchEnabled = signal(false);
+  readonly textStyleSettings = signal<RoleplayTextStyleSettings>(
+    loadRoleplayTextStyle('default'),
+  );
   readonly contextUsage = signal<ContextUsageResponse | null>(null);
   readonly contextLoading = signal(false);
   readonly contextError = signal<string | undefined>(undefined);
+  readonly alternateSlots = signal<readonly MessageAlternateSlot[]>([]);
+  readonly revisionLoading = signal(false);
+  readonly revisionError = signal<string | undefined>(undefined);
+  readonly revisionCapabilities = signal<MessageRevisionCapabilities>({
+    branch: true,
+    requestNextAlternative: true,
+    regenerate: true,
+  });
   readonly highlightedSessionId = signal<string | undefined>(undefined);
   private loreRequestId = 0;
   private lastContextRefreshKey: string | undefined;
@@ -121,6 +157,9 @@ export class RoleplayWorkbench {
   });
   readonly activeSessionPreview = computed(() =>
     lastTranscriptPreview(this.chatStore.messages()),
+  );
+  readonly transcriptMessages = computed(() =>
+    decorateRoleplayMessages(this.chatStore.messages()),
   );
   readonly connectionStatus = computed<StreamStatusKind>(() =>
     toStreamStatus(this.chatStore.connectionState().status),
@@ -181,6 +220,7 @@ export class RoleplayWorkbench {
         this.lastContextRefreshKey = refreshKey;
         queueMicrotask(() => {
           void this.loadContextUsage(sessionId);
+          void this.loadAlternates(sessionId);
         });
       }
     });
@@ -239,6 +279,9 @@ export class RoleplayWorkbench {
           : 'Unknown profile.',
     );
     if (result.ok) {
+      const settings = loadRoleplayTextStyle(selection.profileId);
+      this.textStyleSettings.set(settings);
+      applyRoleplayTextStyle(settings);
       void this.connectToProfile(selection.profileId);
     }
   }
@@ -255,6 +298,19 @@ export class RoleplayWorkbench {
 
   toggleTranscriptSearch(): void {
     this.transcriptSearchEnabled.update((enabled) => !enabled);
+  }
+
+  updateTextStyle(settings: RoleplayTextStyleSettings): void {
+    this.textStyleSettings.set(settings);
+    applyRoleplayTextStyle(settings);
+    const profileId = this.activeProfile()?.id;
+    if (profileId !== undefined) {
+      saveRoleplayTextStyle(profileId, settings);
+    }
+  }
+
+  handleRevisionAction(action: MessageRevisionAction): void {
+    void this.applyRevisionAction(action);
   }
 
   refreshContextUsage(): void {
@@ -315,8 +371,34 @@ export class RoleplayWorkbench {
     }
   }
 
+  activatePlayerPersona(personaId: string): void {
+    this.activePlayerPersonaId.set(personaId);
+    const sessionId = this.chatStore.activeSessionId();
+    if (sessionId !== null) {
+      void this.setSessionPlayerPersona(sessionId, personaId);
+    }
+  }
+
   createCharacter(profileId: string, request: CharacterWriteRequest): void {
     void this.createCharacterRecord(profileId, request);
+  }
+
+  createPlayerPersona(
+    profileId: string,
+    request: PlayerPersonaWriteRequest,
+  ): void {
+    void this.createPlayerPersonaRecord(profileId, request);
+  }
+
+  updatePlayerPersona(
+    profileId: string,
+    request: PlayerPersonaUpdateRequest,
+  ): void {
+    void this.updatePlayerPersonaRecord(profileId, request);
+  }
+
+  archivePlayerPersona(profileId: string, personaId: string): void {
+    void this.archivePlayerPersonaRecord(profileId, personaId);
   }
 
   updateCharacter(profileId: string, request: CharacterUpdateRequest): void {
@@ -373,11 +455,28 @@ export class RoleplayWorkbench {
     void this.saveNarratorConfigRecord(profileId, config);
   }
 
+  async refreshAfterStImport(result: StPacketImportResult): Promise<void> {
+    await Promise.all([
+      this.loadRoleplaySessions(result.profileId),
+      this.loadPlayerPersonas(result.profileId),
+      this.loadCharacters(result.profileId),
+      this.loadProfileLayers(result.profileId),
+      this.chatStore.refreshSessions(),
+    ]);
+    if (result.sessionId !== undefined) {
+      await this.selectRoleplaySession(result.profileId, result.sessionId);
+      this.highlightCreatedSession(result.sessionId);
+      return;
+    }
+    await this.loadLoreEntries();
+  }
+
   private async connectToProfile(profileId: string): Promise<void> {
     this.sessionError.set(undefined);
     try {
       const [roleplaySessions] = await Promise.all([
         this.loadRoleplaySessions(profileId),
+        this.loadPlayerPersonas(profileId),
         this.loadCharacters(profileId),
         this.loadProfileLayers(profileId),
         this.loadNarratorConfig(profileId),
@@ -415,7 +514,9 @@ export class RoleplayWorkbench {
       }
       await this.chatStore.selectSession(selected.session_id);
       this.syncActiveCharacterFromSession(selected.session_id);
+      this.syncActivePlayerPersonaFromSession(selected.session_id);
       await this.loadChatLayers(selected.session_id);
+      await this.loadAlternates(selected.session_id);
       await this.loadLoreEntries();
       await this.loadContextUsage(selected.session_id);
     } catch (error: unknown) {
@@ -449,7 +550,9 @@ export class RoleplayWorkbench {
       await this.chatStore.refreshSessions();
       await this.chatStore.selectSession(sessionId);
       this.syncActiveCharacterFromSession(sessionId);
+      this.syncActivePlayerPersonaFromSession(sessionId);
       await this.loadChatLayers(sessionId);
+      await this.loadAlternates(sessionId);
       await this.loadLoreEntries();
       await this.loadContextUsage(sessionId);
       void this.loadRoleplaySessions(profileId);
@@ -474,8 +577,10 @@ export class RoleplayWorkbench {
       await this.chatStore.refreshSessions();
       await this.chatStore.selectSession(session.sessionId);
       this.activeCharacterId.set(session.characterId);
+      this.activePlayerPersonaId.set(session.playerPersonaId);
       this.highlightCreatedSession(session.sessionId);
       await this.loadChatLayers(session.sessionId);
+      await this.loadAlternates(session.sessionId);
       await this.loadLoreEntries();
       await this.loadContextUsage(session.sessionId);
     } catch (error: unknown) {
@@ -538,6 +643,82 @@ export class RoleplayWorkbench {
     }
   }
 
+  private async loadAlternates(sessionId: string): Promise<void> {
+    this.revisionError.set(undefined);
+    try {
+      const slot = await this.branchingApi.readTerminalAlternatives(sessionId);
+      this.alternateSlots.set(slot === null ? [] : [slot]);
+    } catch {
+      this.alternateSlots.set([]);
+    }
+  }
+
+  private async applyRevisionAction(
+    action: MessageRevisionAction,
+  ): Promise<void> {
+    const sessionId = this.chatStore.activeSessionId();
+    if (sessionId === null) {
+      return;
+    }
+    this.revisionError.set(undefined);
+    this.revisionLoading.set(true);
+    try {
+      switch (action.kind) {
+        case 'previous_variant':
+        case 'next_variant':
+        case 'select_variant': {
+          if (action.slot === undefined) {
+            return;
+          }
+          await this.branchingApi.selectAlternative(
+            sessionId,
+            action.slot.id,
+            action.variant?.id,
+          );
+          await this.chatStore.selectSession(sessionId);
+          await this.loadAlternates(sessionId);
+          return;
+        }
+        case 'branch': {
+          const fork = await this.branchingApi.forkSession(
+            sessionId,
+            action.message.id,
+            `Fork from ${this.sceneLabel()}`,
+          );
+          this.roleplaySessions.update((sessions) =>
+            upsertSession(sessions, fork),
+          );
+          await this.chatStore.refreshSessions();
+          await this.selectRoleplaySession(fork.profileId, fork.sessionId);
+          return;
+        }
+        case 'request_next_alternative':
+        case 'regenerate': {
+          if (action.slot === undefined) {
+            this.revisionError.set(
+              'Assistant alternatives are available for the latest assistant message.',
+            );
+            return;
+          }
+          await this.branchingApi.generateAlternative(
+            sessionId,
+            action.slot.id,
+            undefined,
+          );
+          await this.chatStore.selectSession(sessionId);
+          await this.loadAlternates(sessionId);
+          return;
+        }
+        default:
+          return;
+      }
+    } catch (error: unknown) {
+      this.revisionError.set(readErrorMessage(error));
+    } finally {
+      this.revisionLoading.set(false);
+    }
+  }
+
   private async loadCharacters(profileId: string): Promise<void> {
     this.charactersLoading.set(true);
     this.charactersError.set(undefined);
@@ -555,6 +736,26 @@ export class RoleplayWorkbench {
       this.charactersError.set(readErrorMessage(error));
     } finally {
       this.charactersLoading.set(false);
+    }
+  }
+
+  private async loadPlayerPersonas(profileId: string): Promise<void> {
+    this.playerPersonasLoading.set(true);
+    this.playerPersonasError.set(undefined);
+    try {
+      const personas = await this.playerPersonaApi.listPersonas(profileId);
+      this.playerPersonas.set(personas);
+      const activeId = this.activePlayerPersonaId();
+      if (
+        activeId !== undefined &&
+        !personas.some((persona) => persona.id === activeId)
+      ) {
+        this.activePlayerPersonaId.set(undefined);
+      }
+    } catch (error: unknown) {
+      this.playerPersonasError.set(readErrorMessage(error));
+    } finally {
+      this.playerPersonasLoading.set(false);
     }
   }
 
@@ -605,6 +806,63 @@ export class RoleplayWorkbench {
       }
     } catch (error: unknown) {
       this.charactersError.set(readErrorMessage(error));
+    }
+  }
+
+  private async createPlayerPersonaRecord(
+    profileId: string,
+    request: PlayerPersonaWriteRequest,
+  ): Promise<void> {
+    this.playerPersonasError.set(undefined);
+    try {
+      const persona = await this.playerPersonaApi.createPersona(
+        profileId,
+        request,
+      );
+      this.playerPersonas.update((personas) => [...personas, persona]);
+      this.activePlayerPersonaId.set(persona.id);
+      const sessionId = this.chatStore.activeSessionId();
+      if (sessionId !== null) {
+        await this.setSessionPlayerPersona(sessionId, persona.id);
+      }
+    } catch (error: unknown) {
+      this.playerPersonasError.set(readErrorMessage(error));
+    }
+  }
+
+  private async updatePlayerPersonaRecord(
+    profileId: string,
+    request: PlayerPersonaUpdateRequest,
+  ): Promise<void> {
+    this.playerPersonasError.set(undefined);
+    try {
+      const persona = await this.playerPersonaApi.updatePersona(
+        profileId,
+        request,
+      );
+      this.playerPersonas.update((personas) =>
+        personas.map((item) => (item.id === persona.id ? persona : item)),
+      );
+    } catch (error: unknown) {
+      this.playerPersonasError.set(readErrorMessage(error));
+    }
+  }
+
+  private async archivePlayerPersonaRecord(
+    profileId: string,
+    personaId: string,
+  ): Promise<void> {
+    this.playerPersonasError.set(undefined);
+    try {
+      await this.playerPersonaApi.archivePersona(profileId, personaId);
+      this.playerPersonas.update((personas) =>
+        personas.filter((persona) => persona.id !== personaId),
+      );
+      if (this.activePlayerPersonaId() === personaId) {
+        this.activePlayerPersonaId.set(undefined);
+      }
+    } catch (error: unknown) {
+      this.playerPersonasError.set(readErrorMessage(error));
     }
   }
 
@@ -662,11 +920,36 @@ export class RoleplayWorkbench {
     }
   }
 
+  private async setSessionPlayerPersona(
+    sessionId: string,
+    playerPersonaId: string,
+  ): Promise<void> {
+    this.playerPersonasError.set(undefined);
+    try {
+      const session = await this.roleplaySessionApi.updateSession({
+        sessionId,
+        playerPersonaId,
+      });
+      this.roleplaySessions.update((sessions) =>
+        upsertSession(sessions, session),
+      );
+    } catch (error: unknown) {
+      this.playerPersonasError.set(readErrorMessage(error));
+    }
+  }
+
   private syncActiveCharacterFromSession(sessionId: string): void {
     const session = this.roleplaySessions().find(
       (candidate) => candidate.sessionId === sessionId,
     );
     this.activeCharacterId.set(session?.characterId);
+  }
+
+  private syncActivePlayerPersonaFromSession(sessionId: string): void {
+    const session = this.roleplaySessions().find(
+      (candidate) => candidate.sessionId === sessionId,
+    );
+    this.activePlayerPersonaId.set(session?.playerPersonaId);
   }
 
   private highlightCreatedSession(sessionId: string): void {
