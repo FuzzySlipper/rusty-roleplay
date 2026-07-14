@@ -1,5 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 
+// Ordinary E2E runs cannot assume the host-local debug service/profile exists.
+// eslint-disable-next-line playwright/no-skipped-test -- opt-in live service proof
+test.skip(
+  process.env['RUSTY_ROLEPLAY_LIVE_RUN'] !== '1',
+  'requires the local Rusty Crew debug service and Live Tester profile',
+);
+
 const actionLabels = [
   'Regenerate',
   'Continue',
