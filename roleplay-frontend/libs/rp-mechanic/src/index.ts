@@ -1,6 +1,22 @@
+export { RpMechanicPanelComponent } from './lib/rp-mechanic/rp-mechanic';
 export {
-  RpMechanicPanelComponent,
-  type RpMode,
+  MECHANIC_DIAGNOSTIC_OUTCOMES,
+  MECHANIC_PROPOSAL_KINDS,
+  type MechanicAutoMonitorConfig,
+  type MechanicDiagnostic,
+  type MechanicDiagnosticOutcome,
+  type MechanicDiagnosticOutcomeWrite,
+  type MechanicProfileConfig,
+  type MechanicProfileConfigWrite,
+  type MechanicProfileOption,
   type MechanicProposal,
-  type DiagnosticLine,
-} from './lib/rp-mechanic/rp-mechanic';
+  type MechanicProposalBatchDecision,
+  type MechanicProposalDecision,
+  type MechanicProposalEvent,
+  type MechanicProposalKind,
+  type MechanicProposalStatus,
+  type MechanicSessionAssociation,
+  type MechanicSessionAttachment,
+  type MechanicSessionSummary,
+  type RpMode,
+} from './lib/mechanic.model';

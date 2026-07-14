@@ -27,6 +27,7 @@ import { appRoutes } from './app.routes';
 import { BACKEND_CONFIG, type BackendConfig } from './backend-config';
 import { CHAT_BACKEND_PROVIDERS } from './chat-backend-providers';
 import { ContextApi } from './context/context-api';
+import { MechanicApi } from './mechanic/mechanic-api';
 import { NarratorConfigApi } from './narrator-config/narrator-config-api';
 import { PlayerPersonaApi } from './persona-management/player-persona-api';
 import { PromptStackApi } from './prompt-stack/prompt-stack-api';
@@ -112,9 +113,10 @@ const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
   },
   {
     id: 'rp-mechanics',
-    label: 'Mechanics',
-    title: 'Scene Mechanics',
+    label: 'Mechanic',
+    title: 'Mechanic / OOC Workspace',
     order: 19,
+    width: 'wide',
     component: RoleplayMechanicsMenuPanelComponent,
   },
 ];
@@ -190,8 +192,9 @@ const ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS: readonly Omit<
   },
   {
     id: 'rp-mechanics',
-    label: 'Mechanics',
-    tooltip: 'Open out-of-character diagnostics and proposed fixes',
+    label: 'Mechanic',
+    tooltip:
+      'Switch to separate OOC chat, review proposed fixes, and track outcomes',
     kind: 'panel',
     panelId: 'rp-mechanics',
     order: 19,
@@ -265,6 +268,7 @@ export const appConfig: ApplicationConfig = {
     PromptStackApi,
     ProfileRegistryApi,
     RoleplayBranchingApi,
+    MechanicApi,
     RoleplaySessionApi,
     StPacketImportApi,
   ],

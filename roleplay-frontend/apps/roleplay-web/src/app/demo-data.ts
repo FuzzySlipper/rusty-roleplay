@@ -1,8 +1,4 @@
 import type { ChatMessage } from '@rusty-view/chat-domain';
-import type {
-  DiagnosticLine,
-  MechanicProposal,
-} from '@rusty-roleplay/rp-mechanic';
 
 const SESSION_ID = 'rp-session-a';
 
@@ -56,23 +52,4 @@ export const DEMO_MESSAGES: readonly ChatMessage[] = [
     'Narrator',
     'Boot prints, half-filled with fresh snow — a small party passed within the hour, heading toward the baron’s hall.',
   ),
-];
-
-export const DEMO_PROPOSALS: readonly MechanicProposal[] = [
-  {
-    id: 'prop-1',
-    summary: 'Boost "politics" tag weight for this campaign',
-    reason: 'Political lore is under-retrieved in tense court scenes.',
-  },
-];
-
-export const DEMO_LOGS: readonly DiagnosticLine[] = [
-  {
-    timestamp: '12:30:01',
-    message: 'recall: northmarch-taxes included (score 0.92)',
-  },
-  {
-    timestamp: '12:30:01',
-    message: 'recall: caleb-arm skipped (excluded_subject)',
-  },
 ];

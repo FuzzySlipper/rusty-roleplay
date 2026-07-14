@@ -1,5 +1,8 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
-import type { ChatMessage, MessageAlternateSlot } from '@rusty-view/chat-domain';
+import type {
+  ChatMessage,
+  MessageAlternateSlot,
+} from '@rusty-view/chat-domain';
 import { ChatStore } from '@rusty-view/chat-store';
 import type { StreamStatusKind } from '@rusty-view/chat-components';
 import type {
@@ -34,13 +37,21 @@ import type {
   NarratorPhase,
   SceneMood,
 } from '@rusty-roleplay/rp-scene-controls';
-import type { RpMode } from '@rusty-roleplay/rp-mechanic';
+import type {
+  MechanicDiagnostic,
+  MechanicDiagnosticOutcomeWrite,
+  MechanicProfileConfig,
+  MechanicProfileConfigWrite,
+  MechanicProposal,
+  MechanicProposalBatchDecision,
+  MechanicProposalDecision,
+  MechanicSessionAttachment,
+  MechanicSessionSummary,
+  RpMode,
+} from '@rusty-roleplay/rp-mechanic';
 
-import {
-  ContextApi,
-  type ContextUsageResponse,
-} from './context/context-api';
-import { DEMO_LOGS, DEMO_PROPOSALS } from './demo-data';
+import { ContextApi, type ContextUsageResponse } from './context/context-api';
+import { MechanicApi } from './mechanic/mechanic-api';
 import { deriveNarratorPhase } from './narrator-phase';
 import { NarratorConfigApi } from './narrator-config/narrator-config-api';
 import type { NarratorConfig } from './narrator-config/narrator-config.model';
@@ -81,6 +92,7 @@ export class RoleplayWorkbench {
   private readonly profileRegistryApi = inject(ProfileRegistryApi);
   private readonly contextApi = inject(ContextApi);
   private readonly branchingApi = inject(RoleplayBranchingApi);
+  private readonly mechanicApi = inject(MechanicApi);
 
   readonly campaignId = 'eldoria';
   readonly characters = signal<readonly RpCharacter[]>([]);
@@ -91,9 +103,6 @@ export class RoleplayWorkbench {
   readonly promotingLoreEntryId = signal<string | undefined>(undefined);
   readonly loreError = signal<string | undefined>(undefined);
   readonly loreQuery = signal('');
-  readonly proposals = DEMO_PROPOSALS;
-  readonly logs = DEMO_LOGS;
-
   readonly activeCharacterId = signal<string | undefined>(undefined);
   readonly activePlayerPersonaId = signal<string | undefined>(undefined);
   readonly playerPersonas = signal<readonly PlayerPersona[]>([]);
@@ -101,6 +110,18 @@ export class RoleplayWorkbench {
   readonly playerPersonasError = signal<string | undefined>(undefined);
   readonly mood = signal<SceneMood>('tense');
   readonly mode = signal<RpMode>('roleplay');
+  readonly mechanicProfileId = signal('');
+  readonly mechanicConfig = signal<MechanicProfileConfig | null>(null);
+  readonly mechanicSessions = signal<readonly MechanicSessionSummary[]>([]);
+  readonly mechanicProposals = signal<readonly MechanicProposal[]>([]);
+  readonly mechanicDiagnostics = signal<readonly MechanicDiagnostic[]>([]);
+  readonly activeMechanicSessionId = signal<string | undefined>(undefined);
+  readonly mechanicLoading = signal(false);
+  readonly mechanicSaving = signal(false);
+  readonly mechanicError = signal<string | undefined>(undefined);
+  readonly roleplaySessionBeforeMechanic = signal<string | undefined>(
+    undefined,
+  );
   readonly selectError = signal<string | undefined>(undefined);
   readonly sessionError = signal<string | undefined>(undefined);
   readonly sessionsLoading = signal(false);
@@ -136,6 +157,17 @@ export class RoleplayWorkbench {
   private lastContextRefreshKey: string | undefined;
 
   readonly activeProfile = this.profileStore.activeProfile;
+  readonly mechanicProfileOptions = computed(() =>
+    this.profileStore.profiles().map((profile) => ({
+      id: profile.id,
+      name: profile.name,
+    })),
+  );
+  readonly activeRoleplaySessionId = computed(() =>
+    this.mode() === 'mechanic'
+      ? this.roleplaySessionBeforeMechanic()
+      : (this.chatStore.activeSessionId() ?? undefined),
+  );
   readonly phase = computed<NarratorPhase>(() =>
     deriveNarratorPhase(this.chatStore.rawEvents()),
   );
@@ -455,6 +487,93 @@ export class RoleplayWorkbench {
     void this.saveNarratorConfigRecord(profileId, config);
   }
 
+  setMechanicMode(mode: RpMode): void {
+    if (mode === this.mode()) return;
+    if (mode === 'mechanic') {
+      const roleplaySessionId = this.chatStore.activeSessionId() ?? undefined;
+      if (roleplaySessionId !== undefined) {
+        this.roleplaySessionBeforeMechanic.set(roleplaySessionId);
+      }
+      this.mode.set('mechanic');
+      const mechanicSessionId =
+        this.activeMechanicSessionId() ??
+        this.mechanicSessions().find((session) => !session.archived)
+          ?.association.mechanicSessionId;
+      if (mechanicSessionId !== undefined) {
+        void this.selectMechanicSessionRecord(mechanicSessionId);
+      }
+      return;
+    }
+    this.mode.set('roleplay');
+    const roleplaySessionId = this.roleplaySessionBeforeMechanic();
+    if (roleplaySessionId !== undefined) {
+      void this.restoreRoleplayChatSession(roleplaySessionId);
+    }
+  }
+
+  selectMechanicProfile(profileId: string): void {
+    this.mechanicProfileId.set(profileId);
+    this.mechanicConfig.set(null);
+    this.activeMechanicSessionId.set(undefined);
+    void this.loadMechanicData();
+  }
+
+  reloadMechanicConfig(): void {
+    void this.loadMechanicData();
+  }
+
+  saveMechanicConfig(config: MechanicProfileConfigWrite): void {
+    void this.saveMechanicConfigRecord(config);
+  }
+
+  refreshMechanicData(): void {
+    void this.loadMechanicData();
+  }
+
+  createMechanicSession(): void {
+    void this.createMechanicSessionRecord();
+  }
+
+  selectMechanicSession(sessionId: string): void {
+    void this.selectMechanicSessionRecord(sessionId);
+  }
+
+  attachMechanicSession(request: MechanicSessionAttachment): void {
+    void this.attachMechanicSessionRecord(request);
+  }
+
+  archiveMechanicSession(sessionId: string): void {
+    void this.archiveMechanicSessionRecord(sessionId);
+  }
+
+  restoreMechanicSession(sessionId: string): void {
+    void this.restoreMechanicSessionRecord(sessionId);
+  }
+
+  approveMechanicProposal(decision: MechanicProposalDecision): void {
+    void this.decideMechanicProposal('approve', decision);
+  }
+
+  rejectMechanicProposal(decision: MechanicProposalDecision): void {
+    void this.decideMechanicProposal('reject', decision);
+  }
+
+  approveMechanicProposalBatch(decision: MechanicProposalBatchDecision): void {
+    void this.decideMechanicProposalBatch('approve', decision);
+  }
+
+  rejectMechanicProposalBatch(decision: MechanicProposalBatchDecision): void {
+    void this.decideMechanicProposalBatch('reject', decision);
+  }
+
+  applyMechanicProposal(proposalId: string): void {
+    void this.applyMechanicProposalRecord(proposalId);
+  }
+
+  saveMechanicDiagnosticOutcome(request: MechanicDiagnosticOutcomeWrite): void {
+    void this.saveMechanicDiagnosticOutcomeRecord(request);
+  }
+
   async refreshAfterStImport(result: StPacketImportResult): Promise<void> {
     await Promise.all([
       this.loadRoleplaySessions(result.profileId),
@@ -473,6 +592,9 @@ export class RoleplayWorkbench {
 
   private async connectToProfile(profileId: string): Promise<void> {
     this.sessionError.set(undefined);
+    if (this.mechanicProfileId() === '') {
+      this.mechanicProfileId.set(profileId);
+    }
     try {
       const [roleplaySessions] = await Promise.all([
         this.loadRoleplaySessions(profileId),
@@ -480,6 +602,7 @@ export class RoleplayWorkbench {
         this.loadCharacters(profileId),
         this.loadProfileLayers(profileId),
         this.loadNarratorConfig(profileId),
+        this.loadMechanicData(),
         this.chatStore.refreshSessions(),
       ]);
       const genericSessions = this.chatStore.sessions();
@@ -513,6 +636,7 @@ export class RoleplayWorkbench {
         );
       }
       await this.chatStore.selectSession(selected.session_id);
+      this.roleplaySessionBeforeMechanic.set(selected.session_id);
       this.syncActiveCharacterFromSession(selected.session_id);
       this.syncActivePlayerPersonaFromSession(selected.session_id);
       await this.loadChatLayers(selected.session_id);
@@ -547,8 +671,10 @@ export class RoleplayWorkbench {
   ): Promise<void> {
     this.sessionError.set(undefined);
     try {
+      this.mode.set('roleplay');
       await this.chatStore.refreshSessions();
       await this.chatStore.selectSession(sessionId);
+      this.roleplaySessionBeforeMechanic.set(sessionId);
       this.syncActiveCharacterFromSession(sessionId);
       this.syncActivePlayerPersonaFromSession(sessionId);
       await this.loadChatLayers(sessionId);
@@ -785,6 +911,286 @@ export class RoleplayWorkbench {
       this.narratorConfigError.set(readErrorMessage(error));
     } finally {
       this.narratorConfigSaving.set(false);
+    }
+  }
+
+  private async loadMechanicData(): Promise<void> {
+    const mechanicProfileId = this.mechanicProfileId();
+    if (mechanicProfileId === '') {
+      this.mechanicConfig.set(null);
+      this.mechanicSessions.set([]);
+      this.mechanicProposals.set([]);
+      this.mechanicDiagnostics.set([]);
+      return;
+    }
+    this.mechanicLoading.set(true);
+    this.mechanicError.set(undefined);
+    const roleplaySessionId = this.activeRoleplaySessionId();
+    const roleplayProfileId = this.activeProfile()?.id;
+    try {
+      const [config, sessions, proposals, diagnostics] = await Promise.all([
+        this.mechanicApi.readProfileConfig(mechanicProfileId),
+        this.mechanicApi.listSessions({ mechanicProfileId }),
+        this.mechanicApi.listProposals({
+          ...(roleplaySessionId !== undefined ? { roleplaySessionId } : {}),
+          ...(roleplaySessionId === undefined && roleplayProfileId !== undefined
+            ? { profileId: roleplayProfileId }
+            : {}),
+        }),
+        this.mechanicApi.listDiagnostics({
+          ...(roleplaySessionId !== undefined ? { roleplaySessionId } : {}),
+          ...(roleplaySessionId === undefined && roleplayProfileId !== undefined
+            ? { roleplayProfileId }
+            : {}),
+        }),
+      ]);
+      this.mechanicConfig.set(config);
+      this.mechanicSessions.set(sessions);
+      this.mechanicProposals.set(proposals);
+      this.mechanicDiagnostics.set(diagnostics);
+      const selected = this.activeMechanicSessionId();
+      if (
+        selected === undefined ||
+        sessions.every(
+          (session) => session.association.mechanicSessionId !== selected,
+        )
+      ) {
+        this.activeMechanicSessionId.set(
+          sessions.find((session) => !session.archived)?.association
+            .mechanicSessionId,
+        );
+      }
+    } catch (error: unknown) {
+      this.mechanicError.set(readErrorMessage(error));
+    } finally {
+      this.mechanicLoading.set(false);
+    }
+  }
+
+  private async saveMechanicConfigRecord(
+    config: MechanicProfileConfigWrite,
+  ): Promise<void> {
+    const profileId = this.mechanicProfileId();
+    if (profileId === '') return;
+    this.mechanicSaving.set(true);
+    this.mechanicError.set(undefined);
+    try {
+      this.mechanicConfig.set(
+        await this.mechanicApi.saveProfileConfig(profileId, config),
+      );
+      this.mechanicSessions.set(
+        await this.mechanicApi.listSessions({ mechanicProfileId: profileId }),
+      );
+    } catch (error: unknown) {
+      this.mechanicError.set(readErrorMessage(error));
+    } finally {
+      this.mechanicSaving.set(false);
+    }
+  }
+
+  private async createMechanicSessionRecord(): Promise<void> {
+    const profileId = this.mechanicProfileId();
+    if (profileId === '') {
+      this.mechanicError.set('Select a configured mechanic profile first.');
+      return;
+    }
+    this.mechanicSaving.set(true);
+    this.mechanicError.set(undefined);
+    try {
+      const session = await this.mechanicApi.createSession(
+        profileId,
+        this.activeRoleplaySessionId(),
+      );
+      this.mechanicSessions.update((sessions) =>
+        upsertMechanicSession(sessions, session),
+      );
+      await this.selectMechanicSessionRecord(
+        session.association.mechanicSessionId,
+      );
+    } catch (error: unknown) {
+      this.mechanicError.set(readErrorMessage(error));
+    } finally {
+      this.mechanicSaving.set(false);
+    }
+  }
+
+  private async selectMechanicSessionRecord(sessionId: string): Promise<void> {
+    this.mechanicError.set(undefined);
+    try {
+      if (this.mode() !== 'mechanic') {
+        const roleplaySessionId = this.chatStore.activeSessionId() ?? undefined;
+        if (roleplaySessionId !== undefined) {
+          this.roleplaySessionBeforeMechanic.set(roleplaySessionId);
+        }
+      }
+      await this.chatStore.refreshSessions();
+      await this.chatStore.selectSession(sessionId);
+      this.activeMechanicSessionId.set(sessionId);
+      this.mode.set('mechanic');
+      await this.loadMechanicData();
+    } catch (error: unknown) {
+      this.mechanicError.set(readErrorMessage(error));
+    }
+  }
+
+  private async restoreRoleplayChatSession(sessionId: string): Promise<void> {
+    const profileId = this.activeProfile()?.id;
+    if (profileId === undefined) return;
+    await this.selectRoleplaySession(profileId, sessionId);
+  }
+
+  private async attachMechanicSessionRecord(
+    request: MechanicSessionAttachment,
+  ): Promise<void> {
+    this.mechanicSaving.set(true);
+    this.mechanicError.set(undefined);
+    try {
+      const association = await this.mechanicApi.attachSession(request);
+      this.mechanicSessions.update((sessions) =>
+        sessions.map((session) =>
+          session.association.mechanicSessionId ===
+          association.mechanicSessionId
+            ? { ...session, association }
+            : session,
+        ),
+      );
+      await this.loadMechanicData();
+    } catch (error: unknown) {
+      this.mechanicError.set(readErrorMessage(error));
+    } finally {
+      this.mechanicSaving.set(false);
+    }
+  }
+
+  private async archiveMechanicSessionRecord(sessionId: string): Promise<void> {
+    await this.mutateMechanicSession(sessionId, 'archive');
+  }
+
+  private async restoreMechanicSessionRecord(sessionId: string): Promise<void> {
+    await this.mutateMechanicSession(sessionId, 'restore');
+  }
+
+  private async mutateMechanicSession(
+    sessionId: string,
+    action: 'archive' | 'restore',
+  ): Promise<void> {
+    this.mechanicSaving.set(true);
+    this.mechanicError.set(undefined);
+    try {
+      if (action === 'archive') {
+        await this.mechanicApi.archiveSession(sessionId);
+      } else {
+        await this.mechanicApi.restoreSession(sessionId);
+      }
+      await this.loadMechanicData();
+      if (
+        action === 'archive' &&
+        this.activeMechanicSessionId() === sessionId
+      ) {
+        this.activeMechanicSessionId.set(
+          this.mechanicSessions().find((session) => !session.archived)
+            ?.association.mechanicSessionId,
+        );
+      }
+    } catch (error: unknown) {
+      this.mechanicError.set(readErrorMessage(error));
+    } finally {
+      this.mechanicSaving.set(false);
+    }
+  }
+
+  private async decideMechanicProposal(
+    action: 'approve' | 'reject',
+    decision: MechanicProposalDecision,
+  ): Promise<void> {
+    this.mechanicSaving.set(true);
+    this.mechanicError.set(undefined);
+    try {
+      const proposal =
+        action === 'approve'
+          ? await this.mechanicApi.approveProposal(decision)
+          : await this.mechanicApi.rejectProposal(decision);
+      this.mechanicProposals.update((proposals) =>
+        upsertMechanicProposal(proposals, proposal),
+      );
+    } catch (error: unknown) {
+      this.mechanicError.set(readErrorMessage(error));
+    } finally {
+      this.mechanicSaving.set(false);
+    }
+  }
+
+  private async decideMechanicProposalBatch(
+    action: 'approve' | 'reject',
+    batch: MechanicProposalBatchDecision,
+  ): Promise<void> {
+    this.mechanicSaving.set(true);
+    this.mechanicError.set(undefined);
+    try {
+      for (const proposalId of batch.proposalIds) {
+        const proposal = this.mechanicProposals().find(
+          (candidate) => candidate.proposalId === proposalId,
+        );
+        if (proposal === undefined || proposal.status !== 'proposed') continue;
+        const decision: MechanicProposalDecision = {
+          proposalId,
+          reviewerId: batch.reviewerId,
+          expectedRevision: proposal.revision,
+          ...(batch.note !== undefined ? { note: batch.note } : {}),
+        };
+        const decided =
+          action === 'approve'
+            ? await this.mechanicApi.approveProposal(decision)
+            : await this.mechanicApi.rejectProposal(decision);
+        this.mechanicProposals.update((proposals) =>
+          upsertMechanicProposal(proposals, decided),
+        );
+      }
+    } catch (error: unknown) {
+      this.mechanicError.set(readErrorMessage(error));
+      await this.loadMechanicData();
+    } finally {
+      this.mechanicSaving.set(false);
+    }
+  }
+
+  private async applyMechanicProposalRecord(proposalId: string): Promise<void> {
+    this.mechanicSaving.set(true);
+    this.mechanicError.set(undefined);
+    try {
+      const proposal = await this.mechanicApi.applyProposal(
+        proposalId,
+        'roleplay-user',
+      );
+      this.mechanicProposals.update((proposals) =>
+        upsertMechanicProposal(proposals, proposal),
+      );
+      await Promise.all([
+        this.loadNarratorConfig(proposal.profileId),
+        this.loadLoreEntries(),
+      ]);
+    } catch (error: unknown) {
+      this.mechanicError.set(readErrorMessage(error));
+    } finally {
+      this.mechanicSaving.set(false);
+    }
+  }
+
+  private async saveMechanicDiagnosticOutcomeRecord(
+    request: MechanicDiagnosticOutcomeWrite,
+  ): Promise<void> {
+    this.mechanicSaving.set(true);
+    this.mechanicError.set(undefined);
+    try {
+      const diagnostic =
+        await this.mechanicApi.updateDiagnosticOutcome(request);
+      this.mechanicDiagnostics.update((diagnostics) =>
+        upsertMechanicDiagnostic(diagnostics, diagnostic),
+      );
+    } catch (error: unknown) {
+      this.mechanicError.set(readErrorMessage(error));
+    } finally {
+      this.mechanicSaving.set(false);
     }
   }
 
@@ -1314,6 +1720,42 @@ function upsertSession(
         item.sessionId === session.sessionId ? session : item,
       )
     : [session, ...sessions];
+}
+
+function upsertMechanicSession(
+  sessions: readonly MechanicSessionSummary[],
+  session: MechanicSessionSummary,
+): readonly MechanicSessionSummary[] {
+  const id = session.association.mechanicSessionId;
+  return sessions.some((item) => item.association.mechanicSessionId === id)
+    ? sessions.map((item) =>
+        item.association.mechanicSessionId === id ? session : item,
+      )
+    : [session, ...sessions];
+}
+
+function upsertMechanicProposal(
+  proposals: readonly MechanicProposal[],
+  proposal: MechanicProposal,
+): readonly MechanicProposal[] {
+  return proposals.some((item) => item.proposalId === proposal.proposalId)
+    ? proposals.map((item) =>
+        item.proposalId === proposal.proposalId ? proposal : item,
+      )
+    : [proposal, ...proposals];
+}
+
+function upsertMechanicDiagnostic(
+  diagnostics: readonly MechanicDiagnostic[],
+  diagnostic: MechanicDiagnostic,
+): readonly MechanicDiagnostic[] {
+  return diagnostics.some(
+    (item) => item.diagnosticId === diagnostic.diagnosticId,
+  )
+    ? diagnostics.map((item) =>
+        item.diagnosticId === diagnostic.diagnosticId ? diagnostic : item,
+      )
+    : [diagnostic, ...diagnostics];
 }
 
 function upsertLoreEntry(

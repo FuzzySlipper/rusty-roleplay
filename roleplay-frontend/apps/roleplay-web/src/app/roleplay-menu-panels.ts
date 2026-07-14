@@ -303,9 +303,35 @@ export class RoleplayNarratorMenuPanelComponent {
       />
       <rp-mechanic-panel
         [mode]="workbench.mode()"
-        [proposals]="workbench.proposals"
-        [logs]="workbench.logs"
-        (modeChange)="workbench.mode.set($event)"
+        [profileOptions]="workbench.mechanicProfileOptions()"
+        [mechanicProfileId]="workbench.mechanicProfileId()"
+        [activeRoleplaySessionId]="workbench.activeRoleplaySessionId()"
+        [activeMechanicSessionId]="workbench.activeMechanicSessionId()"
+        [config]="workbench.mechanicConfig()"
+        [sessions]="workbench.mechanicSessions()"
+        [proposals]="workbench.mechanicProposals()"
+        [diagnostics]="workbench.mechanicDiagnostics()"
+        [loading]="workbench.mechanicLoading()"
+        [saving]="workbench.mechanicSaving()"
+        [errorMessage]="workbench.mechanicError()"
+        (modeChange)="workbench.setMechanicMode($event)"
+        (profileChange)="workbench.selectMechanicProfile($event)"
+        (configReload)="workbench.reloadMechanicConfig()"
+        (configSave)="workbench.saveMechanicConfig($event)"
+        (refresh)="workbench.refreshMechanicData()"
+        (sessionCreate)="workbench.createMechanicSession()"
+        (sessionSelect)="workbench.selectMechanicSession($event)"
+        (sessionAttach)="workbench.attachMechanicSession($event)"
+        (sessionArchive)="workbench.archiveMechanicSession($event)"
+        (sessionRestore)="workbench.restoreMechanicSession($event)"
+        (proposalApprove)="workbench.approveMechanicProposal($event)"
+        (proposalReject)="workbench.rejectMechanicProposal($event)"
+        (proposalBatchApprove)="workbench.approveMechanicProposalBatch($event)"
+        (proposalBatchReject)="workbench.rejectMechanicProposalBatch($event)"
+        (proposalApply)="workbench.applyMechanicProposal($event)"
+        (diagnosticOutcomeSave)="
+          workbench.saveMechanicDiagnosticOutcome($event)
+        "
       />
     </div>
   `,
