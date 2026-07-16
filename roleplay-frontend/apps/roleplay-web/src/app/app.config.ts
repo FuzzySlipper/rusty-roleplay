@@ -5,9 +5,14 @@ import {
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import {
+  AdminServicePanelComponent,
+  CHAT_DEBUG_TABS,
+  CHAT_TOP_MENU_CONFIGURATION,
   CHAT_TOP_MENU_ITEMS,
   CHAT_TOP_MENU_PANELS,
+  type ChatDebugTab,
   type ChatTopMenuItem,
+  type ChatTopMenuConfiguration,
   type ChatTopMenuPanel,
 } from '@rusty-view/chat-shell';
 import { provideRpMessageDecorators } from '@rusty-roleplay/rp-message-decorators';
@@ -44,7 +49,21 @@ import { RoleplayBranchingApi } from './session-management/roleplay-branching-ap
 import { RoleplaySessionApi } from './session-management/roleplay-session-api';
 import { StPacketImportApi } from './st-import/st-packet-import-api';
 
-const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
+export const ROLEPLAY_TOP_MENU_CONFIGURATION: ChatTopMenuConfiguration = {
+  hiddenBuiltInItemIds: ['sessions', 'service'],
+};
+
+export const ROLEPLAY_DEBUG_TABS: readonly ChatDebugTab[] = [
+  {
+    id: 'service',
+    label: 'Service',
+    order: 40,
+    mode: 'controls',
+    component: AdminServicePanelComponent,
+  },
+];
+
+export const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
   {
     id: 'rp-sessions',
     label: 'RP Sessions',
@@ -87,7 +106,7 @@ const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
   },
 ];
 
-const ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS: readonly Omit<
+export const ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS: readonly Omit<
   ChatTopMenuItem,
   'onActivate'
 >[] = [
@@ -144,6 +163,15 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     ...CHAT_BACKEND_PROVIDERS,
     RoleplayWorkbench,
+    {
+      provide: CHAT_TOP_MENU_CONFIGURATION,
+      useValue: ROLEPLAY_TOP_MENU_CONFIGURATION,
+    },
+    {
+      provide: CHAT_DEBUG_TABS,
+      useValue: ROLEPLAY_DEBUG_TABS,
+      multi: true,
+    },
     {
       provide: CHAT_TOP_MENU_PANELS,
       useValue: ROLEPLAY_TOP_MENU_PANELS,
