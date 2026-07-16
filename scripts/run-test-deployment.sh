@@ -13,5 +13,5 @@ compose=(docker compose --file "${deployment_root}/compose.yaml" --project-direc
   node /opt/rusty-roleplay/deployment-scripts/live-turn-smoke.mjs
 
 port="$(sed -n 's/^RUSTY_ROLEPLAY_PORT=//p' "${deployment_root}/.env" | tail -1)"
-lan_host="${RUSTY_ROLEPLAY_LAN_HOST:-$(ip -4 route get 1.1.1.1 | awk '{for (index = 1; index <= NF; index++) if ($index == "src") { print $(index + 1); exit }}')}"
+lan_host="${RUSTY_ROLEPLAY_LAN_HOST:-$(ip -4 route get 1.1.1.1 | awk '{for (i = 1; i <= NF; i++) if ($i == "src") { print $(i + 1); exit }}')}"
 echo "Rusty Roleplay test deployment is available at http://${lan_host:-127.0.0.1}:${port:-9350}/"

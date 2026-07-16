@@ -13,8 +13,7 @@ COPY --from=rusty_crew . .
 RUN npm ci \
     && npm run build:native \
     && rm -rf target \
-    && npm prune --omit=dev \
-    && npm install --no-save --omit=dev tsx@4.22.4
+    && npm prune --omit=dev
 
 FROM node:${NODE_VERSION}-bookworm AS roleplay-builder
 
@@ -30,6 +29,8 @@ COPY roleplay-frontend/ .
 RUN pnpm exec nx build roleplay-web --configuration production
 
 FROM node:${NODE_VERSION}-bookworm-slim AS runtime
+
+RUN npm install --global tsx@4.22.4
 
 ARG CREW_REVISION=unknown
 ARG ROLEPLAY_REVISION=unknown
