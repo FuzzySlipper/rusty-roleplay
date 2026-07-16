@@ -1,0 +1,57 @@
+name: rusty-roleplay-test
+
+services:
+  rusty-roleplay:
+    image: ${RUSTY_ROLEPLAY_IMAGE:-rusty-roleplay:test}
+    init: true
+    restart: unless-stopped
+    user: "${RUSTY_ROLEPLAY_UID:-1001}:${RUSTY_ROLEPLAY_GID:-1002}"
+    env_file:
+      - ./config/service.env
+    environment:
+      HOME: /tmp
+      RUSTY_ROLEPLAY_PROVIDER_BASE_URL: http://host.docker.internal:18082/v1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${RUSTY_ROLEPLAY_PORT:-9350}:9347"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /home/system/rusty-roleplay-test/config
+      - type: bind
+        source: ./data
+        target: /home/system/rusty-roleplay-test/data
+      - type: bind
+        source: ./run
+        target: /home/system/rusty-roleplay-test/run
+      - type: bind
+        source: ./logs
+        target: /home/system/rusty-roleplay-test/logs
+      - type: bind
+        source: ./artifacts
+        target: /home/system/rusty-roleplay-test/artifacts
+      - type: bind
+        source: ./backups
+        target: /home/system/rusty-roleplay-test/backups
+      - type: bind
+        source: ./workspace
+        target: /workspace
+      - type: bind
+        source: ./site
+        target: /opt/rusty-roleplay/site
+        read_only: true
+      - type: bind
+        source: ./scripts
+        target: /opt/rusty-roleplay/deployment-scripts
+        read_only: true
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:9347/v1/admin/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 10s
