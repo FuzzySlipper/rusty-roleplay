@@ -1,0 +1,11 @@
+{
+  "project": "rusty-roleplay",
+  "serve": {
+    "command": "pnpm --dir roleplay-frontend exec nx serve roleplay-web --host {host} --port {port}",
+    "preferredPort": 4210,
+    "healthUrl": "/",
+    "readyText": "roleplay-web",
+    "reusePolicy": "broker_owned",
+    "startupTimeout": "45s"
+  }
+}

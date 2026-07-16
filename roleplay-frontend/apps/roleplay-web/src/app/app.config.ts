@@ -34,18 +34,14 @@ import { PromptStackApi } from './prompt-stack/prompt-stack-api';
 import { PromptStackPanelComponent } from './prompt-stack/prompt-stack-panel';
 import { ProfileRegistryApi } from './profile-registry/profile-registry-api';
 import {
-  RoleplayCharactersMenuPanelComponent,
   RoleplayLoreMenuPanelComponent,
   RoleplayMechanicsMenuPanelComponent,
-  RoleplayNarratorMenuPanelComponent,
-  RoleplayPersonasMenuPanelComponent,
   RoleplaySessionsMenuPanelComponent,
-  RoleplayTextStyleMenuPanelComponent,
 } from './roleplay-menu-panels';
+import { RoleplaySetupMenuPanelComponent } from './roleplay-setup-menu-panel';
 import { RoleplayWorkbench } from './roleplay-workbench';
 import { RoleplayBranchingApi } from './session-management/roleplay-branching-api';
 import { RoleplaySessionApi } from './session-management/roleplay-session-api';
-import { StImportPanelComponent } from './st-import/st-import-panel';
 import { StPacketImportApi } from './st-import/st-packet-import-api';
 
 const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
@@ -58,27 +54,12 @@ const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
     component: RoleplaySessionsMenuPanelComponent,
   },
   {
-    id: 'rp-personas',
-    label: 'Personas',
-    title: 'Player Personas',
+    id: 'rp-setup',
+    label: 'RP Setup',
+    title: 'RP Setup',
     order: 12,
     width: 'wide',
-    component: RoleplayPersonasMenuPanelComponent,
-  },
-  {
-    id: 'rp-characters',
-    label: 'Characters',
-    title: 'Characters',
-    order: 13,
-    width: 'wide',
-    component: RoleplayCharactersMenuPanelComponent,
-  },
-  {
-    id: 'rp-text-style',
-    label: 'Text Style',
-    title: 'Roleplay Text Style',
-    order: 14,
-    component: RoleplayTextStyleMenuPanelComponent,
+    component: RoleplaySetupMenuPanelComponent,
   },
   {
     id: 'rp-lore',
@@ -89,27 +70,12 @@ const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
     component: RoleplayLoreMenuPanelComponent,
   },
   {
-    id: 'rp-st-import',
-    label: 'ST Import',
-    title: 'SillyTavern Import',
-    order: 16,
-    width: 'wide',
-    component: StImportPanelComponent,
-  },
-  {
     id: 'rp-prompt-stack',
     label: 'Prompt',
     title: 'Prompt Stack',
     order: 17,
     width: 'wide',
     component: PromptStackPanelComponent,
-  },
-  {
-    id: 'rp-narrator',
-    label: 'Narrator',
-    title: 'Narrator Config',
-    order: 18,
-    component: RoleplayNarratorMenuPanelComponent,
   },
   {
     id: 'rp-mechanics',
@@ -134,28 +100,13 @@ const ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS: readonly Omit<
     order: 11,
   },
   {
-    id: 'rp-personas',
-    label: 'Personas',
-    tooltip: 'Manage player-side identities and bind one to the session',
+    id: 'rp-setup',
+    label: 'RP Setup',
+    tooltip:
+      'Manage personas, characters, ST imports, narrator settings, and text styles',
     kind: 'panel',
-    panelId: 'rp-personas',
+    panelId: 'rp-setup',
     order: 12,
-  },
-  {
-    id: 'rp-characters',
-    label: 'Characters',
-    tooltip: 'Manage scene characters and activate one for the current session',
-    kind: 'panel',
-    panelId: 'rp-characters',
-    order: 13,
-  },
-  {
-    id: 'rp-text-style',
-    label: 'Text Style',
-    tooltip: 'Tune dialogue, narration, emphasis, and OOC transcript colors',
-    kind: 'panel',
-    panelId: 'rp-text-style',
-    order: 14,
   },
   {
     id: 'rp-lore',
@@ -166,29 +117,12 @@ const ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS: readonly Omit<
     order: 15,
   },
   {
-    id: 'rp-st-import',
-    label: 'ST Import',
-    tooltip:
-      'Import ST characters, personas, lorebooks, transcripts, and swipes without replaying legacy prompt ceremony',
-    kind: 'panel',
-    panelId: 'rp-st-import',
-    order: 16,
-  },
-  {
     id: 'rp-prompt-stack',
     label: 'Prompt',
     tooltip: 'Inspect the compiled prompt sections and source trace',
     kind: 'panel',
     panelId: 'rp-prompt-stack',
     order: 17,
-  },
-  {
-    id: 'rp-narrator',
-    label: 'Narrator',
-    tooltip: 'Tune the editable narrator style prompt and review pass',
-    kind: 'panel',
-    panelId: 'rp-narrator',
-    order: 18,
   },
   {
     id: 'rp-mechanics',
