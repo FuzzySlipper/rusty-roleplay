@@ -63,7 +63,25 @@ already occupied.
 The account running these helpers must have effective access to
 `/var/run/docker.sock`. Membership added to the `docker` group does not affect
 an already-running login/session; restart that session before building if
-`docker ps` still reports `permission denied`.
+`docker ps` still reports `permission denied`. If restarting an active session
+would disrupt ongoing work, a host administrator can instead grant the current
+agent UID access to the live socket:
+
+```bash
+sudo setfacl -m "u:$(id -u agent):rw" /run/docker.sock
+docker version
+```
+
+Docker socket access is root-equivalent and this ACL is temporary: it is lost
+when `docker.socket` recreates the socket. Remove it explicitly when it is no
+longer needed:
+
+```bash
+sudo setfacl -x "u:$(id -u agent)" /run/docker.sock
+```
+
+Do not make the socket world-writable or expose an unauthenticated Docker TCP
+listener as a workaround.
 
 The installed deployment uses debug-role/no-auth mode so a browser elsewhere on
 the trusted LAN can use every roleplay API without embedding an admin bearer
