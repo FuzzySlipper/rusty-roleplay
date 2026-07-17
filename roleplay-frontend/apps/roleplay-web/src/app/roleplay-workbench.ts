@@ -240,15 +240,15 @@ export class RoleplayWorkbench {
   constructor() {
     effect(() => {
       const sessionId = this.chatStore.activeSessionId();
-      const latestFinishedId = latestAssistantTurnFinishedEventId(
+      const latestCompletedId = latestAssistantMessageCompletedEventId(
         this.chatStore.rawEvents(),
       );
 
-      if (sessionId === null || latestFinishedId === undefined) {
+      if (sessionId === null || latestCompletedId === undefined) {
         return;
       }
 
-      const refreshKey = `${sessionId}:${latestFinishedId}`;
+      const refreshKey = `${sessionId}:${latestCompletedId}`;
       if (refreshKey !== this.lastContextRefreshKey) {
         this.lastContextRefreshKey = refreshKey;
         queueMicrotask(() => {
@@ -1690,7 +1690,7 @@ function toStreamStatus(status: string): StreamStatusKind {
   }
 }
 
-function latestAssistantTurnFinishedEventId(
+function latestAssistantMessageCompletedEventId(
   events: readonly {
     readonly kind?: string;
     readonly event_id?: string;
@@ -1699,7 +1699,7 @@ function latestAssistantTurnFinishedEventId(
 ): string | undefined {
   for (let index = events.length - 1; index >= 0; index -= 1) {
     const event = events[index];
-    if (event?.kind === 'assistant_turn_finished') {
+    if (event?.kind === 'assistant_message_completed') {
       return event.event_id ?? event.eventId ?? String(index);
     }
   }

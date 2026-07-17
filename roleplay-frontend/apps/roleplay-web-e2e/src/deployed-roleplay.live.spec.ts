@@ -116,7 +116,7 @@ test('deployed roleplay narrator survives refresh with RP controls @live-rolepla
   });
 
   const recallTool = assistant
-    .getByTestId('tool-call-block')
+    .locator('[data-testid="tool-call-block"][data-status="completed"]')
     .filter({ hasText: 'recall_lore' });
   await expect(recallTool).toBeVisible();
   await expect(recallTool).toHaveAttribute('data-status', 'completed');
@@ -155,7 +155,7 @@ test('deployed roleplay narrator survives refresh with RP controls @live-rolepla
   });
   await expect(
     page
-      .getByTestId('tool-call-block')
+      .locator('[data-testid="tool-call-block"][data-status="completed"]')
       .filter({ hasText: 'recall_lore' })
       .last(),
   ).toBeVisible();
