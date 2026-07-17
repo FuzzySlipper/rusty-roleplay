@@ -4,6 +4,10 @@ import { workspaceRoot } from '@nx/devkit';
 
 // For CI, you may want to set BASE_URL to the deployed application.
 const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
+const externallyManagedServer =
+  process.env['PLAYWRIGHT_BROKER_BASE_URL'] !== undefined ||
+  process.env['RUSTY_ROLEPLAY_DEPLOYED_RUN'] === '1';
+const brokerArtifactRoot = process.env['PLAYWRIGHT_BROKER_ARTIFACT_ROOT'];
 
 /**
  * Read environment variables from file.
@@ -23,33 +27,39 @@ const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
+  ...(brokerArtifactRoot === undefined
+    ? {}
+    : { outputDir: `${brokerArtifactRoot}/playwright-output` }),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace:
+      process.env['RUSTY_ROLEPLAY_LIVE_RUN'] === '1' ? 'on' : 'on-first-retry',
   },
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'pnpm exec nx run roleplay-web:serve',
-    url: 'http://localhost:4200',
-    reuseExistingServer: true,
-    cwd: workspaceRoot
-  },
+  webServer: externallyManagedServer
+    ? undefined
+    : {
+        command: 'pnpm exec nx run roleplay-web:serve',
+        url: 'http://localhost:4200',
+        reuseExistingServer: false,
+        cwd: workspaceRoot,
+      },
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
     },
 
     {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
     },
 
     {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
     },
 
     // Uncomment for mobile browsers support

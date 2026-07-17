@@ -38,6 +38,9 @@ import { RoleplayWorkbench } from './roleplay-workbench';
         [errorMessage]="workbench.selectError()"
         (selectProfile)="onProfileSelect($event)"
       />
+      @if (workbench.profilesLoading()) {
+        <p role="status">Loading…</p>
+      }
     }
   `,
 })

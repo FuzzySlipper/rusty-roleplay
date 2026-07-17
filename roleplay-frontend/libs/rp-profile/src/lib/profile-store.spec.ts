@@ -8,27 +8,29 @@ describe('ProfileStore', () => {
     return TestBed.configureTestingModule({}).inject(ProfileStore);
   }
 
-  it('starts unauthenticated with seed profiles', () => {
+  it('starts unauthenticated without placeholder profiles', () => {
     const s = store();
     expect(s.isAuthenticated()).toBe(false);
-    expect(s.profiles().length).toBeGreaterThanOrEqual(2);
+    expect(s.profiles()).toEqual([]);
   });
 
   it('selects a password-free profile', () => {
     const s = store();
-    expect(s.select('sister-a')).toEqual({ ok: true });
-    expect(s.activeProfile()?.id).toBe('sister-a');
+    const profile = s.addProfile('Sister A');
+    expect(s.select(profile.id)).toEqual({ ok: true });
+    expect(s.activeProfile()?.id).toBe(profile.id);
   });
 
   it('rejects a wrong password and accepts the right one', () => {
     const s = store();
-    expect(s.select('sister-b', 'nope')).toEqual({
+    const profile = s.addProfile('Sister B', 'rose');
+    expect(s.select(profile.id, 'nope')).toEqual({
       ok: false,
       reason: 'wrong_password',
     });
     expect(s.isAuthenticated()).toBe(false);
-    expect(s.select('sister-b', 'rose')).toEqual({ ok: true });
-    expect(s.activeProfile()?.id).toBe('sister-b');
+    expect(s.select(profile.id, 'rose')).toEqual({ ok: true });
+    expect(s.activeProfile()?.id).toBe(profile.id);
   });
 
   it('reports unknown profiles', () => {
@@ -38,8 +40,9 @@ describe('ProfileStore', () => {
     });
   });
 
-  it('replaces seed profiles from a backend registry', () => {
+  it('replaces local profiles from a backend registry', () => {
     const s = store();
+    s.addProfile('Sister A');
     s.setProfiles([
       { id: 'rp-narrator', name: 'RP Narrator', hasPassword: false },
     ]);
@@ -54,7 +57,8 @@ describe('ProfileStore', () => {
 
   it('signs out back to the selector', () => {
     const s = store();
-    s.select('sister-a');
+    const profile = s.addProfile('Sister A');
+    s.select(profile.id);
     s.signOut();
     expect(s.isAuthenticated()).toBe(false);
   });

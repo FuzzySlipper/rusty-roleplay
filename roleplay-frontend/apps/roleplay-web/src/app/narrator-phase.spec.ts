@@ -43,4 +43,24 @@ describe('deriveNarratorPhase', () => {
       ]),
     ).toBe('composing');
   });
+
+  it('keeps the final explicit idle phase after completion bookkeeping', () => {
+    expect(
+      deriveNarratorPhase([
+        event('assistant_turn_finished', { wake_id: 'wake-a' }),
+        event('phase_change', { phase: 'idle', wake_id: 'wake-a' }),
+        event('assistant_message_completed', { wake_id: 'wake-a' }),
+        event('unknown', { source_event_type: 'brain_actions_accepted' }),
+      ]),
+    ).toBe('idle');
+  });
+
+  it('does not reuse an older turn phase for a newly started wake', () => {
+    expect(
+      deriveNarratorPhase([
+        event('phase_change', { phase: 'idle', wake_id: 'wake-old' }),
+        event('assistant_turn_started', { wake_id: 'wake-new' }),
+      ]),
+    ).toBe('exploring');
+  });
 });

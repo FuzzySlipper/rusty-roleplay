@@ -105,6 +105,31 @@ database file, and static SPA serving. The final live-turn smoke sends Rowan's
 first message through the seeded RP narrator and host den-router, then requires
 a completed streamed response.
 
+### Browser live certification
+
+After the installed stack is healthy, run the opt-in Playwright scenario
+against the deployed frontend and API. It selects the seeded profile, verifies
+the configured RP scene and controls, sends a real narrator turn through
+den-router, observes the phase lifecycle, expands tool and reasoning output,
+and reloads the page to prove transcript persistence.
+
+```bash
+cd /home/dev/rusty-roleplay/roleplay-frontend
+BASE_URL=http://<host>:9350 \
+RUSTY_ROLEPLAY_DEPLOYED_RUN=1 \
+RUSTY_ROLEPLAY_LIVE_RUN=1 \
+RUSTY_ROLEPLAY_LIVE_BACKEND_URL=http://<host>:9350 \
+pnpm exec playwright test \
+  --config=apps/roleplay-web-e2e/playwright.config.mts \
+  --project=chromium \
+  --grep='@live-roleplay'
+```
+
+The scenario writes screenshots, the visible transcript, console and page
+errors, a debug snapshot, and an evidence packet beneath Playwright's output
+directory. A normal local E2E run skips this scenario unless
+`RUSTY_ROLEPLAY_LIVE_RUN=1` is set.
+
 ## Backup and reset
 
 For a consistent SQLite backup, stop the service before copying its data:

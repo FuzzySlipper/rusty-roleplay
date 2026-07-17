@@ -4,29 +4,40 @@ import type { NarratorPhase } from '@rusty-roleplay/rp-scene-controls';
 export function deriveNarratorPhase(
   events: readonly ChatEvent[],
 ): NarratorPhase {
+  let lifecycleFallback: NarratorPhase | undefined;
+  let lifecycleWakeId: string | undefined;
+
   for (let index = events.length - 1; index >= 0; index -= 1) {
     const event = events[index];
     if (event === undefined) {
       continue;
     }
-    if (event.kind === 'assistant_turn_finished') {
-      return 'done';
-    }
-    if (event.kind === 'assistant_message_completed') {
-      return 'reviewing';
-    }
-    if (event.kind === 'assistant_text_delta') {
-      return 'composing';
-    }
-    if (event.kind === 'assistant_turn_started') {
-      return 'exploring';
-    }
     const phase = readPhaseChange(event);
-    if (phase !== undefined) {
+    if (
+      phase !== undefined &&
+      (lifecycleWakeId === undefined || readWakeId(event) === lifecycleWakeId)
+    ) {
       return phase;
     }
+    if (
+      event.kind === 'assistant_turn_finished' ||
+      event.kind === 'assistant_message_completed'
+    ) {
+      lifecycleFallback ??= 'done';
+      lifecycleWakeId ??= readWakeId(event);
+      continue;
+    }
+    if (event.kind === 'assistant_text_delta') {
+      lifecycleFallback ??= 'composing';
+      lifecycleWakeId ??= readWakeId(event);
+      continue;
+    }
+    if (event.kind === 'assistant_turn_started') {
+      lifecycleFallback ??= 'exploring';
+      lifecycleWakeId ??= readWakeId(event);
+    }
   }
-  return 'idle';
+  return lifecycleFallback ?? 'idle';
 }
 
 function readPhaseChange(event: ChatEvent): NarratorPhase | undefined {
@@ -36,18 +47,28 @@ function readPhaseChange(event: ChatEvent): NarratorPhase | undefined {
   ) {
     return undefined;
   }
-  const payload = event.payload as Record<string, unknown>;
+  const payload = readEventPayload(event);
+  if (payload === undefined) {
+    return undefined;
+  }
+  const phase = payload['phase'];
+  return isNarratorPhase(phase) ? phase : undefined;
+}
+
+function readWakeId(event: ChatEvent): string | undefined {
+  const wakeId = readEventPayload(event)?.['wake_id'];
+  return typeof wakeId === 'string' ? wakeId : undefined;
+}
+
+function readEventPayload(
+  event: ChatEvent,
+): Record<string, unknown> | undefined {
+  const payload: unknown = event.payload;
   if (!isRecord(payload)) {
     return undefined;
   }
-  const raw = isRecord(payload['raw'])
-    ? (payload['raw'] as Record<string, unknown>)
-    : payload;
-  const rawPayload = isRecord(raw['payload'])
-    ? (raw['payload'] as Record<string, unknown>)
-    : raw;
-  const phase = rawPayload['phase'];
-  return isNarratorPhase(phase) ? phase : undefined;
+  const raw = isRecord(payload['raw']) ? payload['raw'] : payload;
+  return isRecord(raw['payload']) ? raw['payload'] : raw;
 }
 
 function isNarratorPhase(value: unknown): value is NarratorPhase {

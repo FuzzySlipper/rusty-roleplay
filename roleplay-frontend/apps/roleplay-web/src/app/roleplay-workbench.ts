@@ -123,6 +123,7 @@ export class RoleplayWorkbench {
     undefined,
   );
   readonly selectError = signal<string | undefined>(undefined);
+  readonly profilesLoading = signal(true);
   readonly sessionError = signal<string | undefined>(undefined);
   readonly sessionsLoading = signal(false);
   readonly sessionsError = signal<string | undefined>(undefined);
@@ -267,6 +268,8 @@ export class RoleplayWorkbench {
       }
     } catch (error: unknown) {
       this.selectError.set(readErrorMessage(error));
+    } finally {
+      this.profilesLoading.set(false);
     }
   }
 
@@ -606,9 +609,7 @@ export class RoleplayWorkbench {
         this.chatStore.refreshSessions(),
       ]);
       const genericSessions = this.chatStore.sessions();
-      const roleplaySelection =
-        roleplaySessions.find((session) => !session.archived) ??
-        roleplaySessions.find((session) => session.archived);
+      const roleplaySelection = preferredRoleplaySession(roleplaySessions);
       const matching = genericSessions.find(
         (session) =>
           session.profile_id === profileId && session.status !== 'archived',
@@ -1657,6 +1658,22 @@ export class RoleplayWorkbench {
       ...(layerIds.length > 0 ? { layerIds } : {}),
     };
   }
+}
+
+function preferredRoleplaySession(
+  sessions: readonly RoleplaySessionSummary[],
+): RoleplaySessionSummary | undefined {
+  const configured = sessions.find(
+    (session) =>
+      !session.archived &&
+      (session.displayName ||
+        session.characterId ||
+        session.playerPersonaId ||
+        session.activeLayerIds.length > 0),
+  );
+  return (
+    configured ?? sessions.find((session) => !session.archived) ?? sessions[0]
+  );
 }
 
 function toStreamStatus(status: string): StreamStatusKind {

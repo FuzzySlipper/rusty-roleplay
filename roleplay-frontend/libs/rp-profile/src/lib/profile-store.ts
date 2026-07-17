@@ -2,16 +2,6 @@ import { computed, Injectable, signal } from '@angular/core';
 
 import { Profile, ProfileSelectResult } from './profile.model';
 
-/** Seed profiles for development. In a later task these load from disk/config. */
-const SEED_PROFILES: readonly Profile[] = [
-  { id: 'sister-a', name: 'Sister A', hasPassword: false },
-  { id: 'sister-b', name: 'Sister B', hasPassword: true },
-];
-
-const SEED_PASSWORDS: Readonly<Record<string, string>> = {
-  'sister-b': 'rose',
-};
-
 /**
  * Signals store for profile selection. Holds the profile list and the active
  * profile; enforces optional plain-text passwords. Profile-scoped — no state is
@@ -20,10 +10,8 @@ const SEED_PASSWORDS: Readonly<Record<string, string>> = {
  */
 @Injectable({ providedIn: 'root' })
 export class ProfileStore {
-  private readonly profilesSig = signal<readonly Profile[]>(SEED_PROFILES);
-  private readonly passwords = new Map<string, string>(
-    Object.entries(SEED_PASSWORDS),
-  );
+  private readonly profilesSig = signal<readonly Profile[]>([]);
+  private readonly passwords = new Map<string, string>();
   private readonly activeIdSig = signal<string | null>(null);
 
   readonly profiles = this.profilesSig.asReadonly();

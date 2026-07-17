@@ -1,0 +1,21 @@
+{
+  "project": "rusty-roleplay",
+  "serve": {
+    "command": "pnpm exec nx run roleplay-web:serve -- --host {host} --port {port}",
+    "preferredPort": 4200,
+    "healthUrl": "/",
+    "readyText": "app-root",
+    "reusePolicy": "broker_owned",
+    "env": {
+      "NX_DAEMON": "false"
+    }
+  },
+  "tests": {
+    "command": "pnpm exec playwright test",
+    "config": "apps/roleplay-web-e2e/playwright.config.mts",
+    "artifactPolicy": "live-ui",
+    "env": {
+      "NX_DAEMON": "false"
+    }
+  }
+}
