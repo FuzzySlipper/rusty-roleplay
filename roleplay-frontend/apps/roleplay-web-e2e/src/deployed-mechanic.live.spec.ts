@@ -140,6 +140,9 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   ).toBeVisible();
   await expect(page.locator('rv-transcript-viewport')).toBeVisible();
   await capture(page, testInfo, screenshots, '01-attached-mechanic-session');
+  await page
+    .getByRole('button', { name: 'Close Mechanic / OOC Workspace' })
+    .click();
 
   const proposalMarkdown = [
     '---',
@@ -215,6 +218,7 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
     await narratorConfig(request, config.backendUrl, config.narratorProfileId),
   ).toEqual(beforeNarratorConfig);
 
+  await openMechanicPanel(page);
   await panel.getByRole('button', { name: 'Proposals', exact: true }).click();
   await panel.getByRole('button', { name: 'Refresh', exact: true }).click();
   const acceptedProposalCard = panel
