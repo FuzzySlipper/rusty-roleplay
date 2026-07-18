@@ -151,6 +151,26 @@ the disposable narrator exemplar. Re-running `seed-test-data.mjs` restores the
 fixture exemplar before another certification run. Do not point this command at
 shared live or debug Crew roots.
 
+### Browser mechanic certification
+
+Run the full browser-visible certification from the source checkout. The helper
+seeds the isolated fixture, discovers its attached mechanic session, drives the
+real mechanic chat and proposal controls in Chromium, restarts only the
+`rusty-roleplay` service in this Compose project, and verifies the applied
+proposal and diagnostic outcome after the service becomes healthy again.
+
+```bash
+cd /home/dev/rusty-roleplay
+./scripts/run-mechanic-live-certification.sh
+```
+
+Each run writes screenshots, the visible mechanic transcript, console and page
+errors, backend state receipts, an exact source/image revision snapshot, and an
+evidence packet beneath
+`/home/system/rusty-roleplay-test/artifacts/task-5962/<timestamp>/`. The
+Playwright scenario is tagged `@live-mechanic` and remains skipped during normal
+E2E runs. Its restart gate must not be enabled for any shared Crew deployment.
+
 ## Backup and reset
 
 For a consistent SQLite backup, stop the service before copying its data:
