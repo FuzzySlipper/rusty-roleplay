@@ -68,6 +68,13 @@ export const ROLEPLAY_DEBUG_TABS: readonly ChatDebugTab[] = [
     mode: 'controls',
     component: AdminServicePanelComponent,
   },
+  {
+    id: 'prompt-stack',
+    label: 'Prompt',
+    order: 50,
+    mode: 'diagnostics',
+    component: PromptStackPanelComponent,
+  },
 ];
 
 export const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
@@ -94,14 +101,6 @@ export const ROLEPLAY_TOP_MENU_PANELS: readonly ChatTopMenuPanel[] = [
     order: 15,
     width: 'wide',
     component: RoleplayLoreMenuPanelComponent,
-  },
-  {
-    id: 'rp-prompt-stack',
-    label: 'Prompt',
-    title: 'Prompt Stack',
-    order: 17,
-    width: 'wide',
-    component: PromptStackPanelComponent,
   },
   {
     id: 'rp-mechanics',
@@ -141,14 +140,6 @@ export const ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS: readonly Omit<
     kind: 'panel',
     panelId: 'rp-lore',
     order: 15,
-  },
-  {
-    id: 'rp-prompt-stack',
-    label: 'Prompt',
-    tooltip: 'Inspect the compiled prompt sections and source trace',
-    kind: 'panel',
-    panelId: 'rp-prompt-stack',
-    order: 17,
   },
   {
     id: 'rp-mechanics',

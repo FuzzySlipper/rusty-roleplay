@@ -112,6 +112,22 @@ test('profile gate → transcript rows, decorator, and RP extensions', async ({
   await expect(page.getByRole('button', { name: 'RP Setup' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Lore' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Mechanic' })).toBeVisible();
+  await expect(
+    page
+      .getByTestId('top-menu')
+      .getByRole('button', { name: 'Prompt', exact: true }),
+  ).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Debug', exact: true }).click();
+  const debugDialog = page.getByRole('dialog', { name: 'Debug' });
+  await debugDialog
+    .getByRole('button', { name: 'Prompt', exact: true })
+    .click();
+  await expect(
+    debugDialog.getByRole('heading', { name: 'Prompt Stack' }),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(debugDialog).toBeHidden();
 
   await page.getByRole('button', { name: 'RP Setup' }).click();
   await expect(page.getByRole('tab', { name: 'Personas' })).toBeVisible();

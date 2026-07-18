@@ -1,6 +1,8 @@
 import { AdminServicePanelComponent } from '@rusty-view/chat-shell';
 import { describe, expect, it } from 'vitest';
 
+import { PromptStackPanelComponent } from './prompt-stack/prompt-stack-panel';
+
 import {
   ROLEPLAY_DEBUG_TABS,
   ROLEPLAY_TOP_MENU_CONFIGURATION,
@@ -26,9 +28,11 @@ describe('roleplay top-menu configuration', () => {
     expect(roleplayItemLabels).toContain('RP Sessions');
     expect(roleplayItemLabels).not.toContain('Sessions');
     expect(roleplayItemLabels).not.toContain('Service');
+    expect(roleplayItemLabels).not.toContain('Prompt');
+    expect(roleplayPanelLabels).not.toContain('Prompt');
   });
 
-  it('contributes the Service controls through the built-in Debug surface', () => {
+  it('contributes Service and Prompt through the built-in Debug surface', () => {
     expect(ROLEPLAY_DEBUG_TABS).toEqual([
       {
         id: 'service',
@@ -36,6 +40,13 @@ describe('roleplay top-menu configuration', () => {
         order: 40,
         mode: 'controls',
         component: AdminServicePanelComponent,
+      },
+      {
+        id: 'prompt-stack',
+        label: 'Prompt',
+        order: 50,
+        mode: 'diagnostics',
+        component: PromptStackPanelComponent,
       },
     ]);
   });
