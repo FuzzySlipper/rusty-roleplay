@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
   output,
@@ -18,6 +19,7 @@ import { TranscriptViewportComponent } from '@rusty-view/transcript-renderer';
 import type {
   MessageRevisionAction,
   MessageRevisionCapabilities,
+  TranscriptActivityVisibility,
 } from '@rusty-view/transcript-renderer';
 import {
   NarratorPhaseIndicatorComponent,
@@ -58,6 +60,18 @@ import {
         >
           {{ sceneLabel() }}
         </button>
+        <label
+          class="activity-toggle"
+          rvTooltip="Show or hide tool calls and intermediate reasoning"
+        >
+          <input
+            type="checkbox"
+            data-testid="model-activity-toggle"
+            [checked]="showModelActivity()"
+            (change)="onModelActivityChange($event)"
+          />
+          <span>Model activity</span>
+        </label>
         <rv-stream-status
           class="status"
           [status]="connectionStatus()"
@@ -73,6 +87,7 @@ import {
           [searchEnabled]="searchEnabled()"
           [alternateSlots]="alternateSlots()"
           [revisionCapabilities]="revisionCapabilities()"
+          [activityVisibility]="activityVisibility()"
           (revisionRequested)="revisionRequested.emit($event)"
         />
         <div class="phase-bar">
@@ -97,6 +112,7 @@ import {
           'header'
           'transcript';
         height: 100vh;
+        height: 100dvh;
       }
       .header {
         grid-area: header;
@@ -129,6 +145,19 @@ import {
       }
       .status {
         margin-left: auto;
+      }
+      .activity-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        color: var(--rv-color-text-secondary, inherit);
+        cursor: pointer;
+        font-size: var(--rv-font-size-xs, 0.75rem);
+        white-space: nowrap;
+      }
+      .activity-toggle input {
+        accent-color: var(--rv-color-accent, currentColor);
+        cursor: pointer;
       }
       .transcript-region {
         grid-area: transcript;
@@ -167,14 +196,28 @@ export class RpLayoutComponent {
   readonly sceneLabel = input<string>('');
   readonly sendDisabled = input<boolean>(false);
   readonly searchEnabled = input<boolean>(false);
+  readonly showModelActivity = input<boolean>(false);
   readonly alternateSlots = input<readonly MessageAlternateSlot[]>([]);
   readonly revisionCapabilities = input<MessageRevisionCapabilities>({});
+
+  protected readonly activityVisibility =
+    computed<TranscriptActivityVisibility>(() => ({
+      reasoning: this.showModelActivity(),
+      tools: this.showModelActivity(),
+    }));
 
   readonly send = output<string>();
   readonly reconnect = output<void>();
   readonly revisionRequested = output<MessageRevisionAction>();
+  readonly showModelActivityChange = output<boolean>();
 
   protected openSessionsPanel(): void {
     this.topMenu.openPanel('rp-sessions');
+  }
+
+  protected onModelActivityChange(event: Event): void {
+    if (event.target instanceof HTMLInputElement) {
+      this.showModelActivityChange.emit(event.target.checked);
+    }
   }
 }

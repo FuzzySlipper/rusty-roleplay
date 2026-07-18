@@ -10,11 +10,11 @@ const SESSION = {
   kind: 'full',
   status: 'idle',
   title: 'Northmarch Road',
-  latest_cursor: `${SESSION_ID}:8`,
+  latest_cursor: `${SESSION_ID}:11`,
   created_at: '2026-07-10T00:00:00Z',
   updated_at: '2026-07-10T00:01:00Z',
   message_count: 3,
-  tool_event_count: 0,
+  tool_event_count: 1,
 };
 
 const EVENTS = [
@@ -33,15 +33,33 @@ const EVENTS = [
     body: 'I check the milestone for recent tracks.',
   }),
   event(5, 'assistant_turn_started', {}),
-  event(6, 'assistant_text_delta', {
-    message_id: 'boundary-assistant-2',
-    delta: 'Boot prints lead toward the baron’s hall.',
+  event(6, 'assistant_reasoning_delta', {
+    wake_id: 'boundary-wake-2',
+    text: 'I should inspect the tracks before answering.',
+    visibility: 'reasoning',
   }),
-  event(7, 'assistant_message_completed', {
-    message_id: 'boundary-assistant-2',
+  event(7, 'tool_call_started', {
+    tool_call_id: 'boundary-tool-1',
+    tool_name: 'inspect_tracks',
+    summary: 'Inspecting the milestone tracks',
+    status: 'started',
+  }),
+  event(8, 'tool_call_completed', {
+    tool_call_id: 'boundary-tool-1',
+    tool_name: 'inspect_tracks',
+    summary: 'Found boot prints toward the hall',
     status: 'completed',
   }),
-  event(8, 'phase_change', { phase: 'idle' }),
+  event(9, 'assistant_text_delta', {
+    wake_id: 'boundary-wake-2',
+    text: 'Boot prints lead toward the baron’s hall.',
+  }),
+  event(10, 'assistant_message_completed', {
+    wake_id: 'boundary-wake-2',
+    body: 'Boot prints lead toward the baron’s hall.',
+    status: 'completed',
+  }),
+  event(11, 'phase_change', { phase: 'idle' }),
 ];
 
 test('profile gate → transcript rows, decorator, and RP extensions', async ({
@@ -73,6 +91,22 @@ test('profile gate → transcript rows, decorator, and RP extensions', async ({
     page.getByText('The northern road is quiet', { exact: false }),
   ).toBeVisible();
   await expect(page.locator('.rv-message__prefix').first()).toContainText('📖');
+
+  const modelActivityToggle = page.getByTestId('model-activity-toggle');
+  await expect(modelActivityToggle).not.toBeChecked();
+  await expect(page.getByTestId('reasoning-block')).toHaveCount(0);
+  await expect(page.getByTestId('tool-call-block')).toHaveCount(0);
+
+  await modelActivityToggle.check();
+  await expect(page.getByTestId('reasoning-block')).toHaveCount(1);
+  await expect(page.getByTestId('tool-call-block')).toHaveCount(1);
+  await expect(page.getByTestId('tool-call-block')).toContainText(
+    'inspect_tracks',
+  );
+
+  await modelActivityToggle.uncheck();
+  await expect(page.getByTestId('reasoning-block')).toHaveCount(0);
+  await expect(page.getByTestId('tool-call-block')).toHaveCount(0);
 
   await expect(page.getByRole('button', { name: 'RP Sessions' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'RP Setup' })).toBeVisible();
@@ -183,7 +217,7 @@ function event(
     event_id: `${SESSION_ID}:${sequenceId}`,
     session_id: SESSION_ID,
     sequence_id: sequenceId,
-    created_at: `2026-07-10T00:00:0${sequenceId}Z`,
+    created_at: `2026-07-10T00:00:${String(sequenceId).padStart(2, '0')}Z`,
     kind,
     payload,
   };

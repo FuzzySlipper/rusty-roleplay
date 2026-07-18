@@ -74,6 +74,8 @@ import {
   applyRoleplayTextStyle,
   decorateRoleplayMessages,
   loadRoleplayTextStyle,
+  loadRoleplayModelActivityVisibility,
+  saveRoleplayModelActivityVisibility,
   saveRoleplayTextStyle,
   type RoleplayTextStyleSettings,
 } from './transcript-presentation/roleplay-transcript-presentation';
@@ -139,6 +141,7 @@ export class RoleplayWorkbench {
   readonly narratorConfigSaving = signal(false);
   readonly narratorConfigError = signal<string | undefined>(undefined);
   readonly transcriptSearchEnabled = signal(false);
+  readonly showModelActivity = signal(false);
   readonly textStyleSettings = signal<RoleplayTextStyleSettings>(
     loadRoleplayTextStyle('default'),
   );
@@ -316,6 +319,9 @@ export class RoleplayWorkbench {
     if (result.ok) {
       const settings = loadRoleplayTextStyle(selection.profileId);
       this.textStyleSettings.set(settings);
+      this.showModelActivity.set(
+        loadRoleplayModelActivityVisibility(selection.profileId),
+      );
       applyRoleplayTextStyle(settings);
       void this.connectToProfile(selection.profileId);
     }
@@ -333,6 +339,14 @@ export class RoleplayWorkbench {
 
   toggleTranscriptSearch(): void {
     this.transcriptSearchEnabled.update((enabled) => !enabled);
+  }
+
+  setModelActivityVisible(visible: boolean): void {
+    this.showModelActivity.set(visible);
+    const profileId = this.activeProfile()?.id;
+    if (profileId !== undefined) {
+      saveRoleplayModelActivityVisibility(profileId, visible);
+    }
   }
 
   updateTextStyle(settings: RoleplayTextStyleSettings): void {

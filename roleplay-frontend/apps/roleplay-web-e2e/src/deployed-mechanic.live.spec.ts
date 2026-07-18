@@ -141,6 +141,9 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   await expect(page.locator('rv-transcript-viewport')).toBeVisible();
   await capture(page, testInfo, screenshots, '01-attached-mechanic-session');
   await closeMechanicPanel(page);
+  const modelActivityToggle = page.getByTestId('model-activity-toggle');
+  await expect(modelActivityToggle).not.toBeChecked();
+  await modelActivityToggle.check();
 
   const proposalMarkdown = [
     '---',

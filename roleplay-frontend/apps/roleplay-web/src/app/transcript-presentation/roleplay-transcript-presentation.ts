@@ -62,14 +62,14 @@ export const ROLEPLAY_TEXT_STYLE_PRESETS: readonly RoleplayTextStylePreset[] = [
   },
 ];
 
-export const DEFAULT_ROLEPLAY_TEXT_STYLE =
-  ROLEPLAY_TEXT_STYLE_PRESETS[0]?.settings ?? {
-    presetId: 'rp-night',
-    dialogueColor: '#d9cb82',
-    narrationColor: '#b7c0cc',
-    emphasisColor: '#eaa6d8',
-    oocColor: '#8ea0b5',
-  };
+export const DEFAULT_ROLEPLAY_TEXT_STYLE = ROLEPLAY_TEXT_STYLE_PRESETS[0]
+  ?.settings ?? {
+  presetId: 'rp-night',
+  dialogueColor: '#d9cb82',
+  narrationColor: '#b7c0cc',
+  emphasisColor: '#eaa6d8',
+  oocColor: '#8ea0b5',
+};
 
 export function decorateRoleplayMessages(
   messages: readonly ChatMessage[],
@@ -119,7 +119,11 @@ export function roleplayTextSpans(
 ): readonly TranscriptTextSpan[] {
   const spans: TranscriptTextSpan[] = [];
   for (const match of content.matchAll(/"[^"\n]+"/g)) {
-    spans.push({ start: match.index, end: match.index + match[0].length, scope: 'quote' });
+    spans.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      scope: 'quote',
+    });
   }
   for (const match of content.matchAll(/\*[^*\n]+\*/g)) {
     spans.push({
@@ -137,7 +141,9 @@ export function roleplayTextSpans(
       scope: 'muted',
     });
   }
-  return spans.sort((left, right) => left.start - right.start || left.end - right.end);
+  return spans.sort(
+    (left, right) => left.start - right.start || left.end - right.end,
+  );
 }
 
 export function readSpeakerIdentity(
@@ -154,7 +160,9 @@ export function readSpeakerIdentity(
   return undefined;
 }
 
-export function applyRoleplayTextStyle(settings: RoleplayTextStyleSettings): void {
+export function applyRoleplayTextStyle(
+  settings: RoleplayTextStyleSettings,
+): void {
   const root = document.documentElement;
   root.style.setProperty('--rv-text-scope-quote', settings.dialogueColor);
   root.style.setProperty('--rv-text-scope-plain', settings.narrationColor);
@@ -183,13 +191,31 @@ export function saveRoleplayTextStyle(
   settings: RoleplayTextStyleSettings,
   storage: Pick<Storage, 'setItem'> = window.localStorage,
 ): void {
-  storage.setItem(storageKey(profileId), JSON.stringify(normalizeTextStyle(settings)));
+  storage.setItem(
+    storageKey(profileId),
+    JSON.stringify(normalizeTextStyle(settings)),
+  );
+}
+
+export function loadRoleplayModelActivityVisibility(
+  profileId: string,
+  storage: Pick<Storage, 'getItem'> = window.localStorage,
+): boolean {
+  return storage.getItem(modelActivityStorageKey(profileId)) === 'true';
+}
+
+export function saveRoleplayModelActivityVisibility(
+  profileId: string,
+  visible: boolean,
+  storage: Pick<Storage, 'setItem'> = window.localStorage,
+): void {
+  storage.setItem(modelActivityStorageKey(profileId), String(visible));
 }
 
 export function presetById(presetId: string): RoleplayTextStyleSettings {
   return (
-    ROLEPLAY_TEXT_STYLE_PRESETS.find((preset) => preset.id === presetId)?.settings ??
-    DEFAULT_ROLEPLAY_TEXT_STYLE
+    ROLEPLAY_TEXT_STYLE_PRESETS.find((preset) => preset.id === presetId)
+      ?.settings ?? DEFAULT_ROLEPLAY_TEXT_STYLE
   );
 }
 
@@ -210,16 +236,25 @@ function normalizeTextStyle(
       value.emphasisColor,
       DEFAULT_ROLEPLAY_TEXT_STYLE.emphasisColor,
     ),
-    oocColor: colorOrDefault(value.oocColor, DEFAULT_ROLEPLAY_TEXT_STYLE.oocColor),
+    oocColor: colorOrDefault(
+      value.oocColor,
+      DEFAULT_ROLEPLAY_TEXT_STYLE.oocColor,
+    ),
   };
 }
 
 function colorOrDefault(value: string | undefined, fallback: string): string {
-  return value !== undefined && /^#[0-9a-fA-F]{6}$/.test(value) ? value : fallback;
+  return value !== undefined && /^#[0-9a-fA-F]{6}$/.test(value)
+    ? value
+    : fallback;
 }
 
 function storageKey(profileId: string): string {
   return `rusty-roleplay:text-style:${profileId}`;
+}
+
+function modelActivityStorageKey(profileId: string): string {
+  return `rusty-roleplay:model-activity:${profileId}`;
 }
 
 function mapSpeakerIdentity(

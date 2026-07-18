@@ -4,8 +4,10 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   decorateRoleplayMessages,
   decorateRoleplayMessage,
+  loadRoleplayModelActivityVisibility,
   loadRoleplayTextStyle,
   roleplayTextSpans,
+  saveRoleplayModelActivityVisibility,
   saveRoleplayTextStyle,
 } from './roleplay-transcript-presentation';
 
@@ -63,16 +65,16 @@ describe('roleplay transcript presentation', () => {
       'Jorge',
       'Seraphina',
     ]);
-    expect(messages.map((message) => message.author.speaker?.avatarUrl)).toEqual([
+    expect(
+      messages.map((message) => message.author.speaker?.avatarUrl),
+    ).toEqual([
       'https://example.test/jorge.png',
       'https://example.test/seraphina.png',
     ]);
   });
 
   it('leaves legacy messages on rusty-view role fallbacks', () => {
-    const message = decorateRoleplayMessage(
-      chatMessage({ role: 'assistant' }),
-    );
+    const message = decorateRoleplayMessage(chatMessage({ role: 'assistant' }));
 
     expect(message.author.speaker).toBeUndefined();
   });
@@ -119,6 +121,30 @@ describe('roleplay transcript presentation', () => {
     );
     expect(loadRoleplayTextStyle('profile-a', storage).dialogueColor).toBe(
       '#111111',
+    );
+  });
+
+  it('persists model activity visibility per profile and defaults to hidden', () => {
+    const values = new Map<string, string>();
+    const storage = {
+      getItem: vi.fn((key: string) => values.get(key) ?? null),
+      setItem: vi.fn((key: string, value: string) => values.set(key, value)),
+    };
+
+    expect(loadRoleplayModelActivityVisibility('profile-a', storage)).toBe(
+      false,
+    );
+
+    saveRoleplayModelActivityVisibility('profile-a', true, storage);
+    expect(storage.setItem).toHaveBeenCalledWith(
+      'rusty-roleplay:model-activity:profile-a',
+      'true',
+    );
+    expect(loadRoleplayModelActivityVisibility('profile-a', storage)).toBe(
+      true,
+    );
+    expect(loadRoleplayModelActivityVisibility('profile-b', storage)).toBe(
+      false,
     );
   });
 });

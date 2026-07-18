@@ -71,6 +71,9 @@ test('deployed roleplay narrator survives refresh with RP controls @live-rolepla
   await enterProfile(page, profileName);
   await expect(page.locator('rv-transcript-viewport')).toBeVisible();
   await expect(page.locator('.scene')).toHaveText(sessionName);
+  const modelActivityToggle = page.getByTestId('model-activity-toggle');
+  await expect(modelActivityToggle).not.toBeChecked();
+  await modelActivityToggle.check();
   await capture(page, testInfo, screenshots, '01-profile-selected');
 
   await page.getByRole('button', { name: 'RP Sessions', exact: true }).click();
@@ -150,6 +153,7 @@ test('deployed roleplay narrator survives refresh with RP controls @live-rolepla
   await page.reload();
   await enterProfile(page, profileName);
   await expect(page.locator('.scene')).toHaveText(sessionName);
+  await expect(page.getByTestId('model-activity-toggle')).toBeChecked();
   await expect(page.getByText(marker, { exact: false })).toBeVisible({
     timeout: 30_000,
   });

@@ -26,11 +26,13 @@ import { RoleplayWorkbench } from './roleplay-workbench';
         [sceneLabel]="workbench.sceneLabel()"
         [sendDisabled]="workbench.sendDisabled()"
         [searchEnabled]="workbench.transcriptSearchEnabled()"
+        [showModelActivity]="workbench.showModelActivity()"
         [alternateSlots]="workbench.alternateSlots()"
         [revisionCapabilities]="workbench.revisionCapabilities()"
         (send)="workbench.send($event)"
         (reconnect)="workbench.reconnect()"
         (revisionRequested)="workbench.handleRevisionAction($event)"
+        (showModelActivityChange)="workbench.setModelActivityVisible($event)"
       />
     } @else {
       <rp-profile-selector
