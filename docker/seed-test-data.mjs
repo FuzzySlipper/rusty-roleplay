@@ -2,6 +2,7 @@ const baseUrl = (
   process.env.RUSTY_ROLEPLAY_BASE_URL ?? "http://127.0.0.1:9347"
 ).replace(/\/+$/, "");
 const profileId = "roleplay-test";
+const mechanicProfileId = "roleplay-mechanic-test";
 const providerAlias = "roleplay-test-router";
 const providerBaseUrl = (
   process.env.RUSTY_ROLEPLAY_PROVIDER_BASE_URL ??
@@ -58,6 +59,38 @@ if (!(await exists(`/v1/admin/profiles/registry/${profileId}`))) {
     localToolProfileId: "roleplay_lore",
     reason: "isolated Docker roleplay test fixture",
   });
+}
+
+if (!(await exists(`/v1/admin/profiles/registry/${mechanicProfileId}`))) {
+  await api("POST", "/v1/admin/control/profiles", {
+    profileId: mechanicProfileId,
+    displayName: "Roleplay Mechanic Test",
+    kind: "full",
+    providerAlias,
+    localToolProfileId: "basic_chat",
+    reason: "isolated Docker roleplay mechanic test fixture",
+  });
+}
+
+const mechanicConfig = await api(
+  "GET",
+  `/v1/admin/roleplay/profiles/${mechanicProfileId}/mechanic-config`,
+);
+if (
+  mechanicConfig.configured !== true ||
+  mechanicConfig.toolPolicyIsolated !== true ||
+  mechanicConfig.config?.name !== "Maren" ||
+  mechanicConfig.config?.providerAlias !== providerAlias
+) {
+  await api(
+    "PATCH",
+    `/v1/admin/roleplay/profiles/${mechanicProfileId}/mechanic-config`,
+    {
+      name: "Maren",
+      providerAlias,
+      autoMonitor: false,
+    },
+  );
 }
 
 const layers = await api(
@@ -134,6 +167,24 @@ if (!(await exists(`/v1/admin/roleplay/sessions/${roleplaySessionId}`))) {
   });
 }
 
+const mechanicSessions = await api(
+  "GET",
+  `/v1/admin/roleplay/mechanic-sessions?mechanic_profile_id=${mechanicProfileId}`,
+);
+const mechanicSession = array(mechanicSessions.items).find(
+  (item) =>
+    item?.association?.roleplaySessionId === roleplaySessionId &&
+    item?.session?.status !== "archived",
+);
+const mechanicSessionId =
+  mechanicSession?.association?.mechanicSessionId ??
+  (
+    await api("POST", "/v1/admin/roleplay/mechanic-sessions", {
+      profileId: mechanicProfileId,
+      roleplaySessionId,
+    })
+  ).association.mechanicSessionId;
+
 const search = await api(
   "GET",
   `/v1/admin/roleplay/lore/entries/search?q=clockmaker&profile_id=${profileId}&layer_id=${layerId}&limit=20&offset=0`,
@@ -190,6 +241,8 @@ console.log(
       providerAlias,
       providerBaseUrl,
       profileId,
+      mechanicProfileId,
+      mechanicSessionId,
       runtimeSessionId: `${profileId}-session`,
       roleplaySessionId,
       layerId,

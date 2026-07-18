@@ -130,6 +130,27 @@ errors, a debug snapshot, and an evidence packet beneath Playwright's output
 directory. A normal local E2E run skips this scenario unless
 `RUSTY_ROLEPLAY_LIVE_RUN=1` is set.
 
+## Mechanic approval-loop smoke
+
+The seed also registers the distinct `roleplay-mechanic-test` profile as
+`Maren`, applies the isolated `roleplay_mechanic` tool policy, and keeps one
+active mechanic session attached to `roleplay-test-scene`. Run the opt-in
+mechanic smoke inside this Compose project only:
+
+```bash
+cd /home/system/rusty-roleplay-test
+docker compose exec -T rusty-roleplay \
+  node /opt/rusty-roleplay/deployment-scripts/mechanic-live-smoke.mjs
+```
+
+The smoke drives a real mechanic wake through transcript, scene, and retrieval
+inspection; requires model-created proposal and diagnostic records; proves the
+proposal is inert before approval and apply; then covers applied idempotency,
+rejection safety, and diagnostic outcome persistence. It intentionally changes
+the disposable narrator exemplar. Re-running `seed-test-data.mjs` restores the
+fixture exemplar before another certification run. Do not point this command at
+shared live or debug Crew roots.
+
 ## Backup and reset
 
 For a consistent SQLite backup, stop the service before copying its data:

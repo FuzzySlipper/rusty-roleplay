@@ -27,6 +27,7 @@ install -m 0644 "${repo_root}/docker/deployment.env" "${deployment_root}/.env"
 install -m 0644 "${repo_root}/docker/seed-test-data.mjs" "${deployment_root}/scripts/seed-test-data.mjs"
 install -m 0644 "${repo_root}/docker/smoke-test.mjs" "${deployment_root}/scripts/smoke-test.mjs"
 install -m 0644 "${repo_root}/docker/live-turn-smoke.mjs" "${deployment_root}/scripts/live-turn-smoke.mjs"
+install -m 0644 "${repo_root}/docker/mechanic-live-smoke.mjs" "${deployment_root}/scripts/mechanic-live-smoke.mjs"
 
 if [[ ! -f "${deployment_root}/config/service.env" ]]; then
   install -m 0600 "${repo_root}/docker/service.env" "${deployment_root}/config/service.env"
