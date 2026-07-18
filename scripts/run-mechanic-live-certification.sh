@@ -37,6 +37,7 @@ install -d "${artifact_root}"
 (
   cd "${frontend_root}"
   BASE_URL="${lan_url}" \
+  PLAYWRIGHT_HTML_OPEN=never \
   PLAYWRIGHT_BROKER_ARTIFACT_ROOT="${artifact_root}" \
   RUSTY_ROLEPLAY_DEPLOYED_RUN=1 \
   RUSTY_ROLEPLAY_LIVE_RUN=1 \
