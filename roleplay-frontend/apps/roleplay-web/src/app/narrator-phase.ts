@@ -17,7 +17,9 @@ export function deriveNarratorPhase(
       phase !== undefined &&
       (lifecycleWakeId === undefined || readWakeId(event) === lifecycleWakeId)
     ) {
-      return phase;
+      return lifecycleFallback === 'done' && phase !== 'idle'
+        ? lifecycleFallback
+        : phase;
     }
     if (
       event.kind === 'assistant_turn_finished' ||

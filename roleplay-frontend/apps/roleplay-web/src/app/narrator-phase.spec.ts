@@ -55,6 +55,18 @@ describe('deriveNarratorPhase', () => {
     ).toBe('idle');
   });
 
+  it('treats a terminal lifecycle event as authoritative over an earlier non-idle phase', () => {
+    expect(
+      deriveNarratorPhase([
+        event('phase_change', { phase: 'composing', wake_id: 'wake-a' }),
+        event('assistant_turn_finished', {
+          wake_id: 'wake-a',
+          finish_reason: 'failed',
+        }),
+      ]),
+    ).toBe('done');
+  });
+
   it('does not reuse an older turn phase for a newly started wake', () => {
     expect(
       deriveNarratorPhase([
