@@ -15,6 +15,10 @@ import {
   type ChatTopMenuConfiguration,
   type ChatTopMenuPanel,
 } from '@rusty-view/chat-shell';
+import {
+  TRANSCRIPT_WORKER_FACTORY,
+  type TranscriptWorkerFactory,
+} from '@rusty-view/transcript-renderer';
 import { provideRpMessageDecorators } from '@rusty-roleplay/rp-message-decorators';
 import {
   LORE_ENTRY_API_CONFIG,
@@ -48,6 +52,9 @@ import { RoleplayWorkbench } from './roleplay-workbench';
 import { RoleplayBranchingApi } from './session-management/roleplay-branching-api';
 import { RoleplaySessionApi } from './session-management/roleplay-session-api';
 import { StPacketImportApi } from './st-import/st-packet-import-api';
+
+const transcriptWorkerFactory: TranscriptWorkerFactory = () =>
+  new Worker(new URL('./transcript.worker', import.meta.url));
 
 export const ROLEPLAY_TOP_MENU_CONFIGURATION: ChatTopMenuConfiguration = {
   hiddenBuiltInItemIds: ['sessions', 'service'],
@@ -161,6 +168,10 @@ export const appConfig: ApplicationConfig = {
       document.documentElement.setAttribute('data-rv-theme', 'dark');
     }),
     provideRouter(appRoutes),
+    {
+      provide: TRANSCRIPT_WORKER_FACTORY,
+      useValue: transcriptWorkerFactory,
+    },
     ...CHAT_BACKEND_PROVIDERS,
     RoleplayWorkbench,
     {

@@ -33,32 +33,32 @@ importers:
         specifier: ~21.2.17
         version: 21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2)
       '@rusty-view/chat-components':
-        specifier: ^0.0.16
-        version: 0.0.16(@angular/cdk@21.2.14(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.16)(@rusty-view/protocol@0.0.16)(@rusty-view/transcript-renderer@0.0.16(7e32d4bddfd57ff1d38f2c8a6cc581af))
+        specifier: ^0.0.17
+        version: 0.0.17(@angular/cdk@21.2.14(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.17)(@rusty-view/protocol@0.0.17)(@rusty-view/transcript-renderer@0.0.17(1e8a81069aa914a3ea34cfb9dcf4e7a2))
       '@rusty-view/chat-domain':
-        specifier: ^0.0.16
-        version: 0.0.16
+        specifier: ^0.0.17
+        version: 0.0.17
       '@rusty-view/chat-shell':
-        specifier: ^0.0.16
-        version: 0.0.16(54d5abd81a4006fab2a4706098ef991d)
+        specifier: ^0.0.17
+        version: 0.0.17(46a9b9928a0d306ab9ba159a59ff99a5)
       '@rusty-view/chat-store':
-        specifier: ^0.0.16
-        version: 0.0.16(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.16)(@rusty-view/protocol@0.0.16)(@rusty-view/transport@0.0.16)
+        specifier: ^0.0.17
+        version: 0.0.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.17)(@rusty-view/protocol@0.0.17)(@rusty-view/transport@0.0.17)
       '@rusty-view/chat-theme':
-        specifier: ^0.0.16
-        version: 0.0.16(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/design-tokens@0.0.16)
+        specifier: ^0.0.17
+        version: 0.0.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/design-tokens@0.0.17)
       '@rusty-view/design-tokens':
-        specifier: ^0.0.16
-        version: 0.0.16
+        specifier: ^0.0.17
+        version: 0.0.17
       '@rusty-view/protocol':
-        specifier: ^0.0.16
-        version: 0.0.16
+        specifier: ^0.0.17
+        version: 0.0.17
       '@rusty-view/transcript-renderer':
-        specifier: ^0.0.16
-        version: 0.0.16(7e32d4bddfd57ff1d38f2c8a6cc581af)
+        specifier: ^0.0.17
+        version: 0.0.17(1e8a81069aa914a3ea34cfb9dcf4e7a2)
       '@rusty-view/transport':
-        specifier: ^0.0.16
-        version: 0.0.16
+        specifier: ^0.0.17
+        version: 0.0.17
       rxjs:
         specifier: ~7.8.0
         version: 7.8.2
@@ -3234,63 +3234,63 @@ packages:
   '@rspack/lite-tapable@1.1.2':
     resolution: {integrity: sha512-1OnyWChLGE46YzWyjlmYJssOu/Y0STAnnr2ueKPqDCYTf63GJMs0mxNnCul4dNiVqHYPKv3/fxrTY3IpqoVwZQ==}
 
-  '@rusty-view/chat-components@0.0.16':
-    resolution: {integrity: sha512-1SFzodTZx+vlCLZHkYVn1afKwz5g/D6yxdJOYYBjtwhn+1o9i6nDMG1+svwnYzU9piUc3922vaQwDv3r4P3yog==}
+  '@rusty-view/chat-components@0.0.17':
+    resolution: {integrity: sha512-y0Snfz7BNXLeHFqPp5OIqLDSeFeAjCGP2Y84jnTZNeoAumPYzU5cItssfeylyeTWBTfjFCilzXrLJh1q9Rlgwg==}
     peerDependencies:
       '@angular/cdk': ^21.2.0
       '@angular/core': ^21.2.0
-      '@rusty-view/chat-domain': ^0.0.16
-      '@rusty-view/protocol': ^0.0.16
-      '@rusty-view/transcript-renderer': ^0.0.16
+      '@rusty-view/chat-domain': ^0.0.17
+      '@rusty-view/protocol': ^0.0.17
+      '@rusty-view/transcript-renderer': ^0.0.17
 
-  '@rusty-view/chat-domain@0.0.16':
-    resolution: {integrity: sha512-HE9uYeNp8AT/pGS7cTBkI6DlGFg0pQ8Ein5plum6fwoALvwibnZLAE1T4Vpqc76IHN2ZeaXH1Kg/kwJK4SB47Q==}
+  '@rusty-view/chat-domain@0.0.17':
+    resolution: {integrity: sha512-KxzDUNyqIOQxzhfd2pIn8aT3p8LoaBZEvv93KchPnlKFcOfw3RK6K4ikm0AN86oTTZyICJZGNky5kAIJdxX7Zw==}
 
-  '@rusty-view/chat-shell@0.0.16':
-    resolution: {integrity: sha512-aqZpl2Y16377bDpxt48/GEG5E29MFDc7juoBUP60V1gv3EevC+Cvdw7mQLr6u2QZT2+HLlkI9ucQ43KG+YGguQ==}
+  '@rusty-view/chat-shell@0.0.17':
+    resolution: {integrity: sha512-lft/N5dxDKX8bXoqmyHNMDoCNhQieybs1r1eCWM1O9/HyGS+pRFtp4rQ22RQR4wn1ZUw8z/kAbaT30DZbcYTTQ==}
     peerDependencies:
       '@angular/common': ^21.2.0
       '@angular/core': ^21.2.0
-      '@rusty-view/chat-components': ^0.0.16
-      '@rusty-view/chat-domain': ^0.0.16
-      '@rusty-view/chat-store': ^0.0.16
-      '@rusty-view/chat-theme': ^0.0.16
-      '@rusty-view/protocol': ^0.0.16
-      '@rusty-view/transcript-renderer': ^0.0.16
-      '@rusty-view/transport': ^0.0.16
+      '@rusty-view/chat-components': ^0.0.17
+      '@rusty-view/chat-domain': ^0.0.17
+      '@rusty-view/chat-store': ^0.0.17
+      '@rusty-view/chat-theme': ^0.0.17
+      '@rusty-view/protocol': ^0.0.17
+      '@rusty-view/transcript-renderer': ^0.0.17
+      '@rusty-view/transport': ^0.0.17
 
-  '@rusty-view/chat-store@0.0.16':
-    resolution: {integrity: sha512-kbuiJVVrifvSY1wHZRUrgPwzs1iU9iiJJHrHIcydOqLvWWQv2rHm6cxGa6+Dw9wsHU02ZhuX7MHQAq/BmZLyaA==}
+  '@rusty-view/chat-store@0.0.17':
+    resolution: {integrity: sha512-S/oHlnw6zXultMyyv5k8GFBiumLLrnd/wcBvx/x+Yepy4sfDeMaKeEjmCaGcgJbLZREjiLCK4vtbTDoUdRT0TQ==}
     peerDependencies:
       '@angular/core': ^21.2.0
-      '@rusty-view/chat-domain': ^0.0.16
-      '@rusty-view/protocol': ^0.0.16
-      '@rusty-view/transport': ^0.0.16
+      '@rusty-view/chat-domain': ^0.0.17
+      '@rusty-view/protocol': ^0.0.17
+      '@rusty-view/transport': ^0.0.17
 
-  '@rusty-view/chat-theme@0.0.16':
-    resolution: {integrity: sha512-8UV0UTtfViMYx7pTvZdMABmtBDmx+8fHksd1FDgiJL+CNGzpiHTtYz1VZNcXBUBt4uM84pmcx9CRgCKjVfa9CA==}
+  '@rusty-view/chat-theme@0.0.17':
+    resolution: {integrity: sha512-BJeS1GFP9qvkCcSetlcuzOMYS8816ENjfeEKOPErDLGA8iZK9yKw9oqcnVr3qrU+5IksqxBoatUJ0m4kPfCofQ==}
     peerDependencies:
       '@angular/common': ^21.2.0
       '@angular/core': ^21.2.0
-      '@rusty-view/design-tokens': ^0.0.16
+      '@rusty-view/design-tokens': ^0.0.17
 
-  '@rusty-view/design-tokens@0.0.16':
-    resolution: {integrity: sha512-mO7kvOfJCZDELZy74poYsiq9TcnYw3PuGxcH/Ba17Cd/sGZ0pDL9hBGGPxMoJ1I7dGBt8H8ZmDaNl38oKdOYlg==}
+  '@rusty-view/design-tokens@0.0.17':
+    resolution: {integrity: sha512-djGzmZ2on5Gonxr1nanbYVi4Ail5/Cd6lMQ+yDnu5jtveVXOf4zW7PZJsIObu3GoOM28vsumNn6fSRgrG8MS9Q==}
 
-  '@rusty-view/protocol@0.0.16':
-    resolution: {integrity: sha512-jsBx+acaZ1f+cO36hIlvV0wyecbswtOQRgDUtf8tC1Mw5z/ibTMQ6HyD5L62+nZFqlfRazNveYDS4/gwkIRV3w==}
+  '@rusty-view/protocol@0.0.17':
+    resolution: {integrity: sha512-A+2N3B/ThFARXavZ//7dE82CCVALG2W+lc0xa030sBSmYRdM4ofRxscOH4kR4ol0vXb5zVLf8OWNpToEiO0/Xg==}
 
-  '@rusty-view/transcript-renderer@0.0.16':
-    resolution: {integrity: sha512-UrtjIJzVQEyzO8XTy7KcLkThCkKkZbOAfX74hP2z5bro+m8t3YUgwQk4E3bozrHB8McEjyQAzFuDh5iEs+NIWg==}
+  '@rusty-view/transcript-renderer@0.0.17':
+    resolution: {integrity: sha512-vQeCpuruOsp/AfTYUQfkhzghNihASEq789zx+XUWCIMIP5c/o2vC7Q4bqlGekqCvwcd2aicGAsMC3Ae3DFFRiw==}
     peerDependencies:
       '@angular/cdk': ^21.2.0
       '@angular/cdk-experimental': ^21.2.0
       '@angular/common': ^21.2.0
       '@angular/core': ^21.2.0
-      '@rusty-view/chat-domain': ^0.0.16
+      '@rusty-view/chat-domain': ^0.0.17
 
-  '@rusty-view/transport@0.0.16':
-    resolution: {integrity: sha512-m0LNq6hULZbcGCN/hCrXtTCFRq9xsP+Bfq3SRo1MSMfmqZuDXOLOW8gNk3A14QNm76MNboBvZ1RC8iYmibKuRg==}
+  '@rusty-view/transport@0.0.17':
+    resolution: {integrity: sha512-m/0EdJU/fHltlNZjCervr+67I1AhPYwoaV0gum5mXnOzNXlyz3nVyOYQbeRl57dZvUXGxezPlwMgglyOvEeQrQ==}
 
   '@schematics/angular@21.2.7':
     resolution: {integrity: sha512-aqEj3RyBtmH+41HZvrbfrpCo0e+0NzwyQyNSC/wLDShVqoidBtPbEdHU1FZ4+ni41da7rI3F12gUuAHws27kMA==}
@@ -12295,68 +12295,68 @@ snapshots:
 
   '@rspack/lite-tapable@1.1.2': {}
 
-  '@rusty-view/chat-components@0.0.16(@angular/cdk@21.2.14(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.16)(@rusty-view/protocol@0.0.16)(@rusty-view/transcript-renderer@0.0.16(7e32d4bddfd57ff1d38f2c8a6cc581af))':
+  '@rusty-view/chat-components@0.0.17(@angular/cdk@21.2.14(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.17)(@rusty-view/protocol@0.0.17)(@rusty-view/transcript-renderer@0.0.17(1e8a81069aa914a3ea34cfb9dcf4e7a2))':
     dependencies:
       '@angular/cdk': 21.2.14(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2)
       '@angular/core': 21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)
-      '@rusty-view/chat-domain': 0.0.16
-      '@rusty-view/protocol': 0.0.16
-      '@rusty-view/transcript-renderer': 0.0.16(7e32d4bddfd57ff1d38f2c8a6cc581af)
+      '@rusty-view/chat-domain': 0.0.17
+      '@rusty-view/protocol': 0.0.17
+      '@rusty-view/transcript-renderer': 0.0.17(1e8a81069aa914a3ea34cfb9dcf4e7a2)
       tslib: 2.8.1
 
-  '@rusty-view/chat-domain@0.0.16':
+  '@rusty-view/chat-domain@0.0.17':
     dependencies:
-      '@rusty-view/protocol': 0.0.16
+      '@rusty-view/protocol': 0.0.17
       tslib: 2.8.1
 
-  '@rusty-view/chat-shell@0.0.16(54d5abd81a4006fab2a4706098ef991d)':
-    dependencies:
-      '@angular/common': 21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2)
-      '@angular/core': 21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)
-      '@rusty-view/chat-components': 0.0.16(@angular/cdk@21.2.14(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.16)(@rusty-view/protocol@0.0.16)(@rusty-view/transcript-renderer@0.0.16(7e32d4bddfd57ff1d38f2c8a6cc581af))
-      '@rusty-view/chat-domain': 0.0.16
-      '@rusty-view/chat-store': 0.0.16(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.16)(@rusty-view/protocol@0.0.16)(@rusty-view/transport@0.0.16)
-      '@rusty-view/chat-theme': 0.0.16(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/design-tokens@0.0.16)
-      '@rusty-view/protocol': 0.0.16
-      '@rusty-view/transcript-renderer': 0.0.16(7e32d4bddfd57ff1d38f2c8a6cc581af)
-      '@rusty-view/transport': 0.0.16
-      tslib: 2.8.1
-
-  '@rusty-view/chat-store@0.0.16(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.16)(@rusty-view/protocol@0.0.16)(@rusty-view/transport@0.0.16)':
-    dependencies:
-      '@angular/core': 21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)
-      '@rusty-view/chat-domain': 0.0.16
-      '@rusty-view/protocol': 0.0.16
-      '@rusty-view/transport': 0.0.16
-      tslib: 2.8.1
-
-  '@rusty-view/chat-theme@0.0.16(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/design-tokens@0.0.16)':
+  '@rusty-view/chat-shell@0.0.17(46a9b9928a0d306ab9ba159a59ff99a5)':
     dependencies:
       '@angular/common': 21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2)
       '@angular/core': 21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)
-      '@rusty-view/design-tokens': 0.0.16
+      '@rusty-view/chat-components': 0.0.17(@angular/cdk@21.2.14(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.17)(@rusty-view/protocol@0.0.17)(@rusty-view/transcript-renderer@0.0.17(1e8a81069aa914a3ea34cfb9dcf4e7a2))
+      '@rusty-view/chat-domain': 0.0.17
+      '@rusty-view/chat-store': 0.0.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.17)(@rusty-view/protocol@0.0.17)(@rusty-view/transport@0.0.17)
+      '@rusty-view/chat-theme': 0.0.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/design-tokens@0.0.17)
+      '@rusty-view/protocol': 0.0.17
+      '@rusty-view/transcript-renderer': 0.0.17(1e8a81069aa914a3ea34cfb9dcf4e7a2)
+      '@rusty-view/transport': 0.0.17
       tslib: 2.8.1
 
-  '@rusty-view/design-tokens@0.0.16':
+  '@rusty-view/chat-store@0.0.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/chat-domain@0.0.17)(@rusty-view/protocol@0.0.17)(@rusty-view/transport@0.0.17)':
+    dependencies:
+      '@angular/core': 21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)
+      '@rusty-view/chat-domain': 0.0.17
+      '@rusty-view/protocol': 0.0.17
+      '@rusty-view/transport': 0.0.17
+      tslib: 2.8.1
+
+  '@rusty-view/chat-theme@0.0.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@rusty-view/design-tokens@0.0.17)':
+    dependencies:
+      '@angular/common': 21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2)
+      '@angular/core': 21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)
+      '@rusty-view/design-tokens': 0.0.17
+      tslib: 2.8.1
+
+  '@rusty-view/design-tokens@0.0.17':
     dependencies:
       tslib: 2.8.1
 
-  '@rusty-view/protocol@0.0.16':
+  '@rusty-view/protocol@0.0.17':
     dependencies:
       tslib: 2.8.1
 
-  '@rusty-view/transcript-renderer@0.0.16(7e32d4bddfd57ff1d38f2c8a6cc581af)':
+  '@rusty-view/transcript-renderer@0.0.17(1e8a81069aa914a3ea34cfb9dcf4e7a2)':
     dependencies:
       '@angular/cdk': 21.2.14(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2)
       '@angular/cdk-experimental': 21.2.14(@angular/cdk@21.2.14(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.2.17(@angular/common@21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2))(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))
       '@angular/common': 21.2.17(@angular/core@21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2)
       '@angular/core': 21.2.17(@angular/compiler@21.2.17)(rxjs@7.8.2)(zone.js@0.16.0)
-      '@rusty-view/chat-domain': 0.0.16
+      '@rusty-view/chat-domain': 0.0.17
       tslib: 2.8.1
 
-  '@rusty-view/transport@0.0.16':
+  '@rusty-view/transport@0.0.17':
     dependencies:
-      '@rusty-view/protocol': 0.0.16
+      '@rusty-view/protocol': 0.0.17
       tslib: 2.8.1
 
   '@schematics/angular@21.2.7(chokidar@5.0.0)':
