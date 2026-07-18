@@ -1,9 +1,6 @@
 /**
- * A user profile — an independent silo for sessions, campaigns, and state.
- * Profiles are frontend-managed (no backend auth middleware) per
- * docs/03-mechanic-ooc-agent.md. Passwords, when present, are plain text and
- * exist only to keep profiles visually separate on a trusted LAN — they are
- * not a security boundary.
+ * A Rusty Crew runtime profile used to scope agent configuration and state.
+ * It is not a Roleplay user identity or authentication boundary.
  */
 export interface Profile {
   readonly id: string;

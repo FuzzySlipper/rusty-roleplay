@@ -1,8 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import {
-  RpProfileSelectorComponent,
-  type ProfileSelection,
-} from '@rusty-roleplay/rp-profile';
 import { RpLayoutComponent } from '@rusty-roleplay/rp-layout';
 
 import { RoleplayWorkbench } from './roleplay-workbench';
@@ -15,7 +11,7 @@ import { RoleplayWorkbench } from './roleplay-workbench';
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RpProfileSelectorComponent, RpLayoutComponent],
+  imports: [RpLayoutComponent],
   template: `
     @if (workbench.activeProfile(); as profile) {
       <rp-layout
@@ -35,21 +31,53 @@ import { RoleplayWorkbench } from './roleplay-workbench';
         (showModelActivityChange)="workbench.setModelActivityVisible($event)"
       />
     } @else {
-      <rp-profile-selector
-        [profiles]="workbench.profileStore.profiles()"
-        [errorMessage]="workbench.selectError()"
-        (selectProfile)="onProfileSelect($event)"
-      />
-      @if (workbench.profilesLoading()) {
-        <p role="status">Loading…</p>
-      }
+      <main class="startup">
+        <h1>rusty-roleplay</h1>
+        @if (workbench.profilesLoading()) {
+          <p role="status">Opening roleplay…</p>
+        } @else if (workbench.selectError(); as error) {
+          <p role="alert">{{ error }}</p>
+          <button type="button" (click)="workbench.retryStartup()">
+            Retry
+          </button>
+        }
+      </main>
     }
   `,
+  styles: [
+    `
+      .startup {
+        align-content: center;
+        background: var(--rv-color-surface-base, #111318);
+        color: var(--rv-color-text-primary, #f3f4f6);
+        display: grid;
+        gap: var(--rv-space-md, 12px);
+        height: 100dvh;
+        justify-items: center;
+        padding: var(--rv-space-xl, 24px);
+        text-align: center;
+      }
+
+      .startup h1,
+      .startup p {
+        margin: 0;
+      }
+
+      .startup p {
+        color: var(--rv-color-text-muted, #9ca3af);
+      }
+
+      .startup button {
+        background: var(--rv-color-surface-raised, #20242b);
+        border: 1px solid var(--rv-color-border-subtle, #4b5563);
+        border-radius: 6px;
+        color: inherit;
+        cursor: pointer;
+        padding: 0.5rem 0.8rem;
+      }
+    `,
+  ],
 })
 export class App {
   protected readonly workbench = inject(RoleplayWorkbench);
-
-  protected onProfileSelect(selection: ProfileSelection): void {
-    this.workbench.selectProfile(selection);
-  }
 }

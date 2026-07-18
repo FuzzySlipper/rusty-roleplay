@@ -2,12 +2,7 @@ import { computed, Injectable, signal } from '@angular/core';
 
 import { Profile, ProfileSelectResult } from './profile.model';
 
-/**
- * Signals store for profile selection. Holds the profile list and the active
- * profile; enforces optional plain-text passwords. Profile-scoped — no state is
- * shared between profiles. This is the one container-level service the profile
- * shell injects; presentational components receive data via inputs.
- */
+/** Signals store for Crew runtime profiles and the active narrator profile. */
 @Injectable({ providedIn: 'root' })
 export class ProfileStore {
   private readonly profilesSig = signal<readonly Profile[]>([]);

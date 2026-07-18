@@ -228,30 +228,30 @@ lorekeep:
 
 narrator:
   exploration:
-    max_rounds: 3              # max tool-call rounds in Phase 1
-    delegation_threshold: 2    # rounds before spawning librarian
+    max_rounds: 3 # max tool-call rounds in Phase 1
+    delegation_threshold: 2 # rounds before spawning librarian
     token_budget: 2000
   review:
-    enabled: true              # review pass on/off
-    gravity_check: true        # check for PG-13 drift
-    max_revisions: 1           # re-generation attempts
+    enabled: true # review pass on/off
+    gravity_check: true # check for PG-13 drift
+    max_revisions: 1 # re-generation attempts
   prompt:
     system_prompt_file: "prompts/narrator-system.md"
     exemplar_dir: "exemplars/"
   compaction:
     strategy: "scene-aware"
-    tool_results: "ephemeral"  # excise after turn completes
+    tool_results: "ephemeral" # excise after turn completes
     active_scene_max_turns: 15
     recent_scene_summaries: 3
     token_threshold_pct: 70
 
 mechanic:
   analysis:
-    history_depth: 10          # RP turns to read when diagnosing
-    trace_depth: 5             # retrieval traces to read
+    history_depth: 10 # RP turns to read when diagnosing
+    trace_depth: 5 # retrieval traces to read
   proposals:
-    require_approval: true     # always true — proposals must be approved
-    batch_limit: 5             # max proposals per diagnostic round
+    require_approval: true # always true — proposals must be approved
+    batch_limit: 5 # max proposals per diagnostic round
 ```
 
 ## Frontend
@@ -372,7 +372,7 @@ Test with the users' migrated lore. If narrative quality doesn't match or
 beat ST, the architecture is wrong and needs revisiting before any frontend
 work.
 
-### Phase 4: rusty-view debug client + protocol plumbing  [DONE]
+### Phase 4: rusty-view debug client + protocol plumbing [DONE]
 
 **Produce:** Working debug chat client against rusty-crew session API.
 Protocol types generated from Rust. Transport layer proven.
@@ -387,6 +387,7 @@ retrieving correctly. Responses are good. They're comfortable enough to
 stop using ST.
 
 **Minimum for this phase:**
+
 - Chat UI with streaming responses
 - Phase indicators (exploring/composing)
 - Retry/regenerate on messages
@@ -394,6 +395,7 @@ stop using ST.
 - Lore management basics (view/edit entries)
 
 **Not required for this phase:**
+
 - Mechanic agent / OOC mode
 - Review pass / gravity correction
 - Proposal system
@@ -466,14 +468,12 @@ Once the lorekeep contract (Phase 0) is locked:
    with appropriate tags.
 3. **Nx workspace for roleplay-frontend.** Will be an Nx workspace inside
    this repo, importing rusty-view packages as dependencies.
-4. **Profile storage** — where does profile config live? Start with simple
-   YAML/JSON files in a `profiles/` directory (bind-mounted in Docker).
-   No database needed for two users with plain-text storage.
+4. **Runtime profile storage** — narrator and mechanic agent configuration
+   lives in Rusty Crew's profile authority. These are not Roleplay users.
 5. **Model routing** — narrator, librarian (if delegated), mechanic, and
    compaction agent may want different models. rusty-crew profile config
    handles this per-profile. The mechanic can propose model routing changes
    as provider pattern data accumulates.
-6. **No multi-user security in v0** — plain-text profiles, optional
-   passwords, frontend-managed profile switching. See
-   `03-mechanic-ooc-agent.md` User profiles section. Do not add auth
-   middleware, cryptographic hashing, or session tokens to v0.
+6. **No multi-user model in v0** — Roleplay enters the configured narrator
+   directly. Do not simulate users with Crew runtime profiles; a future
+   multi-user feature needs explicit storage ownership and auth architecture.

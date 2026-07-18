@@ -84,12 +84,12 @@ Campaign: "Eldoria Campaign"
 
 RP and mechanic sessions are independently continuable or resettable:
 
-| RP Session | Mechanic Session | When to use |
-|---|---|---|
-| Continue | Continue | Iterating on a diagnosis — mechanic has context from previous fixes |
-| Continue | **New** | RP is ongoing but mechanic went down rabbit holes; want fresh eyes |
-| **New** | Continue | Starting fresh RP to escape accumulated gravity, but mechanic remembers what it's looking for |
-| **New** | **New** | Full reset — both contexts contaminated |
+| RP Session | Mechanic Session | When to use                                                                                   |
+| ---------- | ---------------- | --------------------------------------------------------------------------------------------- |
+| Continue   | Continue         | Iterating on a diagnosis — mechanic has context from previous fixes                           |
+| Continue   | **New**          | RP is ongoing but mechanic went down rabbit holes; want fresh eyes                            |
+| **New**    | Continue         | Starting fresh RP to escape accumulated gravity, but mechanic remembers what it's looking for |
+| **New**    | **New**          | Full reset — both contexts contaminated                                                       |
 
 The "new RP, continue mechanic" case is the most interesting: the mechanic
 accumulated a hypothesis about what's wrong. You start a fresh RP session to
@@ -237,19 +237,19 @@ diagnostic log within this session.
 
 ### Read tools (environmental inspection)
 
-| Tool | Purpose |
-|---|---|
-| `get_rp_history(session_id, limit?)` | Recent RP turns from the narrator session |
-| `get_last_scene_brief(session_id)` | The scene brief assembled in the last turn |
+| Tool                                  | Purpose                                                         |
+| ------------------------------------- | --------------------------------------------------------------- |
+| `get_rp_history(session_id, limit?)`  | Recent RP turns from the narrator session                       |
+| `get_last_scene_brief(session_id)`    | The scene brief assembled in the last turn                      |
 | `get_recall_logs(session_id, limit?)` | Retrieval traces — what lore was considered, retrieved, skipped |
-| `get_system_prompt(profile_id)` | The current system prompt for the narrator profile |
-| `get_style_exemplar(profile_id)` | The style exemplar currently in use |
-| `get_profile_config(profile_id)` | Full profile configuration (tone, pacing, memory depth, etc.) |
-| `get_retrieval_config(campaign_id)` | Lorekeep retrieval configuration (depth, thresholds, boosts) |
-| `search_lore(campaign_id, query)` | Search lore directly (same as narrator, for checking content) |
-| `get_established_facts(campaign_id)` | Facts captured during play |
-| `get_proposal_history(campaign_id)` | Previous diagnostic proposals and their outcomes |
-| `get_provider_patterns(provider_id)` | Known failure patterns for a model/provider |
+| `get_system_prompt(profile_id)`       | The current system prompt for the narrator profile              |
+| `get_style_exemplar(profile_id)`      | The style exemplar currently in use                             |
+| `get_profile_config(profile_id)`      | Full profile configuration (tone, pacing, memory depth, etc.)   |
+| `get_retrieval_config(campaign_id)`   | Lorekeep retrieval configuration (depth, thresholds, boosts)    |
+| `search_lore(campaign_id, query)`     | Search lore directly (same as narrator, for checking content)   |
+| `get_established_facts(campaign_id)`  | Facts captured during play                                      |
+| `get_proposal_history(campaign_id)`   | Previous diagnostic proposals and their outcomes                |
+| `get_provider_patterns(provider_id)`  | Known failure patterns for a model/provider                     |
 
 ### Provider patterns (model-specific failure mode configuration)
 
@@ -278,7 +278,7 @@ provider_patterns:
       - "PG-13 gravity toward chaste register"
       - "defaults to diplomatic resolution of interpersonal conflict"
       - "tends to make characters emotionally articulate beyond their
-         established register"
+        established register"
     countermeasures:
       - "register-establishment framing in system prompt"
       - "style exemplar with committed voice, not diplomatic"
@@ -289,24 +289,24 @@ provider_patterns:
 ```
 
 The mechanic can propose additions to this configuration when it observes
-a new pattern: `propose_provider_pattern_add(provider_id, failure, countermeasures, evidence)`. 
+a new pattern: `propose_provider_pattern_add(provider_id, failure, countermeasures, evidence)`.
 
 ### Write tools (proposal system)
 
 All writes go through the proposal system. The mechanic proposes, the user
 approves.
 
-| Tool | Purpose |
-|---|---|
-| `propose_config_change(profile_id, field, new_value, reason)` | Change a profile setting (tone, pacing, memory depth, etc.) |
-| `propose_exemplar_update(profile_id, new_exemplar, reason)` | Replace the style exemplar |
-| `propose_lore_tag_update(entry_slug, new_tags, reason)` | Adjust tags on a lore entry for better/worse retrieval |
-| `propose_retrieval_config_change(campaign_id, field, new_value, reason)` | Adjust lorekeep retrieval config (depth, threshold, boosts) |
-| `propose_lore_edit(entry_slug, new_body, reason)` | Edit lore content |
-| `propose_lore_add(entry_data, reason)` | Add new lore entry |
-| `apply_proposal(proposal_id)` | Apply an approved proposal |
-| `reject_proposal(proposal_id, reason?)` | Reject a proposal (for record-keeping) |
-| `propose_provider_pattern(provider_id, failure, countermeasure, evidence)` | Add a model-specific failure pattern based on observation |
+| Tool                                                                       | Purpose                                                     |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `propose_config_change(profile_id, field, new_value, reason)`              | Change a profile setting (tone, pacing, memory depth, etc.) |
+| `propose_exemplar_update(profile_id, new_exemplar, reason)`                | Replace the style exemplar                                  |
+| `propose_lore_tag_update(entry_slug, new_tags, reason)`                    | Adjust tags on a lore entry for better/worse retrieval      |
+| `propose_retrieval_config_change(campaign_id, field, new_value, reason)`   | Adjust lorekeep retrieval config (depth, threshold, boosts) |
+| `propose_lore_edit(entry_slug, new_body, reason)`                          | Edit lore content                                           |
+| `propose_lore_add(entry_data, reason)`                                     | Add new lore entry                                          |
+| `apply_proposal(proposal_id)`                                              | Apply an approved proposal                                  |
+| `reject_proposal(proposal_id, reason?)`                                    | Reject a proposal (for record-keeping)                      |
+| `propose_provider_pattern(provider_id, failure, countermeasure, evidence)` | Add a model-specific failure pattern based on observation   |
 
 ### Proposal record
 
@@ -393,6 +393,7 @@ Mechanic: calls apply_proposal for each
 ### Iterative diagnosis
 
 The mechanic session maintains a running diagnostic context:
+
 ```
 DiagnosticLog {
   entries: [
@@ -434,12 +435,14 @@ The frontend has a toggle between RP mode and OOC/mechanic mode. The toggle
 is obvious — these are fundamentally different activities.
 
 **RP mode:**
+
 - Chat interface with streaming tokens
 - Phase indicators ("Gathering context...", "Writing...")
 - Campaign/session management
 - No visibility into internals (prompt, lore, config)
 
 **OOC/mechanic mode:**
+
 - Chat interface (mechanic conversation)
 - Reference panel: recent RP turns (read-only)
 - Proposal review panel: diffs before/after, approve/reject buttons
@@ -449,6 +452,7 @@ is obvious — these are fundamentally different activities.
 ### Proposal review UI
 
 When the mechanic proposes changes, the UI renders them as diffs:
+
 - **Exemplar changes:** side-by-side text comparison
 - **Tag changes:** before/after tag lists
 - **Config changes:** old value → new value with explanation
@@ -469,11 +473,11 @@ Core character dynamics that are structural to the story and should never
 be fully resolved by the model. These are not bugs to fix — they are
 features to protect:
 
-- Love that is *managed* not cured (Rafe's love for Aurora)
-- Wounds that are *carried* not healed (a mother wound)
-- Relationships to work that are *structural* not temporary (a surgeon's
+- Love that is _managed_ not cured (Rafe's love for Aurora)
+- Wounds that are _carried_ not healed (a mother wound)
+- Relationships to work that are _structural_ not temporary (a surgeon's
   identity)
-- Geometry between friends that *changed permanently* and will never be
+- Geometry between friends that _changed permanently_ and will never be
   simple again
 - Wanting that doesn't stop because you choose (Isabella's wanting)
 
@@ -487,7 +491,7 @@ can check for them.
 Immediate dramatic stakes in the current scene that may or may not resolve:
 a confrontation, a choice, a revelation. These can resolve within the
 scene — that's what makes them scene-level, not permanent. But the model
-often resolves them *too early* or *too neatly*. The mechanic watches for
+often resolves them _too early_ or _too neatly_. The mechanic watches for
 premature resolution: a confrontation that ends in mutual understanding
 when it should end in discomfort.
 
@@ -526,7 +530,7 @@ in a multi-agent pipeline.
 
 The mechanic agent replaces this entirely. Instead of a deterministic
 scanner checking for known-bad patterns, the mechanic is an intelligent
-agent that reads session internals and reasons about *any* quality problem
+agent that reads session internals and reasons about _any_ quality problem
 — not just lore bleed, but tonal drift, pacing, character inconsistency,
 gravity problems. It's strictly more capable and naturally scoped to "when
 the user notices something wrong."
@@ -547,15 +551,12 @@ to tune, not design gaps to close by deeper analysis. Each should be
 per-campaign or per-profile configurable, adjusted by the mechanic, and
 re-evaluated based on observed results.
 
-### Multi-user (resolved: not needed)
+### Multi-user (out of scope)
 
-The users each have their own private independent sessions — they don't
-share campaigns, participate in the same RP, or interact with each other's
-sessions. Each user logs into their own profile, sees their own campaigns
-and sessions, and has their own mechanic. No shared campaign state between
-users. This eliminates all the multi-user mechanic complexity.
-
-See `User profiles and login` below for the profile mechanism.
+Crew has no user/account or ownership model. Runtime profile IDs must not be
+treated as people. If multi-user Roleplay is needed later, design it explicitly
+across storage ownership, authentication, and authorization rather than adding
+a frontend-only profile gate.
 
 ### Config-driven questions
 
@@ -588,10 +589,8 @@ See `User profiles and login` below for the profile mechanism.
    resolution of permanent tensions. Start with tag-based; promote to
    schema field if it proves load-bearing.
 
-6. **Mechanic naming** — per-profile config: `mechanic.name`. User sets
-   it once, the mechanic's system prompt uses it. Different campaigns
-   under the same profile share the mechanic name (the mechanic is
-   per-user, not per-campaign).
+6. **Mechanic naming** — runtime-profile config: `mechanic.name`. Different
+   campaigns using the same mechanic runtime profile share the name.
 
 7. **Mechanic context contamination** — the "new mechanic session" control
    handles most cases. The "compare with fresh mechanic" mode (second
@@ -599,60 +598,27 @@ See `User profiles and login` below for the profile mechanism.
    config-gated: `mechanic.fresh_compare_available`. Default: off, enable
    if contamination becomes a recurring problem.
 
-## User profiles and login
+## Runtime profiles, not user profiles
 
-The RP frontend supports multiple user profiles within a single deployment.
-This is a low-trust profile selection mechanism, not a security system.
-Follow SillyTavern's model: selectable profiles with optional passwords,
-plain-text storage, privacy suggestion not real isolation.
-
-### Design constraints
-
-- **Two users** (sisters), one deployment, high trust
-- Each user has their own campaigns, sessions, lore, mechanic
-- A profile is just a named container — no cryptographic isolation
-- Password is optional, stored as plain text, used as a privacy gate
-  (prevents accidental profile switching, not adversarial access)
-- **Do NOT** add authentication middleware, session tokens, bcrypt,
-  cryptographic best practices, or multi-user security architecture.
-  Those are for a future wide-distribution scenario, not the current
-  household use case.
-
-### Profile scope
-
-A profile owns:
-- Campaigns (each campaign has its own lore scope in lorekeep)
-- RP sessions
-- Mechanic sessions
-- Mechanic name and personality config
-- Profile-level config (model routing, defaults)
-
-Profiles do NOT share anything. No shared campaigns, no shared mechanic,
-no shared session state. Each profile is a completely independent silo
-within the deployment.
+Rusty Crew profiles configure agent runtimes, tools, sessions, and scoped
+Roleplay state. Crew does not model users or authentication, so Roleplay must
+not present runtime profiles as SillyTavern-style user identities.
 
 ### Frontend behavior
 
-- Startup: show profile selector (list of named profiles)
-- Select profile: optionally enter password (if set)
-- No password = direct entry (high-trust household assumption)
-- Within a session: the profile is implicit; no re-authentication
-- Profile management: simple UI to create/delete profiles, set/change
-  passwords. Admin-only or available to all users (TBD, low-stakes).
+- Startup resolves the narrator-capable Crew profile and opens Roleplay
+  directly. There is no user/profile chooser or password gate.
+- The narrator profile is identified by its Roleplay narrator tool policy.
+- The mechanic remains a separate runtime profile selected inside the
+  Mechanic workspace; it is never silently used as the narrator.
+- Operators and live tests may pin a runtime profile through deployment config
+  or the `profile` query parameter. This is configuration, not login.
 
-### Backend behavior
+### Scope and future users
 
-- lorekeep: campaigns are scoped to profile IDs. Each profile's campaigns
-  are invisible to other profiles (enforced by the query layer, not auth).
-- rusty-crew: sessions are scoped to profile IDs. The frontend passes the
-  active profile ID with each request. No server-side session auth.
-- No authentication middleware. No tokens. No cryptography. The backend
-  trusts the frontend to tell it which profile is active.
-- If there's ever a need for real multi-user security, add it as a
-  separate auth layer later — don't bake it into the v0 architecture.
-
-### Relationship to rusty-view
-
-`rusty-view` (the debug client) does NOT need profile support. It's a
-dev tool that connects directly to rusty-crew. Profiles are a
-`rusty-roleplay` concern only.
+Profile IDs continue to scope sessions, lore, narrator configuration, and
+mechanic associations because those are Crew runtime boundaries. They do not
+imply people, privacy, or cryptographic isolation. A real multi-user feature
+would require an explicit user/account model and ownership relationships in
+Crew storage plus authentication and authorization. That is separate future
+architecture, not a frontend selector layered over runtime profiles.

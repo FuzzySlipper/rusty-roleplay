@@ -24,6 +24,8 @@ export interface BackendConfig {
   readonly lorekeepBaseUrl: string;
   /** Optional bearer token (omit for no-auth trusted-LAN mode). */
   readonly bearerToken: string | undefined;
+  /** Optional operator-selected runtime profile. This is not a user identity. */
+  readonly runtimeProfileId: string | undefined;
 }
 
 /** Default service ports, used when deriving a URL from the serving host. */
@@ -39,6 +41,7 @@ export interface RustyRoleplayWindowConfig {
   readonly rustyCrewBaseUrl?: string;
   readonly lorekeepBaseUrl?: string;
   readonly bearerToken?: string;
+  readonly runtimeProfileId?: string;
 }
 
 declare global {
@@ -94,6 +97,8 @@ export function resolveBackendConfigFrom(
       DEFAULT_LOREKEEP_PORT,
     ),
     bearerToken: windowConfig?.bearerToken,
+    runtimeProfileId:
+      params.get('profile')?.trim() || windowConfig?.runtimeProfileId,
   };
 }
 

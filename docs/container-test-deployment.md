@@ -108,7 +108,7 @@ a completed streamed response.
 ### Browser live certification
 
 After the installed stack is healthy, run the opt-in Playwright scenario
-against the deployed frontend and API. It selects the seeded profile, verifies
+against the deployed frontend and API. It enters the seeded narrator directly, verifies
 the configured RP scene and controls, sends a real narrator turn through
 den-router, observes the phase lifecycle, expands tool and reasoning output,
 and reloads the page to prove transcript persistence.

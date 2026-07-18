@@ -62,7 +62,7 @@ const EVENTS = [
   event(11, 'phase_change', { phase: 'idle' }),
 ];
 
-test('profile gate → transcript rows, decorator, and RP extensions', async ({
+test('direct startup → transcript rows, decorator, and RP extensions', async ({
   page,
 }) => {
   const registryRequested = deferred();
@@ -73,16 +73,15 @@ test('profile gate → transcript rows, decorator, and RP extensions', async ({
   await registryRequested.promise;
 
   await expect(
-    page.getByRole('heading', { name: 'Choose a profile' }),
+    page.getByRole('heading', { name: 'rusty-roleplay' }),
   ).toBeVisible();
-  await expect(page.getByRole('status')).toHaveText('Loading…');
+  await expect(page.getByRole('status')).toHaveText('Opening roleplay…');
   await expect(page.getByRole('button', { name: 'Sister A' })).toHaveCount(0);
+  await expect(
+    page.getByRole('heading', { name: 'Choose a profile' }),
+  ).toHaveCount(0);
 
   releaseRegistry.resolve();
-  const profile = page.getByRole('button', { name: 'Sister A', exact: true });
-  await expect(profile).toBeVisible();
-  await profile.click();
-  await page.getByRole('button', { name: 'Enter as Sister A' }).click();
 
   await expect(page.locator('rv-transcript-viewport')).toBeVisible();
   await expect(page.locator('rv-message-input')).toBeVisible();
@@ -137,6 +136,34 @@ test('profile gate → transcript rows, decorator, and RP extensions', async ({
   await expect(page.getByRole('tab', { name: 'Text Style' })).toBeVisible();
 });
 
+test('direct startup refuses to treat a mechanic profile as the narrator', async ({
+  page,
+}) => {
+  await page.route('**/v1/admin/profiles/registry', (route) =>
+    fulfillJson(route, {
+      items: [
+        {
+          profileId: 'mechanic-only',
+          displayName: 'Mechanic Only',
+          lifecycleStatus: 'active',
+          localToolProfileId: 'basic_chat',
+        },
+      ],
+    }),
+  );
+
+  await page.goto('/');
+
+  await expect(page.getByRole('alert')).toHaveText(
+    'No Roleplay narrator profile is configured in Rusty Crew.',
+  );
+  await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Choose a profile' }),
+  ).toHaveCount(0);
+  await expect(page.locator('rv-transcript-viewport')).toHaveCount(0);
+});
+
 async function installBackendFixture(
   page: Page,
   registryRequested: Deferred,
@@ -155,6 +182,7 @@ async function installBackendFixture(
             profileId: PROFILE_ID,
             displayName: 'Sister A',
             lifecycleStatus: 'active',
+            localToolProfileId: 'roleplay_lore',
           },
         ],
       });

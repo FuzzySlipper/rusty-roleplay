@@ -104,7 +104,7 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   );
 
   await page.goto(`/?api=${encodeURIComponent(config.backendUrl)}`);
-  await enterProfile(page, config.narratorProfileName);
+  await enterRoleplay(page, config.narratorProfileName);
   await openMechanicPanel(page);
   const panel = page.locator('rp-mechanic-panel');
   await panel
@@ -336,7 +336,7 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
     .locator('rv-transcript-viewport')
     .innerText();
   await page.reload();
-  await enterProfile(page, config.narratorProfileName);
+  await enterRoleplay(page, config.narratorProfileName);
   await selectMechanicProfile(page, config.mechanicProfileId);
   await openProposal(page, marker);
   await expect(
@@ -354,7 +354,7 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   const containerAfter = await containerReceipt();
 
   await page.goto(`/?api=${encodeURIComponent(config.backendUrl)}`);
-  await enterProfile(page, config.narratorProfileName);
+  await enterRoleplay(page, config.narratorProfileName);
   await selectMechanicProfile(page, config.mechanicProfileId);
   await openProposal(page, marker);
   await expect(
@@ -500,16 +500,11 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   expect(pageErrors).toEqual([]);
 });
 
-async function enterProfile(page: Page, profileName: string): Promise<void> {
-  const profile = page.getByRole('button', { name: profileName, exact: true });
-  await expect(profile).toBeVisible({ timeout: 30_000 });
-  await profile.click();
-  await page
-    .getByRole('button', { name: `Enter as ${profileName}`, exact: true })
-    .click();
+async function enterRoleplay(page: Page, profileName: string): Promise<void> {
   await expect(page.locator('rv-transcript-viewport')).toBeVisible({
     timeout: 30_000,
   });
+  await expect(page.locator('.profile')).toHaveText(profileName);
 }
 
 async function openMechanicPanel(page: Page): Promise<void> {

@@ -12,7 +12,11 @@ vi.mock('@rusty-view/chat-store', () => ({
 }));
 
 import { BACKEND_CONFIG } from '../backend-config';
-import { mapProfile, ProfileRegistryApi } from './profile-registry-api';
+import {
+  initialRoleplayProfile,
+  mapProfile,
+  ProfileRegistryApi,
+} from './profile-registry-api';
 
 describe('ProfileRegistryApi', () => {
   afterEach(() => {
@@ -24,12 +28,48 @@ describe('ProfileRegistryApi', () => {
       mapProfile({
         profileId: 'rp-narrator',
         displayName: 'RP Narrator',
+        localToolProfileId: 'roleplay_lore',
       }),
     ).toEqual({
       id: 'rp-narrator',
       name: 'RP Narrator',
       hasPassword: false,
+      roleplayNarratorCapable: true,
     });
+  });
+
+  it('chooses the narrator runtime profile instead of the mechanic', () => {
+    const mechanic = mapProfile({
+      profileId: 'mechanic',
+      displayName: 'Mechanic',
+      localToolProfileId: 'basic_chat',
+    });
+    const narrator = mapProfile({
+      profileId: 'narrator',
+      displayName: 'Narrator',
+      localToolProfileId: 'roleplay_lore',
+    });
+
+    expect(initialRoleplayProfile([mechanic, narrator], undefined)).toBe(
+      narrator,
+    );
+    expect(initialRoleplayProfile([mechanic], undefined)).toBeUndefined();
+  });
+
+  it('honors an explicit operator runtime profile override', () => {
+    const first = mapProfile({
+      profileId: 'first',
+      localToolProfileId: 'roleplay_lore',
+    });
+    const selected = mapProfile({
+      profileId: 'selected',
+      localToolProfileId: 'full_agent',
+    });
+
+    expect(initialRoleplayProfile([first, selected], 'selected')).toBe(
+      selected,
+    );
+    expect(initialRoleplayProfile([first], 'missing')).toBeUndefined();
   });
 
   it('loads profiles with auth headers', async () => {
@@ -69,6 +109,7 @@ function createApi(): ProfileRegistryApi {
           rustyCrewBaseUrl: 'http://crew.test',
           lorekeepBaseUrl: 'http://lore.test',
           bearerToken: 'token-a',
+          runtimeProfileId: undefined,
         },
       },
     ],

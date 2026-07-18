@@ -16,6 +16,7 @@ describe('resolveBackendConfigFrom', () => {
     expect(config.rustyCrewBaseUrl).toBe('http://den-k8:9347');
     expect(config.lorekeepBaseUrl).toBe('http://den-k8:8790');
     expect(config.bearerToken).toBeUndefined();
+    expect(config.runtimeProfileId).toBeUndefined();
   });
 
   it('preserves the serving protocol when deriving', () => {
@@ -63,6 +64,19 @@ describe('resolveBackendConfigFrom', () => {
       },
     );
     expect(config.rustyCrewBaseUrl).toBe('http://q:1');
+  });
+
+  it('resolves an operator runtime profile without treating it as a user', () => {
+    const queryConfig = resolveBackendConfigFrom(
+      origin('den-k8', '?profile=roleplay-narrator'),
+      { runtimeProfileId: 'window-narrator' },
+    );
+    const windowConfig = resolveBackendConfigFrom(origin('den-k8'), {
+      runtimeProfileId: 'window-narrator',
+    });
+
+    expect(queryConfig.runtimeProfileId).toBe('roleplay-narrator');
+    expect(windowConfig.runtimeProfileId).toBe('window-narrator');
   });
 
   it('normalizes host-port window config with the serving protocol', () => {

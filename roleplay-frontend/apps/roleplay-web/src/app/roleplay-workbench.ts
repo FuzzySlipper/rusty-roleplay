@@ -9,10 +9,7 @@ import type {
   MessageRevisionAction,
   MessageRevisionCapabilities,
 } from '@rusty-view/transcript-renderer';
-import {
-  ProfileStore,
-  type ProfileSelection,
-} from '@rusty-roleplay/rp-profile';
+import { ProfileStore } from '@rusty-roleplay/rp-profile';
 import {
   CharacterApi,
   type CharacterUpdateRequest,
@@ -51,6 +48,7 @@ import type {
 } from '@rusty-roleplay/rp-mechanic';
 
 import { ContextApi, type ContextUsageResponse } from './context/context-api';
+import { BACKEND_CONFIG } from './backend-config';
 import { MechanicApi } from './mechanic/mechanic-api';
 import { deriveNarratorPhase } from './narrator-phase';
 import { NarratorConfigApi } from './narrator-config/narrator-config-api';
@@ -61,7 +59,10 @@ import type {
   PlayerPersonaUpdateRequest,
   PlayerPersonaWriteRequest,
 } from './persona-management/player-persona.model';
-import { ProfileRegistryApi } from './profile-registry/profile-registry-api';
+import {
+  initialRoleplayProfile,
+  ProfileRegistryApi,
+} from './profile-registry/profile-registry-api';
 import { RoleplayBranchingApi } from './session-management/roleplay-branching-api';
 import { RoleplaySessionApi } from './session-management/roleplay-session-api';
 import type {
@@ -84,6 +85,7 @@ import {
 export class RoleplayWorkbench {
   readonly profileStore = inject(ProfileStore);
   readonly chatStore = inject(ChatStore);
+  private readonly backendConfig = inject(BACKEND_CONFIG);
   private readonly loreSource = inject(LORE_SOURCE);
   private readonly loreEntryApi = inject(LoreEntryApi);
   private readonly loreLayerApi = inject(LoreLayerApi);
@@ -264,11 +266,24 @@ export class RoleplayWorkbench {
   }
 
   async loadProfiles(): Promise<void> {
+    this.profilesLoading.set(true);
+    this.selectError.set(undefined);
     try {
       const profiles = await this.profileRegistryApi.listProfiles();
-      if (profiles.length > 0) {
-        this.profileStore.setProfiles(profiles);
+      this.profileStore.setProfiles(profiles);
+      const profile = initialRoleplayProfile(
+        profiles,
+        this.backendConfig.runtimeProfileId,
+      );
+      if (profile === undefined) {
+        this.selectError.set(
+          this.backendConfig.runtimeProfileId === undefined
+            ? 'No Roleplay narrator profile is configured in Rusty Crew.'
+            : `Configured runtime profile “${this.backendConfig.runtimeProfileId}” was not found.`,
+        );
+        return;
       }
+      this.activateProfile(profile.id);
     } catch (error: unknown) {
       this.selectError.set(readErrorMessage(error));
     } finally {
@@ -304,26 +319,25 @@ export class RoleplayWorkbench {
     }
   }
 
-  selectProfile(selection: ProfileSelection): void {
-    const result = this.profileStore.select(
-      selection.profileId,
-      selection.password,
-    );
+  retryStartup(): void {
+    void this.loadProfiles();
+  }
+
+  private activateProfile(profileId: string): void {
+    const result = this.profileStore.select(profileId);
     this.selectError.set(
       result.ok
         ? undefined
-        : result.reason === 'wrong_password'
-          ? 'Incorrect password.'
-          : 'Unknown profile.',
+        : 'The configured Roleplay narrator profile is unavailable.',
     );
     if (result.ok) {
-      const settings = loadRoleplayTextStyle(selection.profileId);
+      const settings = loadRoleplayTextStyle(profileId);
       this.textStyleSettings.set(settings);
       this.showModelActivity.set(
-        loadRoleplayModelActivityVisibility(selection.profileId),
+        loadRoleplayModelActivityVisibility(profileId),
       );
       applyRoleplayTextStyle(settings);
-      void this.connectToProfile(selection.profileId);
+      void this.connectToProfile(profileId);
     }
   }
 

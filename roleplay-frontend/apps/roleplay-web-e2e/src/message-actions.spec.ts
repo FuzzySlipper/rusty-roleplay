@@ -17,9 +17,7 @@ const actionLabels = [
 ] as const;
 
 async function enterLiveTesterProfile(page: Page): Promise<void> {
-  await page.goto('/?api=http://127.0.0.1:9348');
-  await page.getByRole('button', { name: 'Live Tester', exact: true }).click();
-  await page.getByRole('button', { name: 'Enter as Live Tester' }).click();
+  await page.goto('/?api=http://127.0.0.1:9348&profile=tester');
   await expect(page.locator('rv-transcript-viewport')).toBeVisible();
 }
 

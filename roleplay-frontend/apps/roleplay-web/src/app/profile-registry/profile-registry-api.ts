@@ -14,11 +14,15 @@ interface ApiEnvelope<T> {
 
 type ApiRecord = Record<string, unknown>;
 
+export interface RegistryProfile extends Profile {
+  readonly roleplayNarratorCapable: boolean;
+}
+
 @Injectable()
 export class ProfileRegistryApi {
   private readonly config = inject(BACKEND_CONFIG);
 
-  async listProfiles(): Promise<readonly Profile[]> {
+  async listProfiles(): Promise<readonly RegistryProfile[]> {
     const data = await this.request<{ readonly items?: readonly ApiRecord[] }>(
       '/v1/admin/profiles/registry',
     );
@@ -53,9 +57,12 @@ export class ProfileRegistryApi {
   }
 }
 
-export function mapProfile(record: ApiRecord): Profile {
+export function mapProfile(record: ApiRecord): RegistryProfile {
   const id =
     readString(record, 'profileId') ?? readString(record, 'profile_id');
+  const localToolProfileId =
+    readString(record, 'localToolProfileId') ??
+    readString(record, 'local_tool_profile_id');
   return {
     id: id ?? '',
     name:
@@ -64,7 +71,18 @@ export function mapProfile(record: ApiRecord): Profile {
       id ??
       'Untitled profile',
     hasPassword: false,
+    roleplayNarratorCapable: localToolProfileId === 'roleplay_lore',
   };
+}
+
+export function initialRoleplayProfile(
+  profiles: readonly RegistryProfile[],
+  configuredProfileId: string | undefined,
+): RegistryProfile | undefined {
+  if (configuredProfileId !== undefined) {
+    return profiles.find((profile) => profile.id === configuredProfileId);
+  }
+  return profiles.find((profile) => profile.roleplayNarratorCapable);
 }
 
 function readString(record: ApiRecord, key: string): string | undefined {

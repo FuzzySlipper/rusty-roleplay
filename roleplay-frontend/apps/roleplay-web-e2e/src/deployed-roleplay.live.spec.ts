@@ -64,13 +64,12 @@ test('deployed roleplay narrator survives refresh with RP controls @live-rolepla
   await page.goto(`/?api=${encodeURIComponent(backendUrl)}`);
   await expect(
     page.getByRole('heading', { name: 'Choose a profile' }),
-  ).toBeVisible();
-  await expect(page.getByRole('status')).toHaveCount(0);
-  await capture(page, testInfo, screenshots, '00-stable-profile-gate');
+  ).toHaveCount(0);
 
-  await enterProfile(page, profileName);
+  await enterRoleplay(page, profileName);
   await expect(page.locator('rv-transcript-viewport')).toBeVisible();
   await expect(page.locator('.scene')).toHaveText(sessionName);
+  await capture(page, testInfo, screenshots, '00-direct-roleplay-entry');
   const modelActivityToggle = page.getByTestId('model-activity-toggle');
   await expect(modelActivityToggle).not.toBeChecked();
   await modelActivityToggle.check();
@@ -151,7 +150,7 @@ test('deployed roleplay narrator survives refresh with RP controls @live-rolepla
     .allTextContents();
 
   await page.reload();
-  await enterProfile(page, profileName);
+  await enterRoleplay(page, profileName);
   await expect(page.locator('.scene')).toHaveText(sessionName);
   await expect(page.getByTestId('model-activity-toggle')).toBeChecked();
   await expect(page.getByText(marker, { exact: false })).toBeVisible({
@@ -241,16 +240,11 @@ test('deployed roleplay narrator survives refresh with RP controls @live-rolepla
   expect(pageErrors).toEqual([]);
 });
 
-async function enterProfile(page: Page, profileName: string): Promise<void> {
-  const profile = page.getByRole('button', { name: profileName, exact: true });
-  await expect(profile).toBeVisible({ timeout: 30_000 });
-  await profile.click();
-  await page
-    .getByRole('button', { name: `Enter as ${profileName}`, exact: true })
-    .click();
+async function enterRoleplay(page: Page, profileName: string): Promise<void> {
   await expect(page.locator('rv-transcript-viewport')).toBeVisible({
     timeout: 30_000,
   });
+  await expect(page.locator('.profile')).toHaveText(profileName);
 }
 
 async function installPhaseRecorder(phaseIndicator: Locator): Promise<void> {
