@@ -61,6 +61,8 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   request,
 }, testInfo) => {
   test.setTimeout(720_000);
+  page.setDefaultTimeout(30_000);
+  page.setDefaultNavigationTimeout(30_000);
 
   const config = liveConfiguration();
   const artifactDirectory = testInfo.outputPath('live-artifacts');
@@ -105,9 +107,9 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   await enterProfile(page, config.narratorProfileName);
   await openMechanicPanel(page);
   const panel = page.locator('rp-mechanic-panel');
-  await panel.getByLabel('Profile', { exact: true }).selectOption({
-    value: config.mechanicProfileId,
-  });
+  await panel
+    .getByRole('combobox', { name: 'Profile', exact: true })
+    .selectOption({ value: config.mechanicProfileId });
   await expect(
     panel.getByRole('heading', { name: config.mechanicName }),
   ).toBeVisible();
@@ -301,12 +303,19 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   await expect(diagnosticCard).toBeVisible();
   await diagnosticCard.locator('.card-main').click();
   const diagnosticDetail = panel.locator('article.detail');
-  await diagnosticDetail.getByLabel('Outcome').selectOption('improved');
   await diagnosticDetail
-    .getByLabel('Follow-up notes')
+    .getByRole('combobox', { name: 'Outcome', exact: true })
+    .selectOption('improved');
+  await diagnosticDetail
+    .getByRole('textbox', { name: 'Follow-up notes', exact: true })
     .fill(`Visible browser outcome saved for ${marker}.`);
   await diagnosticDetail.getByRole('button', { name: 'Save outcome' }).click();
-  await expect(diagnosticDetail.getByLabel('Outcome')).toHaveValue('improved');
+  await expect(
+    diagnosticDetail.getByRole('combobox', {
+      name: 'Outcome',
+      exact: true,
+    }),
+  ).toHaveValue('improved');
   const improvedDiagnostic = await waitForDiagnostic(
     request,
     config.backendUrl,
@@ -510,9 +519,9 @@ async function selectMechanicProfile(
 ): Promise<void> {
   await openMechanicPanel(page);
   const panel = page.locator('rp-mechanic-panel');
-  await panel.getByLabel('Profile', { exact: true }).selectOption({
-    value: mechanicProfileId,
-  });
+  await panel
+    .getByRole('combobox', { name: 'Profile', exact: true })
+    .selectOption({ value: mechanicProfileId });
   await expect(panel.getByText('Verified', { exact: true })).toBeVisible();
 }
 
