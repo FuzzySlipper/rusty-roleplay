@@ -219,15 +219,15 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   await openMechanicPanel(page);
   await panel.getByRole('button', { name: /^Proposals/ }).click();
   await panel.getByRole('button', { name: 'Refresh', exact: true }).click();
-  const acceptedProposalCard = panel
-    .locator('.proposal-list li')
-    .filter({ has: panel.getByText(marker, { exact: true }) })
-    .first();
+  const acceptedProposalCard = panel.getByRole('button', {
+    name: `Exemplar Proposed ${marker}`,
+    exact: true,
+  });
   await expect(acceptedProposalCard).toBeVisible();
-  await acceptedProposalCard.locator('.card-main').click();
+  await acceptedProposalCard.click();
   const proposalDetail = panel.locator('article.detail');
   await expect(proposalDetail).toContainText(acceptedExemplar);
-  await expect(proposalDetail.locator('.status')).toHaveText('Pending');
+  await expect(proposalDetail.locator('.status')).toHaveText('Proposed');
   await capture(page, testInfo, screenshots, '03-proposal-inert');
 
   await proposalDetail
@@ -274,12 +274,12 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
     marker,
   );
   await panel.getByRole('button', { name: 'Refresh', exact: true }).click();
-  const rejectedProposalCard = panel
-    .locator('.proposal-list li')
-    .filter({ hasText: `Rejected ${marker}` })
-    .first();
+  const rejectedProposalCard = panel.getByRole('button', {
+    name: `Exemplar Proposed Rejected ${marker}`,
+    exact: true,
+  });
   await expect(rejectedProposalCard).toBeVisible();
-  await rejectedProposalCard.locator('.card-main').click();
+  await rejectedProposalCard.click();
   await proposalDetail
     .getByRole('button', { name: 'Reject', exact: true })
     .click();
@@ -540,12 +540,12 @@ async function openProposal(page: Page, marker: string): Promise<void> {
   const panel = page.locator('rp-mechanic-panel');
   await panel.getByRole('button', { name: /^Proposals/ }).click();
   await panel.getByRole('button', { name: 'Refresh', exact: true }).click();
-  const proposal = panel
-    .locator('.proposal-list li')
-    .filter({ has: panel.getByText(marker, { exact: true }) })
-    .first();
+  const proposal = panel.getByRole('button', {
+    name: `Exemplar Applied ${marker}`,
+    exact: true,
+  });
   await expect(proposal).toBeVisible();
-  await proposal.locator('.card-main').click();
+  await proposal.click();
 }
 
 async function mechanicIsolationReceipt(
