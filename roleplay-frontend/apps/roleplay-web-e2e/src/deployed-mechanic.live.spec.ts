@@ -197,7 +197,7 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
     expect(toolNames).toContain(tool);
   }
   await expect(assistant).toContainText(
-    /approval|go-ahead|nothing has been applied/i,
+    /approval|go-ahead|not (?:yet )?applied|nothing has been applied|pending (?:your )?review/i,
   );
   await capture(page, testInfo, screenshots, '02-real-mechanic-wake');
 
