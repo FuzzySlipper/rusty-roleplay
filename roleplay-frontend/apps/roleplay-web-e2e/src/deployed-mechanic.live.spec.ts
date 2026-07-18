@@ -140,9 +140,7 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   ).toBeVisible();
   await expect(page.locator('rv-transcript-viewport')).toBeVisible();
   await capture(page, testInfo, screenshots, '01-attached-mechanic-session');
-  await page
-    .getByRole('button', { name: 'Close Mechanic / OOC Workspace' })
-    .click();
+  await closeMechanicPanel(page);
 
   const proposalMarkdown = [
     '---',
@@ -515,6 +513,15 @@ async function openMechanicPanel(page: Page): Promise<void> {
     await page.getByRole('button', { name: 'Mechanic', exact: true }).click();
   }
   await expect(panel).toBeVisible();
+}
+
+async function closeMechanicPanel(page: Page): Promise<void> {
+  const panel = page.locator('rp-mechanic-panel');
+  await page
+    .getByRole('dialog', { name: 'Mechanic / OOC Workspace' })
+    .getByRole('button', { name: '✕', exact: true })
+    .click();
+  await expect(panel).toBeHidden();
 }
 
 async function selectMechanicProfile(
