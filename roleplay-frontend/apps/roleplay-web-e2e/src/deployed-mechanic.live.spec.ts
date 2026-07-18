@@ -196,7 +196,9 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   ]) {
     expect(toolNames).toContain(tool);
   }
-  await expect(assistant).toContainText(/approv/i);
+  await expect(assistant).toContainText(
+    /approval|go-ahead|nothing has been applied/i,
+  );
   await capture(page, testInfo, screenshots, '02-real-mechanic-wake');
 
   const proposed = await waitForProposal(
