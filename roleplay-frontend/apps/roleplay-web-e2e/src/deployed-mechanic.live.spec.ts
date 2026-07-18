@@ -217,7 +217,7 @@ test('deployed mechanic diagnoses, proposes, applies, and survives restart @live
   ).toEqual(beforeNarratorConfig);
 
   await openMechanicPanel(page);
-  await panel.getByRole('button', { name: 'Proposals', exact: true }).click();
+  await panel.getByRole('button', { name: /^Proposals/ }).click();
   await panel.getByRole('button', { name: 'Refresh', exact: true }).click();
   const acceptedProposalCard = panel
     .locator('.proposal-list li')
@@ -538,7 +538,7 @@ async function selectMechanicProfile(
 
 async function openProposal(page: Page, marker: string): Promise<void> {
   const panel = page.locator('rp-mechanic-panel');
-  await panel.getByRole('button', { name: 'Proposals', exact: true }).click();
+  await panel.getByRole('button', { name: /^Proposals/ }).click();
   await panel.getByRole('button', { name: 'Refresh', exact: true }).click();
   const proposal = panel
     .locator('.proposal-list li')
