@@ -28,6 +28,7 @@ export interface NarratorConfig {
   readonly pacing: NarratorPacing;
   readonly explicitness: NarratorExplicitness;
   readonly memoryDepth: NarratorMemoryDepth;
+  readonly stylePrompt: string;
   readonly exemplar: string;
   readonly review: NarratorReviewSettings;
 }
@@ -37,6 +38,7 @@ export const DEFAULT_NARRATOR_CONFIG: NarratorConfig = {
   pacing: 'balanced',
   explicitness: 'romantic',
   memoryDepth: 'medium',
+  stylePrompt: '',
   exemplar: '',
   review: {
     enabled: false,

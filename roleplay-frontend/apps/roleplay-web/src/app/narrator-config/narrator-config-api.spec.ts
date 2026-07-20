@@ -27,6 +27,7 @@ describe('NarratorConfigApi', () => {
         pacing: 'rapid',
         explicitness: 'suggestive',
         memoryDepth: 'deep',
+        stylePrompt: 'Use emotionally restrained third-person prose.',
         exemplar: 'Keep the rhythm clipped.',
         review: {
           enabled: true,
@@ -41,6 +42,7 @@ describe('NarratorConfigApi', () => {
       pacing: 'rapid',
       explicitness: 'suggestive',
       memoryDepth: 'deep',
+      stylePrompt: 'Use emotionally restrained third-person prose.',
       exemplar: 'Keep the rhythm clipped.',
       review: {
         enabled: true,
@@ -91,6 +93,7 @@ const savedConfig: NarratorConfig = {
   pacing: 'balanced',
   explicitness: 'romantic',
   memoryDepth: 'deep',
+  stylePrompt: 'Answer explicit questions with concrete lore.',
   exemplar: 'Keep continuity clear.',
   review: {
     enabled: true,

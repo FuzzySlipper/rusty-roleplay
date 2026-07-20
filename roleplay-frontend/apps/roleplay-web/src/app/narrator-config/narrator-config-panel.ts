@@ -98,6 +98,15 @@ import {
           Style prompt
           <textarea
             rows="9"
+            [value]="draft().stylePrompt"
+            (input)="setStylePrompt($event)"
+          ></textarea>
+        </label>
+
+        <label class="prompt-field exemplar-field">
+          Exemplar / reference prose
+          <textarea
+            rows="4"
             [value]="draft().exemplar"
             (input)="setExemplar($event)"
           ></textarea>
@@ -305,6 +314,10 @@ import {
         line-height: 1.45;
       }
 
+      .exemplar-field textarea {
+        min-height: 5rem;
+      }
+
       .state {
         color: var(--rv-color-text-muted, #7a828d);
         font-size: var(--rv-font-size-sm, 0.8125rem);
@@ -345,7 +358,7 @@ export class NarratorConfigPanelComponent {
     effect(() => {
       const next = cloneConfig(this.config() ?? DEFAULT_NARRATOR_CONFIG);
       this.draft.set(withPrompt(next));
-      this.promptEdited.set(next.exemplar.trim().length > 0);
+      this.promptEdited.set(next.stylePrompt.trim().length > 0);
     });
   }
 
@@ -369,8 +382,12 @@ export class NarratorConfigPanelComponent {
     });
   }
 
-  protected setExemplar(event: Event): void {
+  protected setStylePrompt(event: Event): void {
     this.promptEdited.set(true);
+    this.patch({ stylePrompt: inputValue(event) });
+  }
+
+  protected setExemplar(event: Event): void {
     this.patch({ exemplar: inputValue(event) });
   }
 
@@ -378,7 +395,7 @@ export class NarratorConfigPanelComponent {
     this.promptEdited.set(false);
     this.draft.update((current) => ({
       ...current,
-      exemplar: buildNarratorStylePrompt(current),
+      stylePrompt: buildNarratorStylePrompt(current),
     }));
   }
 
@@ -401,7 +418,7 @@ export class NarratorConfigPanelComponent {
   protected resetDraft(): void {
     const next = cloneConfig(this.config() ?? DEFAULT_NARRATOR_CONFIG);
     this.draft.set(withPrompt(next));
-    this.promptEdited.set(next.exemplar.trim().length > 0);
+    this.promptEdited.set(next.stylePrompt.trim().length > 0);
   }
 
   protected save(event: Event): void {
@@ -424,7 +441,7 @@ export class NarratorConfigPanelComponent {
       const next = { ...current, ...patch };
       return this.promptEdited()
         ? next
-        : { ...next, exemplar: buildNarratorStylePrompt(next) };
+        : { ...next, stylePrompt: buildNarratorStylePrompt(next) };
     });
   }
 
@@ -443,7 +460,7 @@ export class NarratorConfigPanelComponent {
       };
       return this.promptEdited()
         ? next
-        : { ...next, exemplar: buildNarratorStylePrompt(next) };
+        : { ...next, stylePrompt: buildNarratorStylePrompt(next) };
     });
   }
 }
@@ -456,8 +473,8 @@ function cloneConfig(config: NarratorConfig): NarratorConfig {
 }
 
 function withPrompt(config: NarratorConfig): NarratorConfig {
-  if (config.exemplar.trim().length > 0) return config;
-  return { ...config, exemplar: buildNarratorStylePrompt(config) };
+  if (config.stylePrompt.trim().length > 0) return config;
+  return { ...config, stylePrompt: buildNarratorStylePrompt(config) };
 }
 
 function inputValue(event: Event): string {

@@ -23,6 +23,7 @@ class HostComponent {
     pacing: 'balanced',
     explicitness: 'romantic',
     memoryDepth: 'medium',
+    stylePrompt: '',
     exemplar: 'Flowing prose.',
     review: {
       enabled: false,
@@ -59,7 +60,7 @@ describe('NarratorConfigPanelComponent', () => {
   });
 
   it('generates an editable style prompt from the controls', async () => {
-    const fixture = await render({ exemplar: '' });
+    const fixture = await render({ stylePrompt: '' });
     const host = fixture.componentInstance;
     const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
     const selects = fixture.nativeElement.querySelectorAll('select');
@@ -87,7 +88,8 @@ describe('NarratorConfigPanelComponent', () => {
     fixture.detectChanges();
 
     expect(host.saved?.tone).toBe('wry');
-    expect(host.saved?.exemplar).toContain('dry humor');
+    expect(host.saved?.stylePrompt).toContain('dry humor');
+    expect(host.saved?.exemplar).toBe('Flowing prose.');
   });
 
   it('uses a clearer review-before-sending label', async () => {

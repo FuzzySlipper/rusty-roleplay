@@ -69,8 +69,10 @@ export const ROLEPLAY_SETUP_TABS: readonly RoleplaySetupTab[] = [
     :host {
       display: flex;
       flex: 1;
+      max-height: calc(80vh - 2.5rem);
       min-height: 0;
       flex-direction: column;
+      overflow: hidden;
     }
 
     .rp-setup__body {

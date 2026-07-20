@@ -90,6 +90,8 @@ export function mapNarratorConfig(record: ApiRecord): NarratorConfig {
     memoryDepth:
       readMemoryDepth(record['memoryDepth'] ?? record['memory_depth']) ??
       DEFAULT_NARRATOR_CONFIG.memoryDepth,
+    stylePrompt:
+      readString(record['stylePrompt'] ?? record['style_prompt']) ?? '',
     exemplar: readString(record['exemplar']) ?? '',
     review: {
       enabled: readBoolean(review['enabled']),
@@ -118,6 +120,7 @@ function configBody(config: NarratorConfig): Record<string, unknown> {
     pacing: config.pacing,
     explicitness: config.explicitness,
     memoryDepth: config.memoryDepth,
+    stylePrompt: config.stylePrompt,
     exemplar: config.exemplar,
     review: {
       enabled: config.review.enabled,
