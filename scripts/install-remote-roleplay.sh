@@ -1,18 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-deployment_root="${RUSTY_EVA_ROLEPLAY_DEPLOYMENT_ROOT:?RUSTY_EVA_ROLEPLAY_DEPLOYMENT_ROOT is required}"
-staging_root="${RUSTY_EVA_ROLEPLAY_STAGING_ROOT:?RUSTY_EVA_ROLEPLAY_STAGING_ROOT is required}"
-image="${RUSTY_EVA_ROLEPLAY_IMAGE:?RUSTY_EVA_ROLEPLAY_IMAGE is required}"
-roleplay_revision="${RUSTY_EVA_ROLEPLAY_REVISION:?RUSTY_EVA_ROLEPLAY_REVISION is required}"
-port_start="${RUSTY_EVA_ROLEPLAY_PORT_START:-9347}"
-port_end="${RUSTY_EVA_ROLEPLAY_PORT_END:-9399}"
-requested_port="${RUSTY_EVA_ROLEPLAY_PORT:-}"
+instance_name="${RUSTY_ROLEPLAY_INSTANCE_NAME:?RUSTY_ROLEPLAY_INSTANCE_NAME is required}"
+deployment_root="${RUSTY_ROLEPLAY_DEPLOYMENT_ROOT:?RUSTY_ROLEPLAY_DEPLOYMENT_ROOT is required}"
+staging_root="${RUSTY_ROLEPLAY_STAGING_ROOT:?RUSTY_ROLEPLAY_STAGING_ROOT is required}"
+image="${RUSTY_ROLEPLAY_IMAGE:?RUSTY_ROLEPLAY_IMAGE is required}"
+roleplay_revision="${RUSTY_ROLEPLAY_REVISION:?RUSTY_ROLEPLAY_REVISION is required}"
+port_start="${RUSTY_ROLEPLAY_PORT_START:-9347}"
+port_end="${RUSTY_ROLEPLAY_PORT_END:-9399}"
+requested_port="${RUSTY_ROLEPLAY_PORT:-}"
 docker_host="${DOCKER_HOST:?DOCKER_HOST is required}"
-public_host="${RUSTY_EVA_ROLEPLAY_PUBLIC_HOST:-}"
+public_host="${RUSTY_ROLEPLAY_PUBLIC_HOST:-}"
 
+if [[ ! "${instance_name}" =~ ^rusty-[a-z0-9]+([a-z0-9-]*[a-z0-9])?$ ]]; then
+  echo "Invalid Roleplay instance name: ${instance_name}" >&2
+  exit 1
+fi
 if [[ ! "${deployment_root}" =~ ^/data/docker/[^/]+$ ]]; then
   echo "Deployment root must be one direct child of /data/docker: ${deployment_root}" >&2
+  exit 1
+fi
+if [[ "${deployment_root}" != "/data/docker/${instance_name}" ]]; then
+  echo "Deployment root must match the instance name: /data/docker/${instance_name}" >&2
   exit 1
 fi
 if [[ ! -d "${staging_root}/site" ]] ||
@@ -47,7 +56,7 @@ if ((port_start < 1024 || port_end > 65535 || port_start > port_end)); then
 fi
 
 docker=(docker)
-lock_file="/run/lock/rusty-eva-roleplay-deploy.lock"
+lock_file="/run/lock/${instance_name}-deploy.lock"
 exec 9>"${lock_file}"
 flock 9
 
@@ -70,7 +79,7 @@ port_is_reserved() {
 port_is_owned_by_deployment() {
   local candidate="$1"
   "${docker[@]}" ps -a \
-    --filter label=com.docker.compose.project=rusty-eva-roleplay \
+    --filter "label=com.docker.compose.project=${instance_name}" \
     --filter label=com.docker.compose.service=rusty-roleplay \
     --format '{{.Ports}}' |
     grep -Eq "(^|[ ,])([^, ]*:)?${candidate}->"
@@ -86,7 +95,7 @@ validate_port() {
 
 existing_port=""
 if [[ -f "${deployment_root}/.env" ]]; then
-  existing_port="$(sed -n 's/^RUSTY_EVA_ROLEPLAY_PORT=//p' "${deployment_root}/.env" | tail -1)"
+  existing_port="$(sed -n -e 's/^RUSTY_ROLEPLAY_PORT=//p' -e 's/^RUSTY_EVA_ROLEPLAY_PORT=//p' "${deployment_root}/.env" | tail -1)"
 fi
 
 if [[ -n "${requested_port}" ]]; then
@@ -151,9 +160,10 @@ fi
 
 env_file="$(mktemp "${deployment_root}/.env.XXXXXX")"
 {
-  printf 'RUSTY_EVA_ROLEPLAY_IMAGE=%s\n' "${image}"
-  printf 'RUSTY_EVA_ROLEPLAY_PORT=%s\n' "${selected_port}"
-  printf 'RUSTY_EVA_ROLEPLAY_REVISION=%s\n' "${roleplay_revision}"
+  printf 'RUSTY_ROLEPLAY_INSTANCE_NAME=%s\n' "${instance_name}"
+  printf 'RUSTY_ROLEPLAY_IMAGE=%s\n' "${image}"
+  printf 'RUSTY_ROLEPLAY_PORT=%s\n' "${selected_port}"
+  printf 'RUSTY_ROLEPLAY_REVISION=%s\n' "${roleplay_revision}"
 } >"${env_file}"
 chmod 0640 "${env_file}"
 mv "${env_file}" "${deployment_root}/.env"
@@ -192,8 +202,9 @@ if [[ ! -f "${database_path}" ]]; then
   exit 1
 fi
 
-echo "RUSTY_EVA_ROLEPLAY_PORT=${selected_port}"
-echo "RUSTY_EVA_ROLEPLAY_URL=http://${public_host}:${selected_port}/"
-echo "RUSTY_EVA_ROLEPLAY_ROOT=${deployment_root}"
-echo "RUSTY_EVA_ROLEPLAY_DATABASE=${database_path}"
-echo "RUSTY_EVA_ROLEPLAY_IMAGE=${image}"
+echo "RUSTY_ROLEPLAY_INSTANCE_NAME=${instance_name}"
+echo "RUSTY_ROLEPLAY_PORT=${selected_port}"
+echo "RUSTY_ROLEPLAY_URL=http://${public_host}:${selected_port}/"
+echo "RUSTY_ROLEPLAY_ROOT=${deployment_root}"
+echo "RUSTY_ROLEPLAY_DATABASE=${database_path}"
+echo "RUSTY_ROLEPLAY_IMAGE=${image}"

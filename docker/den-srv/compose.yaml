@@ -1,8 +1,8 @@
-name: rusty-eva-roleplay
+name: ${RUSTY_ROLEPLAY_INSTANCE_NAME}
 
 services:
   rusty-roleplay:
-    image: ${RUSTY_EVA_ROLEPLAY_IMAGE}
+    image: ${RUSTY_ROLEPLAY_IMAGE}
     init: true
     restart: unless-stopped
     env_file:
@@ -13,7 +13,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "${RUSTY_EVA_ROLEPLAY_PORT}:9347"
+      - "${RUSTY_ROLEPLAY_PORT}:9347"
     volumes:
       - type: bind
         source: ./config
