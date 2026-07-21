@@ -136,7 +136,7 @@ test('direct startup → transcript rows, decorator, and RP extensions', async (
   await expect(page.getByRole('tab', { name: 'Text Style' })).toBeVisible();
 });
 
-test('direct startup refuses to treat a mechanic profile as the narrator', async ({
+test('direct startup offers first narrator setup instead of selecting a mechanic', async ({
   page,
 }) => {
   await page.route('**/v1/admin/profiles/registry', (route) =>
@@ -157,7 +157,14 @@ test('direct startup refuses to treat a mechanic profile as the narrator', async
   await expect(page.getByRole('alert')).toHaveText(
     'No Roleplay narrator profile is configured in Rusty Crew.',
   );
-  await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Create the first narrator' }),
+  ).toBeVisible();
+  await expect(page.getByLabel('Base URL')).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Create narrator' }),
+  ).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Check again' })).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'Choose a profile' }),
   ).toHaveCount(0);

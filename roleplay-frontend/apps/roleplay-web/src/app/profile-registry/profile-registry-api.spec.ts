@@ -97,6 +97,83 @@ describe('ProfileRegistryApi', () => {
     const headers = call?.[1].headers as Headers;
     expect(headers.get('authorization')).toBe('Bearer token-a');
   });
+
+  it('creates a missing provider before creating the first narrator', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ ok: false }, 404))
+      .mockResolvedValueOnce(jsonResponse({ ok: true, data: {} }))
+      .mockResolvedValueOnce(jsonResponse({ ok: true, data: {} }));
+    vi.stubGlobal('fetch', fetchMock);
+    const api = createApi();
+
+    await api.createFirstNarrator({
+      profileId: 'eva',
+      displayName: 'Eva',
+      providerAlias: 'eva-router',
+      providerDisplayName: 'Eva Router',
+      providerBaseUrl: 'http://router.test/v1',
+      modelId: 'model-a',
+      contextWindowTokens: 128000,
+      maxOutputTokens: 4096,
+      apiKey: undefined,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      'http://crew.test/v1/admin/model-providers/eva-router',
+    );
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(
+      'http://crew.test/v1/admin/model-providers',
+    );
+    expect(fetchMock.mock.calls[2]?.[0]).toBe(
+      'http://crew.test/v1/admin/control/profiles',
+    );
+
+    const providerInit = fetchMock.mock.calls[1]?.[1] as
+      | RequestInit
+      | undefined;
+    const profileInit = fetchMock.mock.calls[2]?.[1] as RequestInit | undefined;
+    expect(JSON.parse(String(providerInit?.body))).toMatchObject({
+      alias: 'eva-router',
+      protocol: 'chat_completions',
+      modelId: 'model-a',
+      contextWindowTokens: 128000,
+      maxOutputTokens: 4096,
+    });
+    expect(JSON.parse(String(profileInit?.body))).toMatchObject({
+      profileId: 'eva',
+      providerAlias: 'eva-router',
+      localToolProfileId: 'roleplay_lore',
+      brain: { strategy: 'roleplay_narrator' },
+    });
+  });
+
+  it('reuses an existing provider when a previous setup attempt created it', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ ok: true, data: {} }))
+      .mockResolvedValueOnce(jsonResponse({ ok: true, data: {} }));
+    vi.stubGlobal('fetch', fetchMock);
+    const api = createApi();
+
+    await api.createFirstNarrator({
+      profileId: 'roleplay',
+      displayName: 'Roleplay',
+      providerAlias: 'existing-router',
+      providerDisplayName: 'Existing Router',
+      providerBaseUrl: 'http://router.test/v1',
+      modelId: 'model-a',
+      contextWindowTokens: 32000,
+      maxOutputTokens: 2048,
+      apiKey: undefined,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(
+      'http://crew.test/v1/admin/control/profiles',
+    );
+  });
 });
 
 function createApi(): ProfileRegistryApi {

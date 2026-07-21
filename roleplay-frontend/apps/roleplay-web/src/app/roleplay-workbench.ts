@@ -60,6 +60,7 @@ import type {
   PlayerPersonaWriteRequest,
 } from './persona-management/player-persona.model';
 import {
+  type FirstNarratorSetupRequest,
   initialRoleplayProfile,
   ProfileRegistryApi,
 } from './profile-registry/profile-registry-api';
@@ -128,6 +129,8 @@ export class RoleplayWorkbench {
   );
   readonly selectError = signal<string | undefined>(undefined);
   readonly profilesLoading = signal(true);
+  readonly firstNarratorSetupAvailable = signal(false);
+  readonly firstNarratorSetupSaving = signal(false);
   readonly sessionError = signal<string | undefined>(undefined);
   readonly sessionsLoading = signal(false);
   readonly sessionsError = signal<string | undefined>(undefined);
@@ -275,6 +278,10 @@ export class RoleplayWorkbench {
         profiles,
         this.backendConfig.runtimeProfileId,
       );
+      this.firstNarratorSetupAvailable.set(
+        profile === undefined &&
+          this.backendConfig.runtimeProfileId === undefined,
+      );
       if (profile === undefined) {
         this.selectError.set(
           this.backendConfig.runtimeProfileId === undefined
@@ -285,6 +292,7 @@ export class RoleplayWorkbench {
       }
       this.activateProfile(profile.id);
     } catch (error: unknown) {
+      this.firstNarratorSetupAvailable.set(false);
       this.selectError.set(readErrorMessage(error));
     } finally {
       this.profilesLoading.set(false);
@@ -321,6 +329,26 @@ export class RoleplayWorkbench {
 
   retryStartup(): void {
     void this.loadProfiles();
+  }
+
+  createFirstNarrator(request: FirstNarratorSetupRequest): void {
+    void this.createAndActivateFirstNarrator(request);
+  }
+
+  private async createAndActivateFirstNarrator(
+    request: FirstNarratorSetupRequest,
+  ): Promise<void> {
+    this.firstNarratorSetupSaving.set(true);
+    this.selectError.set(undefined);
+    try {
+      await this.profileRegistryApi.createFirstNarrator(request);
+      await this.loadProfiles();
+    } catch (error: unknown) {
+      this.firstNarratorSetupAvailable.set(true);
+      this.selectError.set(readErrorMessage(error));
+    } finally {
+      this.firstNarratorSetupSaving.set(false);
+    }
   }
 
   private activateProfile(profileId: string): void {
