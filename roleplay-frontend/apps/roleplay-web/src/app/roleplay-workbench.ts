@@ -828,6 +828,14 @@ export class RoleplayWorkbench {
 
   private async loadAlternates(sessionId: string): Promise<void> {
     this.revisionError.set(undefined);
+    if (
+      this.chatStore.activeSessionId() === sessionId &&
+      latestAssistantMessageCompletedEventId(this.chatStore.rawEvents()) ===
+        undefined
+    ) {
+      this.alternateSlots.set([]);
+      return;
+    }
     try {
       const slot = await this.branchingApi.readTerminalAlternatives(sessionId);
       this.alternateSlots.set(slot === null ? [] : [slot]);
