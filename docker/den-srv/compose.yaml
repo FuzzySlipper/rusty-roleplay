@@ -1,0 +1,52 @@
+name: rusty-eva-roleplay
+
+services:
+  rusty-roleplay:
+    image: ${RUSTY_EVA_ROLEPLAY_IMAGE}
+    init: true
+    restart: unless-stopped
+    env_file:
+      - ./config/service.env
+    environment:
+      HOME: /tmp
+      RUSTY_ROLEPLAY_PROVIDER_BASE_URL: http://host.docker.internal:18082/v1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${RUSTY_EVA_ROLEPLAY_PORT}:9347"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /srv/rusty-eva-roleplay/config
+      - type: bind
+        source: ./data
+        target: /srv/rusty-eva-roleplay/data
+      - type: bind
+        source: ./run
+        target: /srv/rusty-eva-roleplay/run
+      - type: bind
+        source: ./logs
+        target: /srv/rusty-eva-roleplay/logs
+      - type: bind
+        source: ./artifacts
+        target: /srv/rusty-eva-roleplay/artifacts
+      - type: bind
+        source: ./backups
+        target: /srv/rusty-eva-roleplay/backups
+      - type: bind
+        source: ./workspace
+        target: /workspace
+      - type: bind
+        source: ./site
+        target: /opt/rusty-roleplay/site
+        read_only: true
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:9347/v1/admin/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 10s

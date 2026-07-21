@@ -1,0 +1,9 @@
+{
+  "profilesDir": "/srv/rusty-eva-roleplay/config/profiles",
+  "skillsDir": "/srv/rusty-eva-roleplay/config/skills",
+  "wakeTimeout": {
+    "mode": "disabled"
+  },
+  "brains": [],
+  "sessions": []
+}
