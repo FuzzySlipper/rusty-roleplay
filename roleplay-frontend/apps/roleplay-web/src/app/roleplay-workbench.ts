@@ -67,6 +67,7 @@ import {
 } from './profile-registry/profile-registry-api';
 import { RoleplayBranchingApi } from './session-management/roleplay-branching-api';
 import { RoleplaySessionApi } from './session-management/roleplay-session-api';
+import { terminalAssistantMessageCompletedEventId } from './session-terminal';
 import type {
   CreateRoleplaySessionRequest,
   RoleplaySessionSummary,
@@ -251,7 +252,7 @@ export class RoleplayWorkbench {
   constructor() {
     effect(() => {
       const sessionId = this.chatStore.activeSessionId();
-      const latestCompletedId = latestAssistantMessageCompletedEventId(
+      const latestCompletedId = terminalAssistantMessageCompletedEventId(
         this.chatStore.rawEvents(),
       );
 
@@ -875,7 +876,7 @@ export class RoleplayWorkbench {
     if (
       this.chatStore.activeSessionId() === sessionId &&
       (terminalMessage?.author.role !== 'assistant' ||
-        latestAssistantMessageCompletedEventId(this.chatStore.rawEvents()) ===
+        terminalAssistantMessageCompletedEventId(this.chatStore.rawEvents()) ===
           undefined)
     ) {
       this.alternateSlots.set([]);
@@ -1797,22 +1798,6 @@ function toStreamStatus(status: string): StreamStatusKind {
     default:
       return 'idle';
   }
-}
-
-function latestAssistantMessageCompletedEventId(
-  events: readonly {
-    readonly kind?: string;
-    readonly event_id?: string;
-    readonly eventId?: string;
-  }[],
-): string | undefined {
-  for (let index = events.length - 1; index >= 0; index -= 1) {
-    const event = events[index];
-    if (event?.kind === 'assistant_message_completed') {
-      return event.event_id ?? event.eventId ?? String(index);
-    }
-  }
-  return undefined;
 }
 
 function lastTranscriptPreview(
