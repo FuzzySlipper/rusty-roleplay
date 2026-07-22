@@ -2,9 +2,11 @@ import { AdminServicePanelComponent } from '@rusty-view/chat-shell';
 import { describe, expect, it } from 'vitest';
 
 import { PromptStackPanelComponent } from './prompt-stack/prompt-stack-panel';
+import { NarratorProfileOptionsTabComponent } from './profile-registry/narrator-profile-options-tab';
 
 import {
   ROLEPLAY_DEBUG_TABS,
+  ROLEPLAY_OPTIONS_TABS,
   ROLEPLAY_TOP_MENU_CONFIGURATION,
   ROLEPLAY_TOP_MENU_ITEM_TOOLTIPS,
   ROLEPLAY_TOP_MENU_PANELS,
@@ -47,6 +49,17 @@ describe('roleplay top-menu configuration', () => {
         order: 50,
         mode: 'diagnostics',
         component: PromptStackPanelComponent,
+      },
+    ]);
+  });
+
+  it('contributes narrator switching through the built-in Options surface', () => {
+    expect(ROLEPLAY_OPTIONS_TABS).toEqual([
+      {
+        id: 'narrator-profile',
+        label: 'Narrator',
+        order: 20,
+        component: NarratorProfileOptionsTabComponent,
       },
     ]);
   });

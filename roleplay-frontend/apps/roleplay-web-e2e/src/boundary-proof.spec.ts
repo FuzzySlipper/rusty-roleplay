@@ -2,6 +2,8 @@ import { expect, test, type Page, type Route } from '@playwright/test';
 
 const SESSION_ID = 'boundary-roleplay-session';
 const PROFILE_ID = 'sister-a';
+const SECOND_SESSION_ID = 'boundary-roleplay-session-b';
+const SECOND_PROFILE_ID = 'sister-b';
 
 const SESSION = {
   session_id: SESSION_ID,
@@ -15,6 +17,17 @@ const SESSION = {
   updated_at: '2026-07-10T00:01:00Z',
   message_count: 3,
   tool_event_count: 1,
+};
+
+const SECOND_SESSION = {
+  ...SESSION,
+  session_id: SECOND_SESSION_ID,
+  agent_id: SECOND_PROFILE_ID,
+  profile_id: SECOND_PROFILE_ID,
+  title: 'Southwatch Gate',
+  latest_cursor: `${SECOND_SESSION_ID}:3`,
+  message_count: 1,
+  tool_event_count: 0,
 };
 
 const EVENTS = [
@@ -60,6 +73,27 @@ const EVENTS = [
     status: 'completed',
   }),
   event(11, 'phase_change', { phase: 'idle' }),
+];
+
+const SECOND_EVENTS = [
+  {
+    ...event(1, 'assistant_turn_started', {}),
+    session_id: SECOND_SESSION_ID,
+  },
+  {
+    ...event(2, 'assistant_text_delta', {
+      message_id: 'boundary-assistant-b',
+      delta: 'Lanterns burn above the rain-dark stones of Southwatch Gate.',
+    }),
+    session_id: SECOND_SESSION_ID,
+  },
+  {
+    ...event(3, 'assistant_message_completed', {
+      message_id: 'boundary-assistant-b',
+      status: 'completed',
+    }),
+    session_id: SECOND_SESSION_ID,
+  },
 ];
 
 test('direct startup → transcript rows, decorator, and RP extensions', async ({
@@ -128,6 +162,39 @@ test('direct startup → transcript rows, decorator, and RP extensions', async (
   await page.keyboard.press('Escape');
   await expect(debugDialog).toBeHidden();
 
+  await page.getByRole('button', { name: 'Options', exact: true }).click();
+  const optionsDialog = page.getByRole('dialog', { name: 'Options' });
+  await optionsDialog
+    .getByRole('tab', { name: 'Narrator', exact: true })
+    .click();
+  await expect(
+    optionsDialog.getByRole('heading', { name: 'Narrator profile' }),
+  ).toBeVisible();
+  await expect(optionsDialog).toContainText(
+    'This is not a user account or character persona.',
+  );
+  await expect(
+    optionsDialog.getByLabel('Active narrator').getByRole('option'),
+  ).toHaveCount(2);
+  await expect(
+    optionsDialog.getByLabel('Active narrator').getByRole('option', {
+      name: 'Mechanic Only',
+    }),
+  ).toHaveCount(0);
+  await optionsDialog
+    .getByLabel('Active narrator')
+    .selectOption(SECOND_PROFILE_ID);
+  await expect(
+    page.getByText('Lanterns burn above the rain-dark stones', {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(optionsDialog.getByLabel('Active narrator')).toHaveValue(
+    SECOND_PROFILE_ID,
+  );
+  await page.keyboard.press('Escape');
+  await expect(optionsDialog).toBeHidden();
+
   await page.getByRole('button', { name: 'RP Setup' }).click();
   await expect(page.getByRole('tab', { name: 'Personas' })).toBeVisible();
   await expect(page.getByRole('tab', { name: 'Characters' })).toBeVisible();
@@ -191,6 +258,18 @@ async function installBackendFixture(
             lifecycleStatus: 'active',
             localToolProfileId: 'roleplay_lore',
           },
+          {
+            profileId: SECOND_PROFILE_ID,
+            displayName: 'Sister B',
+            lifecycleStatus: 'active',
+            localToolProfileId: 'roleplay_lore',
+          },
+          {
+            profileId: 'mechanic-only',
+            displayName: 'Mechanic Only',
+            lifecycleStatus: 'active',
+            localToolProfileId: 'basic_chat',
+          },
         ],
       });
     }
@@ -199,31 +278,48 @@ async function installBackendFixture(
     }
     if (path === '/v1/chat/sessions') {
       return fulfillJson(route, {
-        items: [SESSION],
-        total: 1,
+        items: [SESSION, SECOND_SESSION],
+        total: 2,
         limit: 100,
         offset: 0,
       });
     }
-    if (path === `/v1/chat/sessions/${SESSION_ID}/stream`) {
+    if (
+      path === `/v1/chat/sessions/${SESSION_ID}/stream` ||
+      path === `/v1/chat/sessions/${SECOND_SESSION_ID}/stream`
+    ) {
       return route.fulfill({
         status: 200,
         contentType: 'text/event-stream',
         body: ': connected\n\n',
       });
     }
-    if (path === `/v1/chat/sessions/${SESSION_ID}/events`) {
+    if (
+      path === `/v1/chat/sessions/${SESSION_ID}/events` ||
+      path === `/v1/chat/sessions/${SECOND_SESSION_ID}/events`
+    ) {
       return fulfillJson(route, { items: [] });
     }
     if (path === `/v1/chat/sessions/${SESSION_ID}`) {
       return fulfillJson(route, { session: SESSION, events: EVENTS });
     }
+    if (path === `/v1/chat/sessions/${SECOND_SESSION_ID}`) {
+      return fulfillJson(route, {
+        session: SECOND_SESSION,
+        events: SECOND_EVENTS,
+      });
+    }
     if (path === '/v1/admin/roleplay/sessions') {
+      const isSecondProfile =
+        url.searchParams.get('profile_id') === SECOND_PROFILE_ID;
+      const session = isSecondProfile ? SECOND_SESSION : SESSION;
       return fulfillJson(route, {
         items: [
           {
-            ...SESSION,
-            display_name: 'Northmarch Road',
+            ...session,
+            display_name: isSecondProfile
+              ? 'Southwatch Gate'
+              : 'Northmarch Road',
             character_id: 'narrator',
             character_name: 'Narrator',
             active_layer_ids: [],

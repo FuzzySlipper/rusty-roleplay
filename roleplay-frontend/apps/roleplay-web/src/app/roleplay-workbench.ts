@@ -63,6 +63,7 @@ import {
   type FirstNarratorSetupRequest,
   initialRoleplayProfile,
   ProfileRegistryApi,
+  type RegistryProfile,
 } from './profile-registry/profile-registry-api';
 import { RoleplayBranchingApi } from './session-management/roleplay-branching-api';
 import { RoleplaySessionApi } from './session-management/roleplay-session-api';
@@ -129,6 +130,8 @@ export class RoleplayWorkbench {
   );
   readonly selectError = signal<string | undefined>(undefined);
   readonly profilesLoading = signal(true);
+  readonly profileSwitching = signal(false);
+  readonly narratorProfiles = signal<readonly RegistryProfile[]>([]);
   readonly firstNarratorSetupAvailable = signal(false);
   readonly firstNarratorSetupSaving = signal(false);
   readonly sessionError = signal<string | undefined>(undefined);
@@ -274,6 +277,9 @@ export class RoleplayWorkbench {
     try {
       const profiles = await this.profileRegistryApi.listProfiles();
       this.profileStore.setProfiles(profiles);
+      this.narratorProfiles.set(
+        profiles.filter((profile) => profile.roleplayNarratorCapable),
+      );
       const profile = initialRoleplayProfile(
         profiles,
         this.backendConfig.runtimeProfileId,
@@ -290,7 +296,7 @@ export class RoleplayWorkbench {
         );
         return;
       }
-      this.activateProfile(profile.id);
+      await this.activateProfile(profile.id);
     } catch (error: unknown) {
       this.firstNarratorSetupAvailable.set(false);
       this.selectError.set(readErrorMessage(error));
@@ -351,22 +357,61 @@ export class RoleplayWorkbench {
     }
   }
 
-  private activateProfile(profileId: string): void {
-    const result = this.profileStore.select(profileId);
-    this.selectError.set(
-      result.ok
-        ? undefined
-        : 'The configured Roleplay narrator profile is unavailable.',
-    );
-    if (result.ok) {
-      const settings = loadRoleplayTextStyle(profileId);
-      this.textStyleSettings.set(settings);
-      this.showModelActivity.set(
-        loadRoleplayModelActivityVisibility(profileId),
-      );
-      applyRoleplayTextStyle(settings);
-      void this.connectToProfile(profileId);
+  switchNarratorProfile(profileId: string): void {
+    if (profileId === this.activeProfile()?.id || this.profileSwitching()) {
+      return;
     }
+    if (!this.narratorProfiles().some((profile) => profile.id === profileId)) {
+      this.selectError.set(
+        'That profile is not configured as a Roleplay narrator.',
+      );
+      return;
+    }
+    void this.activateProfile(profileId);
+  }
+
+  private async activateProfile(profileId: string): Promise<void> {
+    this.profileSwitching.set(true);
+    try {
+      const result = this.profileStore.select(profileId);
+      this.selectError.set(
+        result.ok
+          ? undefined
+          : 'The configured Roleplay narrator profile is unavailable.',
+      );
+      if (result.ok) {
+        this.resetProfileScopedState();
+        const settings = loadRoleplayTextStyle(profileId);
+        this.textStyleSettings.set(settings);
+        this.showModelActivity.set(
+          loadRoleplayModelActivityVisibility(profileId),
+        );
+        applyRoleplayTextStyle(settings);
+        await this.connectToProfile(profileId);
+      }
+    } finally {
+      this.profileSwitching.set(false);
+    }
+  }
+
+  private resetProfileScopedState(): void {
+    this.mode.set('roleplay');
+    this.chatStore.clearProfileSelection();
+    this.roleplaySessions.set([]);
+    this.characters.set([]);
+    this.playerPersonas.set([]);
+    this.profileLayers.set([]);
+    this.chatLayers.set([]);
+    this.lore.set([]);
+    this.selectedLore.set(null);
+    this.activeCharacterId.set(undefined);
+    this.activePlayerPersonaId.set(undefined);
+    this.roleplaySessionBeforeMechanic.set(undefined);
+    this.narratorConfig.set(null);
+    this.contextUsage.set(null);
+    this.alternateSlots.set([]);
+    this.lastContextRefreshKey = undefined;
+    this.sessionError.set(undefined);
   }
 
   send(text: string): void {
@@ -670,17 +715,15 @@ export class RoleplayWorkbench {
         (session) =>
           session.profile_id === profileId && session.status !== 'archived',
       );
-      const fallback = genericSessions.find(
-        (session) => session.status !== 'archived',
+      const profileSessions = genericSessions.filter(
+        (session) => session.profile_id === profileId,
       );
-      const selectedId =
-        roleplaySelection?.sessionId ??
-        matching?.session_id ??
-        fallback?.session_id ??
-        genericSessions[0]?.session_id;
-      const selected = genericSessions.find(
-        (session) => session.session_id === selectedId,
-      );
+      const selected =
+        genericSessions.find(
+          (session) => session.session_id === roleplaySelection?.sessionId,
+        ) ??
+        matching ??
+        profileSessions[0];
       if (selected === undefined) {
         this.sessionError.set(
           'No chat sessions are available from rusty-crew. Create a session to begin.',

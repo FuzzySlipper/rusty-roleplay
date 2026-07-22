@@ -7,10 +7,12 @@ import { provideRouter } from '@angular/router';
 import {
   AdminServicePanelComponent,
   CHAT_DEBUG_TABS,
+  CHAT_OPTIONS_TABS,
   CHAT_TOP_MENU_CONFIGURATION,
   CHAT_TOP_MENU_ITEMS,
   CHAT_TOP_MENU_PANELS,
   type ChatDebugTab,
+  type ChatOptionsTab,
   type ChatTopMenuItem,
   type ChatTopMenuConfiguration,
   type ChatTopMenuPanel,
@@ -41,6 +43,7 @@ import { NarratorConfigApi } from './narrator-config/narrator-config-api';
 import { PlayerPersonaApi } from './persona-management/player-persona-api';
 import { PromptStackApi } from './prompt-stack/prompt-stack-api';
 import { PromptStackPanelComponent } from './prompt-stack/prompt-stack-panel';
+import { NarratorProfileOptionsTabComponent } from './profile-registry/narrator-profile-options-tab';
 import { ProfileRegistryApi } from './profile-registry/profile-registry-api';
 import {
   RoleplayLoreMenuPanelComponent,
@@ -74,6 +77,15 @@ export const ROLEPLAY_DEBUG_TABS: readonly ChatDebugTab[] = [
     order: 50,
     mode: 'diagnostics',
     component: PromptStackPanelComponent,
+  },
+];
+
+export const ROLEPLAY_OPTIONS_TABS: readonly ChatOptionsTab[] = [
+  {
+    id: 'narrator-profile',
+    label: 'Narrator',
+    order: 20,
+    component: NarratorProfileOptionsTabComponent,
   },
 ];
 
@@ -173,6 +185,10 @@ export const appConfig: ApplicationConfig = {
       provide: CHAT_DEBUG_TABS,
       useValue: ROLEPLAY_DEBUG_TABS,
       multi: true,
+    },
+    {
+      provide: CHAT_OPTIONS_TABS,
+      useValue: ROLEPLAY_OPTIONS_TABS,
     },
     {
       provide: CHAT_TOP_MENU_PANELS,
