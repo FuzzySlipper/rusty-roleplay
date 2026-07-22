@@ -83,6 +83,7 @@ trap cleanup EXIT
 echo "Building Rusty Roleplay..."
 (
   cd "${frontend_root}"
+  pnpm install --frozen-lockfile
   pnpm exec nx build roleplay-web --configuration production
 )
 

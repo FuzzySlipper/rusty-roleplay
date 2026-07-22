@@ -49,6 +49,22 @@ cd /home/dev/rusty-roleplay
 ./scripts/update-den-srv-instances.sh
 ```
 
+When Rusty View publishes a new `0.0.x` development release, synchronize the
+Roleplay lockfile first; no per-package version edits are required:
+
+```bash
+cd /home/dev/rusty-roleplay/roleplay-frontend
+pnpm run sync:rusty-view
+git add package.json pnpm-lock.yaml
+git commit -m "Update Rusty View packages"
+cd ..
+./scripts/update-den-srv-instances.sh
+```
+
+The sync command requires every `@rusty-view/*` library to resolve to the same
+release. Deployments run a frozen install before the production build, so the
+container receives exactly the package set recorded by the committed lockfile.
+
 It validates that the relevant local checkouts are clean, prints their exact
 revisions, then updates these deployments in order:
 

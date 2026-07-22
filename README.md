@@ -39,6 +39,20 @@ pnpm exec nx lint roleplay-web
 pnpm exec nx test roleplay-web
 ```
 
+During rapid Rusty View development, Roleplay accepts the newest published
+`0.0.x` package set while the committed lockfile keeps each build
+reproducible. After publishing a new Rusty View release, refresh all View
+packages together:
+
+```bash
+cd roleplay-frontend
+pnpm run sync:rusty-view
+```
+
+Commit the resulting `package.json` and `pnpm-lock.yaml` changes before using
+the deployment orchestrator. Individual Docker and den-srv builds continue to
+use the committed lockfile rather than silently changing dependencies.
+
 The production build is written to
 `roleplay-frontend/dist/apps/roleplay-web/browser`.
 

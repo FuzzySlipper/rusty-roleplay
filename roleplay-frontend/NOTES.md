@@ -32,6 +32,12 @@ filesystem link, so the dependency model matches real publishing.
 (`minimumReleaseAge: 0`) because packages are (re)published moments before
 install in local dev.
 
+During the pre-stable rapid-development period, all Rusty View dependencies use
+the `0.0.x` range. Run `pnpm run sync:rusty-view` after a coordinated View
+package publication. The command updates only the View package set, installs
+the frozen result, and rejects a mixed-version resolution. The committed
+lockfile remains the deployment pin.
+
 ### Angular version alignment
 
 The consuming app's Angular must be **>= the version the libs were compiled
