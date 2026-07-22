@@ -9,7 +9,7 @@ describe('RpSceneControlsComponent', () => {
     fixture.componentRef.setInput('phase', 'exploring');
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.phase').textContent).toContain(
-      'Exploring',
+      'Searching lore...',
     );
   });
 
