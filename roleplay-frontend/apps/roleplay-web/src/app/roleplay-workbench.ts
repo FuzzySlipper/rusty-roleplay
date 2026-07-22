@@ -871,10 +871,12 @@ export class RoleplayWorkbench {
 
   private async loadAlternates(sessionId: string): Promise<void> {
     this.revisionError.set(undefined);
+    const terminalMessage = this.chatStore.messages().at(-1);
     if (
       this.chatStore.activeSessionId() === sessionId &&
-      latestAssistantMessageCompletedEventId(this.chatStore.rawEvents()) ===
-        undefined
+      (terminalMessage?.author.role !== 'assistant' ||
+        latestAssistantMessageCompletedEventId(this.chatStore.rawEvents()) ===
+          undefined)
     ) {
       this.alternateSlots.set([]);
       return;
