@@ -50,12 +50,18 @@ esac
 require_clean_repo() {
   local label="$1"
   local path="$2"
+  local status_output
   if [[ ! -d "${path}/.git" ]]; then
     echo "${label} checkout not found at ${path}" >&2
     exit 1
   fi
-  if ! git -C "${path}" diff --quiet --ignore-submodules -- ||
-    ! git -C "${path}" diff --cached --quiet --ignore-submodules --; then
+  status_output="$(
+    git -C "${path}" status \
+      --porcelain=v1 \
+      --untracked-files=all \
+      --ignore-submodules=all
+  )"
+  if [[ -n "${status_output}" ]]; then
     echo "${label} checkout is dirty at ${path}; commit or stash it before updating." >&2
     exit 1
   fi
