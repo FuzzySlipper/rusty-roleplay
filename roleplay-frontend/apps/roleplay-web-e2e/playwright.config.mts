@@ -6,7 +6,8 @@ import { workspaceRoot } from '@nx/devkit';
 const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
 const externallyManagedServer =
   process.env['PLAYWRIGHT_BROKER_BASE_URL'] !== undefined ||
-  process.env['RUSTY_ROLEPLAY_DEPLOYED_RUN'] === '1';
+  process.env['RUSTY_ROLEPLAY_DEPLOYED_RUN'] === '1' ||
+  process.env['RUSTY_ROLEPLAY_IMAGE_LIVE_RUN'] === '1';
 const brokerArtifactRoot = process.env['PLAYWRIGHT_BROKER_ARTIFACT_ROOT'];
 
 /**
@@ -35,7 +36,10 @@ export default defineConfig({
     baseURL,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace:
-      process.env['RUSTY_ROLEPLAY_LIVE_RUN'] === '1' ? 'on' : 'on-first-retry',
+      process.env['RUSTY_ROLEPLAY_LIVE_RUN'] === '1' ||
+      process.env['RUSTY_ROLEPLAY_IMAGE_LIVE_RUN'] === '1'
+        ? 'on'
+        : 'on-first-retry',
   },
   /* Run your local dev server before starting the tests */
   webServer: externallyManagedServer

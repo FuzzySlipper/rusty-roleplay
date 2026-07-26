@@ -14,10 +14,11 @@ import {
   RoleplayPersonasMenuPanelComponent,
   RoleplayTextStyleMenuPanelComponent,
 } from './roleplay-menu-panels';
+import { ImageGenerationPanelComponent } from './image-generation/image-generation-panel';
 import { StImportPanelComponent } from './st-import/st-import-panel';
 
 interface RoleplaySetupTab extends TabEntry {
-  readonly component: Type<unknown>;
+  readonly component?: Type<unknown>;
 }
 
 export const ROLEPLAY_SETUP_TABS: readonly RoleplaySetupTab[] = [
@@ -42,6 +43,10 @@ export const ROLEPLAY_SETUP_TABS: readonly RoleplaySetupTab[] = [
     component: RoleplayNarratorMenuPanelComponent,
   },
   {
+    id: 'images',
+    label: 'Images',
+  },
+  {
     id: 'text-style',
     label: 'Text Style',
     component: RoleplayTextStyleMenuPanelComponent,
@@ -51,7 +56,11 @@ export const ROLEPLAY_SETUP_TABS: readonly RoleplaySetupTab[] = [
 @Component({
   selector: 'app-roleplay-setup-menu-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgComponentOutlet, TabStripComponent],
+  imports: [
+    ImageGenerationPanelComponent,
+    NgComponentOutlet,
+    TabStripComponent,
+  ],
   template: `
     <rv-tab-strip
       [tabs]="tabs"
@@ -60,7 +69,13 @@ export const ROLEPLAY_SETUP_TABS: readonly RoleplaySetupTab[] = [
     />
 
     <div class="rp-setup__body">
-      @if (activeComponent(); as component) {
+      @if (activeId() === 'images') {
+        @defer {
+          <app-image-generation-panel />
+        } @placeholder {
+          <p class="rp-setup__state">Loading image controls…</p>
+        }
+      } @else if (activeComponent(); as component) {
         <ng-container [ngComponentOutlet]="component" />
       }
     </div>
@@ -78,6 +93,11 @@ export const ROLEPLAY_SETUP_TABS: readonly RoleplaySetupTab[] = [
     .rp-setup__body {
       min-height: 0;
       overflow: auto;
+    }
+
+    .rp-setup__state {
+      margin: var(--rv-space-md, 8px);
+      color: var(--rv-color-text-muted, #7a828d);
     }
   `,
 })

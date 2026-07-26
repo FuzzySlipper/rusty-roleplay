@@ -20,6 +20,7 @@ describe('RoleplaySetupMenuPanelComponent', () => {
         { id: 'characters', label: 'Characters' },
         { id: 'st-import', label: 'ST Import' },
         { id: 'narrator', label: 'Narrator' },
+        { id: 'images', label: 'Images' },
         { id: 'text-style', label: 'Text Style' },
       ],
     );
