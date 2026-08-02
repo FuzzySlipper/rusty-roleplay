@@ -29,6 +29,7 @@ export const CHAT_BACKEND_PROVIDERS: (Provider | EnvironmentProviders)[] = [
     useFactory: (config: BackendConfig) =>
       new ChatTransport({
         baseUrl: config.rustyCrewBaseUrl,
+        coordinationRole: config.coordinationRole,
         ...(config.bearerToken === undefined
           ? {}
           : { bearerToken: config.bearerToken }),

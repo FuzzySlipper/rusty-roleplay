@@ -37,9 +37,10 @@ isolated test deployment. Model inference uses the host den-router at port
 shared Crew data is mounted.
 
 The installed `site/runtime-config.js` pins browser API calls to
-`window.location.origin`. This is load-bearing: without it, the frontend's
-general multi-service fallback would derive port `9347` and could accidentally
-read or write the shared live service instead of this isolated port `9350`.
+`window.location.origin` and declares Crew's `debug` coordination role. Both
+are load-bearing: without them, the frontend's general multi-service fallback
+would derive port `9347`, and the reusable transport would select production
+coordination routes instead of this isolated port `9350`.
 
 ## Build and install
 

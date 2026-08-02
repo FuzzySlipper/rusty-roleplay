@@ -17,6 +17,7 @@ describe('resolveBackendConfigFrom', () => {
     expect(config.lorekeepBaseUrl).toBe('http://den-k8:8790');
     expect(config.bearerToken).toBeUndefined();
     expect(config.runtimeProfileId).toBeUndefined();
+    expect(config.coordinationRole).toBe('production');
   });
 
   it('preserves the serving protocol when deriving', () => {
@@ -54,6 +55,15 @@ describe('resolveBackendConfigFrom', () => {
     // lorekeep falls back to derivation when window config omits it.
     expect(config.lorekeepBaseUrl).toBe('http://den-k8:8790');
     expect(config.bearerToken).toBe('tok');
+  });
+
+  it('uses an explicit debug coordination role from deployment config', () => {
+    const config = resolveBackendConfigFrom(origin('den-k8'), {
+      rustyCrewBaseUrl: 'http://den-k8:9350',
+      coordinationRole: 'debug',
+    });
+
+    expect(config.coordinationRole).toBe('debug');
   });
 
   it('query param wins over window config', () => {

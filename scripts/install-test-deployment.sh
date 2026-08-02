@@ -38,7 +38,7 @@ fi
 
 find "${deployment_root}/site" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
 cp -a "${frontend_dist}/." "${deployment_root}/site/"
-install -m 0644 "${repo_root}/docker/runtime-config.js" "${deployment_root}/site/runtime-config.js"
+install -m 0644 "${repo_root}/docker/runtime-config.debug.js" "${deployment_root}/site/runtime-config.js"
 
 echo "Installed the test deployment at ${deployment_root}."
 echo "The Dockerfile and source build assets remain in ${repo_root}; only runtime artifacts were installed."

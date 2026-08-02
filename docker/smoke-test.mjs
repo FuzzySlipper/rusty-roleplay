@@ -48,10 +48,11 @@ const runtimeConfigResponse = await fetch(`${baseUrl}/runtime-config.js`);
 const runtimeConfig = await runtimeConfigResponse.text();
 if (
   !runtimeConfigResponse.ok ||
-  !runtimeConfig.includes("window.location.origin")
+  !runtimeConfig.includes("window.location.origin") ||
+  !runtimeConfig.includes("coordinationRole: 'debug'")
 ) {
   throw new Error(
-    "container runtime config did not pin the API to the serving origin",
+    "container runtime config did not pin the API and debug coordination role",
   );
 }
 

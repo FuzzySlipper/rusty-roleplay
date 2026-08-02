@@ -26,6 +26,8 @@ export interface BackendConfig {
   readonly bearerToken: string | undefined;
   /** Optional operator-selected runtime profile. This is not a user identity. */
   readonly runtimeProfileId: string | undefined;
+  /** Fixed Crew coordination role for this deployment. */
+  readonly coordinationRole: 'production' | 'debug';
 }
 
 /** Default service ports, used when deriving a URL from the serving host. */
@@ -42,6 +44,7 @@ export interface RustyRoleplayWindowConfig {
   readonly lorekeepBaseUrl?: string;
   readonly bearerToken?: string;
   readonly runtimeProfileId?: string;
+  readonly coordinationRole?: 'production' | 'debug';
 }
 
 declare global {
@@ -99,6 +102,7 @@ export function resolveBackendConfigFrom(
     bearerToken: windowConfig?.bearerToken,
     runtimeProfileId:
       params.get('profile')?.trim() || windowConfig?.runtimeProfileId,
+    coordinationRole: windowConfig?.coordinationRole ?? 'production',
   };
 }
 
