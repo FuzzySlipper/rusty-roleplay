@@ -242,7 +242,8 @@ async function tuneControlsInBrowser(
     ),
     fullPage: true,
   });
-  await page.getByRole('button', { name: 'Close RP Setup' }).click();
+  await page.getByTestId('top-menu-panel-close').click();
+  await expect(page.getByTestId('top-menu-overlay-custom')).toHaveCount(0);
 }
 
 async function openSessionInBrowser(page: Page): Promise<void> {

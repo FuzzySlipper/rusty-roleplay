@@ -99,7 +99,8 @@ test('operator and narrator image generation remain inline, durable, and flow-sa
     .toBeGreaterThan(initialImages.length);
   await expect(page.locator('.gallery-grid img').last()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Close RP Setup' }).click();
+  await page.getByTestId('top-menu-panel-close').click();
+  await expect(page.getByTestId('top-menu-overlay-custom')).toHaveCount(0);
   const inlineImagesAfterOperator = page.locator(
     'rv-transcript-viewport .rv-attachment[data-kind="image"] img',
   );

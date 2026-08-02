@@ -201,6 +201,8 @@ test('direct startup → transcript rows, decorator, and RP extensions', async (
   await expect(page.getByRole('tab', { name: 'ST Import' })).toBeVisible();
   await expect(page.getByRole('tab', { name: 'Narrator' })).toBeVisible();
   await expect(page.getByRole('tab', { name: 'Text Style' })).toBeVisible();
+  await page.getByTestId('top-menu-panel-close').click();
+  await expect(page.getByTestId('top-menu-overlay-custom')).toHaveCount(0);
 });
 
 test('direct startup offers first narrator setup instead of selecting a mechanic', async ({
