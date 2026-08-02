@@ -49,7 +49,7 @@ const runtimeConfig = await runtimeConfigResponse.text();
 if (
   !runtimeConfigResponse.ok ||
   !runtimeConfig.includes("window.location.origin") ||
-  !runtimeConfig.includes("coordinationRole: 'debug'")
+  !/coordinationRole:\s*["']debug["']/.test(runtimeConfig)
 ) {
   throw new Error(
     "container runtime config did not pin the API and debug coordination role",

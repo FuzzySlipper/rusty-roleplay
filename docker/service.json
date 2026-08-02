@@ -1,9 +1,6 @@
 {
   "profilesDir": "/home/system/rusty-roleplay-test/config/profiles",
   "skillsDir": "/home/system/rusty-roleplay-test/config/skills",
-  "wakeTimeout": {
-    "mode": "disabled"
-  },
   "brains": [],
   "sessions": []
 }
